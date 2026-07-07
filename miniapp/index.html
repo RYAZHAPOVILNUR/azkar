@@ -803,16 +803,36 @@
   }
 
   /* ---------- состояние (сохраняется между заходами, сбрасывается на новый день) ---------- */
-  const todayStr = () => new Date().toLocaleDateString('sv');   // YYYY-MM-DD (локальная дата)
+  const todayStr = (date = new Date()) => date.toLocaleDateString('sv');   // YYYY-MM-DD (локальная дата)
+  const blankProgress = date => ({ date, morning:{}, evening:{}, after:{} });
+  function hasSavedLocation(){
+    try { const saved = JSON.parse(localStorage.getItem('azkar_loc') || 'null'); return !!(saved && typeof saved.lat === 'number' && typeof saved.lng === 'number'); }
+    catch(e){ return false; }
+  }
   function loadProgress(){
     let p=null; try{ p=JSON.parse(localStorage.getItem('azkar_progress')||'null'); }catch(e){}
-    if(!p || p.date!==todayStr()) p={ date:todayStr(), morning:{}, evening:{}, after:{} };
+    if(!p) p=blankProgress(todayStr());
     p.morning=p.morning||{}; p.evening=p.evening||{}; p.after=p.after||{};
     return p;
   }
   let PROG = loadProgress();
-  function saveProgress(){ try{ localStorage.setItem('azkar_progress', JSON.stringify(PROG)); }catch(e){} }
   let CURRENT_KEY = null;
+  function saveProgress(){ try{ localStorage.setItem('azkar_progress', JSON.stringify(PROG)); }catch(e){} }
+  function routineDayFromTimes(t){
+    const now = new Date();
+    const day = new Date(now);
+    if(t && t.fajr && now < new Date(t.fajr)) day.setDate(day.getDate()-1);
+    return todayStr(day);
+  }
+  function ensureProgressFresh(day = todayStr()){
+    if(!PROG || PROG.date !== day){
+      PROG = blankProgress(day);
+      saveProgress();
+      if(CURRENT_KEY) openReading(CURRENT_KEY);
+      else updateHomeProgress();
+    }
+  }
+  if(!hasSavedLocation()) ensureProgressFresh(todayStr());
 
   function openReading(key){
     CURRENT_KEY = key;
@@ -986,10 +1006,18 @@
     const stA=document.getElementById('statAzkar'); if(stA) stA.textContent = azkarToday;
   }
 
-  let showTranslit = true, showTranslate = true;
+  function savedBool(key, fallback = true){
+    const value = localStorage.getItem(key);
+    return value == null ? fallback : value === '1';
+  }
+  let showTranslit = savedBool('azkar_show_translit', true), showTranslate = savedBool('azkar_show_translate', true);
   function applyTextToggles(){
     document.querySelectorAll('.js-translit').forEach(e=> e.style.display = showTranslit?'':'none');
     document.querySelectorAll('.js-translate').forEach(e=> e.style.display = showTranslate?'':'none');
+  }
+  function applyTextToggleSwitches(){
+    document.querySelectorAll('.switch[data-toggle="translit"]').forEach(sw=> sw.classList.toggle('on', showTranslit));
+    document.querySelectorAll('.switch[data-toggle="translate"]').forEach(sw=> sw.classList.toggle('on', showTranslate));
   }
 
   const root = document.documentElement;
@@ -1036,9 +1064,10 @@
   if(caseLink){ caseLink.addEventListener('click', e=>{ if(TG && TG.openLink){ e.preventDefault(); TG.openLink(caseLink.href); } }); }
   document.querySelectorAll('.switch[data-toggle]').forEach(sw=> sw.addEventListener('click', ()=>{
     sw.classList.toggle('on'); const t = sw.dataset.toggle;
-    if(t==='translit'){ showTranslit = sw.classList.contains('on'); applyTextToggles(); }
-    if(t==='translate'){ showTranslate = sw.classList.contains('on'); applyTextToggles(); }
+    if(t==='translit'){ showTranslit = sw.classList.contains('on'); localStorage.setItem('azkar_show_translit', showTranslit?'1':'0'); applyTextToggles(); }
+    if(t==='translate'){ showTranslate = sw.classList.contains('on'); localStorage.setItem('azkar_show_translate', showTranslate?'1':'0'); applyTextToggles(); }
   }));
+  applyTextToggleSwitches();
 
   document.querySelectorAll('.ring').forEach(r=>{
     const p = +r.dataset.p, c = 2*Math.PI*18, val = r.querySelector('.val');
@@ -1073,6 +1102,7 @@
       const r = await fetch(`/api/times?lat=${loc.lat}&lng=${loc.lng}&madhab=${madhab}`);
       if(!r.ok) return;
       const t = await r.json();
+      ensureProgressFresh(routineDayFromTimes(t));
       const grid = document.getElementById('timesGrid'); grid.innerHTML='';
       const nowMs = Date.now(); let curIdx = -1;
       PRAYERS.forEach(([k],i)=>{ if(new Date(t[k]).getTime()<=nowMs) curIdx=i; });
@@ -1117,6 +1147,9 @@
   }));
   renderMadhab();
   if(loc){ locDone(); setLocStatus('Напоминания по времени намаза'); fetchTimes(); }
+  setInterval(()=>{ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); }, 60000);
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); } });
+  window.addEventListener('focus', ()=>{ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); });
   updateStreakUI(); updateHomeProgress();
 
   /* ---- приветствие по времени суток + дата ---- */
