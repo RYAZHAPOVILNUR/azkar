@@ -202,7 +202,7 @@
   .src-note { font-size:13px; color: var(--ink-faint); margin-top:12px; font-style:italic; }
 
   .cnote { text-align:center; font-size:12px; color:var(--ink-faint); margin-top:12px; font-style:italic; }
-  .counter-row { display:flex; align-items:center; justify-content:flex-end; gap:18px; margin-top:10px; padding-top:12px; border-top:1px solid var(--line); }
+  .counter-row { display:flex; align-items:center; justify-content:center; gap:18px; margin-top:10px; padding-top:12px; border-top:1px solid var(--line); }
   .cbtn { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; cursor:pointer; flex-shrink:0;
     background: var(--surface-2); border:1px solid var(--line); color: var(--ink-soft);
     transition: transform .15s, color .15s, background .15s, border-color .15s; }
@@ -829,7 +829,6 @@
         <div class="src-note">${z.src}</div>
         ${note}
         <div class="counter-row">
-          <button class="cbtn reset" title="Сбросить"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/></svg></button>
           <button class="tasbih" data-target="${z.target}" data-cur="${saved}">
             <svg viewBox="0 0 120 126">
               <circle class="tr" cx="60" cy="55" r="47"/>
@@ -873,7 +872,7 @@
       }
       function persist(cur){ PROG[CURRENT_KEY][idx] = cur; saveProgress(); }
       function inc(){
-        let cur = +btn.dataset.cur; cur = cur>=target ? 0 : cur+1;
+        let cur = +btn.dataset.cur; if(cur>=target) return; cur = cur+1;
         render(cur); persist(cur);
         const done = cur>=target && cur>0;
         tgHaptic(done ? 'medium' : 'light');
@@ -884,7 +883,6 @@
       btn.addEventListener('click', e=>{ e.stopPropagation(); inc(); });
       // тап по всей карточке (арабский/фон) тоже считает — палец не надо тянуть к центру
       card.addEventListener('click', e=>{ if(e.target.closest('.cbtn, .mini, a, .tasbih')) return; inc(); });
-      card.querySelector('.cbtn.reset').addEventListener('click', e=>{ e.stopPropagation(); render(0); persist(0); tgHaptic('light'); updateProgress(); });
       card.querySelector('.js-src').addEventListener('click', e=>{ e.stopPropagation(); openInfo(AZKAR[CURRENT_KEY].items[idx]); });
     });
   }
