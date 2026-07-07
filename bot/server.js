@@ -1,19 +1,25 @@
 'use strict';
 
 /*
- * Азикр — сервер Telegram Mini App + бот напоминаний.
- * - Отдаёт статику Mini App (../miniapp) на PORT.
- * - Бот: /start сохраняет подписчика и даёт кнопку открытия Mini App.
- * - Крон: утреннее и вечернее напоминание всем подписчикам.
- *
- * Часовой пояс напоминаний берётся из TZ (по умолчанию Europe/Moscow).
- * Подписчики хранятся в data/subscribers.json (простое JSON-хранилище).
+ * Азкар — сервер Mini App + бот.
+ * - Отдаёт статику Mini App (../miniapp).
+ * - API: /api/times (времена намаза по координатам+мазхабу), /api/location (регистрация
+ *   геолокации пользователя для персональных напоминаний, с проверкой Telegram initData).
+ * - Бот: /start (кнопка Mini App), /stop. Напоминания:
+ *     • у кого задана геолокация — по времени намаза (утренние после Фаджра, вечерние после Асра);
+ *     • у кого нет — по фиксированному расписанию (MORNING_CRON/EVENING_CRON).
  */
 
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const cron = require('node-cron');
+
+// adhan v4 — ESM-only, грузим динамическим import (server.js — CommonJS)
+let adhan = null;
+import('adhan').then(m => { adhan = m.default || m; console.log('[adhan] загружен'); })
+  .catch(e => console.error('[adhan] ошибка загрузки:', e));
 
 const PORT = process.env.PORT || 3010;
 const TOKEN = process.env.BOT_TOKEN || '';
@@ -22,69 +28,124 @@ const MORNING_CRON = process.env.MORNING_CRON || '30 6 * * *';
 const EVENING_CRON = process.env.EVENING_CRON || '0 18 * * *';
 const TZ = process.env.TZ || 'Europe/Moscow';
 
-// ---------- статик Mini App ----------
+// ---------- хранилище ----------
+const DATA_FILE = path.join(__dirname, 'data', 'subscribers.json');
+function loadSubs() { try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); } catch { return {}; } }
+function saveSubs(s) { fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true }); fs.writeFileSync(DATA_FILE, JSON.stringify(s, null, 2)); }
+
+// ---------- расчёт времён намаза ----------
+function prayerTimes(lat, lng, madhab, date) {
+  if (!adhan) throw new Error('adhan not loaded yet');
+  const coords = new adhan.Coordinates(Number(lat), Number(lng));
+  const params = adhan.CalculationMethod.MuslimWorldLeague();
+  params.madhab = madhab === 'hanafi' ? adhan.Madhab.Hanafi : adhan.Madhab.Shafi;
+  return new adhan.PrayerTimes(coords, date || new Date(), params);
+}
+
+// ---------- статик + API ----------
 const app = express();
+app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'miniapp'), { extensions: ['html'] }));
 app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
-app.listen(PORT, () => console.log(`[web] Mini App слушает :${PORT}`));
 
-// ---------- хранилище подписчиков ----------
-const DATA_FILE = path.join(__dirname, 'data', 'subscribers.json');
-function loadSubs() {
-  try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); }
-  catch { return {}; }
+// времена намаза на сегодня (ISO в UTC — клиент форматирует в свою зону)
+app.get('/api/times', (req, res) => {
+  const { lat, lng, madhab } = req.query;
+  if (!lat || !lng) return res.status(400).json({ error: 'lat/lng required' });
+  if (!adhan) return res.status(503).json({ error: 'prayer engine warming up' });
+  try {
+    const t = prayerTimes(lat, lng, madhab, new Date());
+    res.json({
+      fajr: t.fajr, sunrise: t.sunrise, dhuhr: t.dhuhr,
+      asr: t.asr, maghrib: t.maghrib, isha: t.isha,
+    });
+  } catch (e) { res.status(500).json({ error: String(e) }); }
+});
+
+// проверка подписи Telegram WebApp initData
+function checkInitData(initData) {
+  if (!initData || !TOKEN) return null;
+  const url = new URLSearchParams(initData);
+  const hash = url.get('hash');
+  url.delete('hash');
+  const dcs = [...url.entries()].map(([k, v]) => `${k}=${v}`).sort().join('\n');
+  const secret = crypto.createHmac('sha256', 'WebAppData').update(TOKEN).digest();
+  const calc = crypto.createHmac('sha256', secret).update(dcs).digest('hex');
+  if (calc !== hash) return null;
+  try { return JSON.parse(url.get('user')); } catch { return null; }
 }
-function saveSubs(subs) {
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify(subs, null, 2));
-}
+
+// регистрация геолокации пользователя (для персональных напоминаний)
+app.post('/api/location', (req, res) => {
+  const { initData, lat, lng, madhab } = req.body || {};
+  const user = checkInitData(initData);
+  if (!user || !user.id) return res.status(401).json({ error: 'bad initData' });
+  if (typeof lat !== 'number' || typeof lng !== 'number') return res.status(400).json({ error: 'lat/lng required' });
+  const subs = loadSubs();
+  subs[user.id] = { ...(subs[user.id] || {}), id: user.id, name: user.first_name || '',
+    lat, lng, madhab: madhab === 'hanafi' ? 'hanafi' : 'shafi', since: subs[user.id]?.since || Date.now() };
+  saveSubs(subs);
+  res.json({ ok: true });
+});
+
+app.listen(PORT, () => console.log(`[web] Mini App + API на :${PORT}`));
 
 // ---------- бот ----------
 if (!TOKEN) {
-  console.warn('[bot] BOT_TOKEN не задан — работает только статик-сервер, бот выключен.');
+  console.warn('[bot] BOT_TOKEN не задан — только статик/API, бот выключен.');
 } else {
   const TelegramBot = require('node-telegram-bot-api');
   const bot = new TelegramBot(TOKEN, { polling: true });
-
-  const openKeyboard = {
-    reply_markup: { inline_keyboard: [[{ text: '🕌 Открыть азкары', web_app: { url: APP_URL } }]] }
-  };
-
-  // кнопка-меню слева от поля ввода открывает Mini App
-  bot.setChatMenuButton({ menu_button: { type: 'web_app', text: 'Азкары', web_app: { url: APP_URL } } })
-    .catch(() => {});
+  const kb = { reply_markup: { inline_keyboard: [[{ text: '🕌 Открыть азкары', web_app: { url: APP_URL } }]] } };
+  bot.setChatMenuButton({ menu_button: { type: 'web_app', text: 'Азкары', web_app: { url: APP_URL } } }).catch(() => {});
 
   bot.onText(/\/start/, (msg) => {
-    const id = msg.chat.id;
-    const subs = loadSubs();
-    subs[id] = { id, name: msg.from.first_name || '', since: subs[id]?.since || Date.now() };
+    const id = msg.chat.id, subs = loadSubs();
+    subs[id] = { ...(subs[id] || {}), id, name: msg.from.first_name || '', since: subs[id]?.since || Date.now() };
     saveSubs(subs);
-    bot.sendMessage(id,
-      'Ассаляму алейкум! 🌿\n\nЯ буду напоминать об утренних и вечерних поминаниях и после намаза. Открой приложение кнопкой ниже.',
-      openKeyboard);
+    bot.sendMessage(id, 'Ассаляму алейкум! 🌿\n\nЯ напомню об утренних и вечерних поминаниях и после намаза. Открой приложение и в настройках включи геолокацию — тогда напоминания будут приходить по времени твоего намаза.', kb);
   });
+  bot.onText(/\/stop/, (msg) => { const s = loadSubs(); delete s[msg.chat.id]; saveSubs(s); bot.sendMessage(msg.chat.id, 'Напоминания отключены. /start — включить снова.'); });
 
-  bot.onText(/\/stop/, (msg) => {
-    const subs = loadSubs();
-    delete subs[msg.chat.id];
-    saveSubs(subs);
-    bot.sendMessage(msg.chat.id, 'Напоминания отключены. Наберите /start, чтобы включить снова.');
-  });
-
-  function broadcast(text) {
-    const subs = loadSubs();
-    Object.keys(subs).forEach((id) => {
-      bot.sendMessage(id, text, openKeyboard).catch((e) => {
-        // 403 — пользователь заблокировал бота: чистим
-        if (e && e.response && e.response.statusCode === 403) {
-          const s = loadSubs(); delete s[id]; saveSubs(s);
-        }
-      });
+  function send(id, text) {
+    bot.sendMessage(id, text, kb).catch((e) => {
+      if (e?.response?.statusCode === 403) { const s = loadSubs(); delete s[id]; saveSubs(s); }
     });
   }
+  const MORNING_MSG = '🌅 Время утренних поминаний. Начни день с зикра.';
+  const EVENING_MSG = '🌙 Время вечерних поминаний.';
+  const todayKey = () => new Date().toISOString().slice(0, 10);
+  function hhmm(d, tz) { return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: tz || TZ }); }
 
-  cron.schedule(MORNING_CRON, () => broadcast('🌅 Время утренних поминаний. Начни день с зикра.'), { timezone: TZ });
-  cron.schedule(EVENING_CRON, () => broadcast('🌙 Время вечерних поминаний. Не забудь azkar.'), { timezone: TZ });
+  // персональные напоминания по времени намаза — тик раз в минуту
+  cron.schedule('* * * * *', () => {
+    const subs = loadSubs(); const now = new Date(); const day = todayKey();
+    const nowHM = hhmm(now, TZ);
+    let changed = false;
+    for (const id in subs) {
+      const u = subs[id];
+      if (typeof u.lat !== 'number') continue; // без геолокации — фиксированный крон ниже
+      const tz = u.tz || TZ;
+      let t; try { t = prayerTimes(u.lat, u.lng, u.madhab, now); } catch { continue; }
+      if (hhmm(t.fajr, tz) === hhmm(now, tz) && u.lastMorning !== day) { u.lastMorning = day; changed = true; send(id, MORNING_MSG); }
+      if (hhmm(t.asr, tz) === hhmm(now, tz) && u.lastEvening !== day) { u.lastEvening = day; changed = true; send(id, EVENING_MSG); }
+    }
+    if (changed) saveSubs(subs);
+  }, { timezone: TZ });
 
-  console.log(`[bot] запущен. Напоминания: утро "${MORNING_CRON}", вечер "${EVENING_CRON}" (${TZ}).`);
+  // фиксированное расписание — только для тех, у кого нет геолокации
+  function fixedBroadcast(text, mark) {
+    const subs = loadSubs(); const day = todayKey(); let changed = false;
+    for (const id in subs) {
+      const u = subs[id];
+      if (typeof u.lat === 'number') continue;
+      if (u[mark] === day) continue;
+      u[mark] = day; changed = true; send(id, text);
+    }
+    if (changed) saveSubs(subs);
+  }
+  cron.schedule(MORNING_CRON, () => fixedBroadcast(MORNING_MSG, 'lastMorning'), { timezone: TZ });
+  cron.schedule(EVENING_CRON, () => fixedBroadcast(EVENING_MSG, 'lastEvening'), { timezone: TZ });
+
+  console.log(`[bot] запущен. Персональные напоминания по намазу + фикс. фолбэк (${TZ}).`);
 }

@@ -8,6 +8,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "adhan": "^4.4.3",
     "express": "^4.19.2",
     "node-cron": "^3.0.3",
     "node-telegram-bot-api": "^0.66.0"
