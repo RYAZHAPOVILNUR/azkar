@@ -2,7 +2,7 @@
 
 /*
  * Азкар — сервер Mini App + бот.
- * - Отдаёт статику Mini App (../miniapp).
+ * - Отдаёт лендинг (../landing) на / и Mini App (../miniapp) на /app.
  * - API: /api/times (времена намаза по координатам+мазхабу), /api/location (регистрация
  *   геолокации пользователя для персональных напоминаний, с проверкой Telegram initData).
  * - Бот: /start (кнопка Mini App), /stop. Напоминания:
@@ -23,7 +23,7 @@ import('adhan').then(m => { adhan = m.default || m; console.log('[adhan] заг�
 
 const PORT = process.env.PORT || 3010;
 const TOKEN = process.env.BOT_TOKEN || '';
-const APP_URL = process.env.APP_URL || 'https://azkar.nurtech.dev';
+const APP_URL = process.env.APP_URL || 'https://azkar.nurtech.dev/app';
 const MORNING_CRON = process.env.MORNING_CRON || '30 6 * * *';
 const EVENING_CRON = process.env.EVENING_CRON || '0 18 * * *';
 const TZ = process.env.TZ || 'Europe/Moscow';
@@ -71,7 +71,6 @@ function prayerTimes(lat, lng, madhab, date) {
 // ---------- статик + API ----------
 const app = express();
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'miniapp'), { extensions: ['html'] }));
 app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
 
 // времена намаза на сегодня (ISO в UTC — клиент форматирует в свою зону)
@@ -113,6 +112,10 @@ app.post('/api/location', (req, res) => {
   saveSubs(subs);
   res.json({ ok: true });
 });
+
+// Mini App живёт под /app, лендинг — на корне. API и health объявлены выше.
+app.use('/app', express.static(path.join(__dirname, '..', 'miniapp'), { extensions: ['html'], index: 'index.html' }));
+app.use('/', express.static(path.join(__dirname, '..', 'landing'), { extensions: ['html'], index: 'index.html' }));
 
 app.listen(PORT, () => console.log(`[web] Mini App + API на :${PORT}`));
 

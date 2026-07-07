@@ -2,14 +2,14 @@
   "name": "Азкар — поминания",
   "short_name": "Азкар",
   "description": "Утренние и вечерние поминания и азкары после намаза",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/app",
+  "scope": "/app",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F5F3EC",
   "theme_color": "#6FA58C",
   "icons": [
-    { "src": "/assets/icon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/assets/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/app/assets/icon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app/assets/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

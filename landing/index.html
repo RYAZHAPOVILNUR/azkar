@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#6FA58C">
+  <title>Азкар — поминания на каждый день</title>
+  <style>
+    @font-face { font-family: AzkarSans; src: url('/app/assets/fonts/noto-sans-ar.woff2') format('woff2'); font-display: swap; }
+    @font-face { font-family: AzkarNaskh; src: url('/app/assets/fonts/noto-naskh.woff2') format('woff2'); font-display: swap; }
+
+    :root {
+      --paper: #F5F3EC;
+      --paper-2: #EBE7D9;
+      --surface: #FFFEFA;
+      --surface-soft: #F0EEE4;
+      --ink: #3A433D;
+      --muted: #6D756E;
+      --faint: #A0A69E;
+      --line: #E1DED2;
+      --sage: #6FA58C;
+      --sage-deep: #4E7B65;
+      --sage-soft: #DDEBE4;
+      --amber: #E9C68D;
+      --violet: #A9A4C8;
+      --shadow: 0 22px 70px rgba(58, 67, 61, .13);
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #171D1A;
+        --paper-2: #202821;
+        --surface: #242C27;
+        --surface-soft: #1C231F;
+        --ink: #F3F0E7;
+        --muted: #BBC3BA;
+        --faint: #858D84;
+        --line: #354038;
+        --sage: #8FC4A9;
+        --sage-deep: #A7D6BF;
+        --sage-soft: #26382F;
+        --amber: #DDB879;
+        --violet: #B8B1D9;
+        --shadow: 0 24px 78px rgba(0, 0, 0, .36);
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="light"] {
+      --paper: #F5F3EC; --paper-2: #EBE7D9; --surface: #FFFEFA; --surface-soft: #F0EEE4;
+      --ink: #3A433D; --muted: #6D756E; --faint: #A0A69E; --line: #E1DED2;
+      --sage: #6FA58C; --sage-deep: #4E7B65; --sage-soft: #DDEBE4; --amber: #E9C68D; --violet: #A9A4C8;
+      --shadow: 0 22px 70px rgba(58, 67, 61, .13); color-scheme: light;
+    }
+    :root[data-theme="dark"] {
+      --paper: #171D1A; --paper-2: #202821; --surface: #242C27; --surface-soft: #1C231F;
+      --ink: #F3F0E7; --muted: #BBC3BA; --faint: #858D84; --line: #354038;
+      --sage: #8FC4A9; --sage-deep: #A7D6BF; --sage-soft: #26382F; --amber: #DDB879; --violet: #B8B1D9;
+      --shadow: 0 24px 78px rgba(0, 0, 0, .36); color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 18% 8%, color-mix(in srgb, var(--sage) 22%, transparent), transparent 34rem),
+        radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--amber) 24%, transparent), transparent 30rem),
+        linear-gradient(180deg, var(--paper), var(--paper-2));
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; }
+    .page { min-height: 100vh; overflow: hidden; }
+    .wrap { width: min(1120px, calc(100% - 36px)); margin: 0 auto; }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 22px 0 10px;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; font-size: 20px; letter-spacing: 0; }
+    .mark {
+      width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+      background: var(--surface); border: 1px solid var(--line); color: var(--sage);
+      box-shadow: 0 10px 24px rgba(58, 67, 61, .08);
+    }
+    .mark svg { width: 24px; height: 24px; }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .ghost, .theme {
+      min-height: 42px; border-radius: 999px; border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface) 80%, transparent); color: var(--ink);
+      text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px;
+    }
+    .ghost { padding: 0 18px; }
+    .theme { width: 42px; cursor: pointer; }
+    .hero {
+      min-height: calc(100vh - 74px);
+      display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(330px, .78fr);
+      align-items: center; gap: 54px; padding: 28px 0 70px;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; color: var(--sage-deep);
+      background: var(--sage-soft); border: 1px solid color-mix(in srgb, var(--sage) 28%, transparent);
+      padding: 8px 12px; border-radius: 999px; font-size: 13px; font-weight: 800;
+    }
+    h1 {
+      margin: 24px 0 18px; max-width: 760px;
+      font-size: clamp(40px, 7.2vw, 82px); line-height: .96; letter-spacing: 0; font-weight: 850;
+    }
+    .lead { max-width: 660px; color: var(--muted); font-size: clamp(18px, 2.5vw, 23px); line-height: 1.55; margin: 0; }
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 30px; }
+    .cta {
+      min-height: 54px; border-radius: 999px; padding: 0 24px; display: inline-flex; align-items: center; gap: 10px;
+      background: var(--sage); color: #fff; text-decoration: none; font-weight: 800;
+      box-shadow: 0 14px 32px color-mix(in srgb, var(--sage) 30%, transparent);
+    }
+    .secondary { color: var(--sage-deep); font-weight: 800; text-decoration: none; padding: 14px 8px; }
+    .trust { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 9px; }
+    .chip {
+      border: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 72%, transparent);
+      color: var(--muted); border-radius: 999px; padding: 8px 12px; font-weight: 700; font-size: 13px;
+    }
+
+    .phone-area { position: relative; min-height: 650px; display: grid; place-items: center; }
+    .halo {
+      position: absolute; inset: 60px -24px 28px 18px; border-radius: 52px;
+      background: linear-gradient(145deg, color-mix(in srgb, var(--sage) 25%, transparent), color-mix(in srgb, var(--amber) 22%, transparent));
+      filter: blur(1px); transform: rotate(-5deg);
+    }
+    .phone {
+      position: relative; width: min(360px, 88vw); border: 10px solid color-mix(in srgb, var(--ink) 82%, #000);
+      border-radius: 44px; background: var(--paper); box-shadow: var(--shadow); overflow: hidden;
+    }
+    .phone:before {
+      content: ""; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      width: 92px; height: 24px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 88%, #000); z-index: 3;
+    }
+    .screen { padding: 24px 16px 18px; min-height: 620px; background: linear-gradient(180deg, var(--paper), var(--surface-soft)); }
+    .app-head { display: flex; align-items: center; justify-content: space-between; margin: 12px 4px 14px; }
+    .mini-brand { display: flex; align-items: center; gap: 8px; font-weight: 850; }
+    .round { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line); color: var(--sage); }
+    .quote {
+      margin: 0 0 12px; padding: 16px; border-radius: 22px; border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--sage-soft), var(--surface));
+    }
+    .quote .ar { font-family: AzkarNaskh, serif; direction: rtl; text-align: right; font-size: 21px; line-height: 1.9; }
+    .quote p { margin: 10px 0 0; color: var(--muted); line-height: 1.45; font-size: 13px; }
+    .session-card {
+      height: 112px; border-radius: 22px; overflow: hidden; margin: 12px 0;
+      display: flex; align-items: flex-end; border: 1px solid var(--line);
+      background-size: cover; background-position: center;
+    }
+    .session-card.morning { background-image: linear-gradient(0deg, rgba(255,255,255,.76), rgba(255,255,255,.08)), url('/app/assets/morning.webp'); }
+    .session-card.evening { background-image: linear-gradient(0deg, rgba(255,255,255,.72), rgba(255,255,255,.06)), url('/app/assets/evening.webp'); }
+    .session-card.after { background-image: linear-gradient(0deg, rgba(255,255,255,.74), rgba(255,255,255,.06)), url('/app/assets/after.webp'); }
+    :root[data-theme="dark"] .session-card.morning { background-image: linear-gradient(0deg, rgba(18,24,21,.7), rgba(18,24,21,.08)), url('/app/assets/morning-dark.webp'); }
+    :root[data-theme="dark"] .session-card.evening { background-image: linear-gradient(0deg, rgba(18,24,21,.7), rgba(18,24,21,.08)), url('/app/assets/evening-dark.webp'); }
+    :root[data-theme="dark"] .session-card.after { background-image: linear-gradient(0deg, rgba(18,24,21,.7), rgba(18,24,21,.08)), url('/app/assets/after-dark.webp'); }
+    .session-card > div { padding: 14px 16px; }
+    .session-card b { display: block; color: var(--ink); font-size: 18px; }
+    .session-card span { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .tasbih-preview {
+      margin-top: 14px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+      padding: 14px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line);
+    }
+    .counter { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: var(--sage); color: #fff; font-weight: 850; }
+    .soft-star {
+      position: absolute; width: 210px; height: 210px; right: -44px; top: 22px; color: var(--sage);
+      opacity: .14; pointer-events: none;
+    }
+
+    section.band { padding: 80px 0; }
+    .section-head { max-width: 760px; margin-bottom: 28px; }
+    h2 { margin: 0; font-size: clamp(30px, 4vw, 48px); line-height: 1.08; letter-spacing: 0; }
+    .section-head p { color: var(--muted); font-size: 18px; line-height: 1.6; margin: 14px 0 0; }
+    .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .feature {
+      min-height: 170px; padding: 22px; border-radius: 26px; background: color-mix(in srgb, var(--surface) 86%, transparent);
+      border: 1px solid var(--line); box-shadow: 0 10px 28px rgba(58, 67, 61, .06);
+    }
+    .feature .icon { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; background: var(--sage-soft); color: var(--sage-deep); margin-bottom: 16px; }
+    .feature h3 { margin: 0; font-size: 18px; letter-spacing: 0; }
+    .feature p { margin: 8px 0 0; color: var(--muted); line-height: 1.5; font-size: 15px; }
+    .sessions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .big-session {
+      min-height: 330px; border-radius: 30px; overflow: hidden; position: relative; display: flex; align-items: flex-end;
+      background-size: cover; background-position: center; border: 1px solid var(--line);
+      box-shadow: 0 18px 48px rgba(58, 67, 61, .11);
+    }
+    .big-session:after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,.48)); }
+    .big-session.morning { background-image: url('/app/assets/morning.webp'); }
+    .big-session.evening { background-image: url('/app/assets/evening.webp'); }
+    .big-session.after { background-image: url('/app/assets/after.webp'); }
+    :root[data-theme="dark"] .big-session.morning { background-image: url('/app/assets/morning-dark.webp'); }
+    :root[data-theme="dark"] .big-session.evening { background-image: url('/app/assets/evening-dark.webp'); }
+    :root[data-theme="dark"] .big-session.after { background-image: url('/app/assets/after-dark.webp'); }
+    .big-session div { position: relative; z-index: 1; padding: 24px; color: #fff; }
+    .big-session span { display: inline-flex; margin-bottom: 8px; padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,.18); font-weight: 800; font-size: 12px; }
+    .big-session h3 { margin: 0; font-size: 24px; }
+    .start {
+      display: grid; grid-template-columns: 1fr auto; gap: 22px; align-items: center;
+      padding: 30px; border-radius: 34px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow);
+    }
+    .steps { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .step { padding: 10px 14px; border-radius: 999px; background: var(--surface-soft); color: var(--muted); font-weight: 800; }
+    footer { padding: 38px 0 44px; color: var(--muted); border-top: 1px solid var(--line); }
+    footer .wrap { display: flex; justify-content: space-between; gap: 18px; align-items: center; flex-wrap: wrap; }
+    footer a { color: var(--sage-deep); font-weight: 800; text-decoration: none; }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .session-card.morning { background-image: linear-gradient(0deg, rgba(18,24,21,.7), rgba(18,24,21,.08)), url('/app/assets/morning-dark.webp'); }
+      :root:not([data-theme="light"]) .session-card.evening { background-image: linear-gradient(0deg, rgba(18,24,21,.7), rgba(18,24,21,.08)), url('/app/assets/evening-dark.webp'); }
+      :root:not([data-theme="light"]) .session-card.after { background-image: linear-gradient(0deg, rgba(18,24,21,.7), rgba(18,24,21,.08)), url('/app/assets/after-dark.webp'); }
+      :root:not([data-theme="light"]) .big-session.morning { background-image: url('/app/assets/morning-dark.webp'); }
+      :root:not([data-theme="light"]) .big-session.evening { background-image: url('/app/assets/evening-dark.webp'); }
+      :root:not([data-theme="light"]) .big-session.after { background-image: url('/app/assets/after-dark.webp'); }
+    }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; gap: 34px; padding-top: 22px; }
+      .phone-area { min-height: auto; }
+      .features, .sessions-grid { grid-template-columns: 1fr; }
+      .big-session { min-height: 240px; }
+      .start { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .wrap { width: min(100% - 28px, 1120px); }
+      .nav { padding-top: 14px; }
+      .ghost { display: none; }
+      .hero { min-height: auto; padding-bottom: 48px; }
+      h1 { font-size: clamp(38px, 13vw, 58px); }
+      .lead { font-size: 17px; }
+      .hero-actions { align-items: stretch; }
+      .cta { width: 100%; justify-content: center; }
+      .phone { width: min(334px, 96vw); border-width: 8px; border-radius: 38px; }
+      .screen { min-height: 560px; padding: 22px 13px 15px; }
+      section.band { padding: 56px 0; }
+      .feature { min-height: auto; border-radius: 22px; }
+      .start { padding: 24px; border-radius: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="wrap nav">
+      <a class="brand" href="/" aria-label="Азкар">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 2 14.5 6 19.1 4.9 18 9.5 22 12 18 14.5 19.1 19.1 14.5 18 12 22 9.5 18 4.9 19.1 6 14.5 2 12 6 9.5 4.9 4.9 9.5 6Z" fill="currentColor"/></svg>
+        </span>
+        <span>Азкар</span>
+      </a>
+      <nav class="nav-actions" aria-label="Навигация">
+        <a class="ghost" href="#features">Возможности</a>
+        <a class="ghost" href="#start">Как начать</a>
+        <button class="theme" id="themeBtn" type="button" aria-label="Сменить тему">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path id="themeIcon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="wrap hero">
+        <div>
+          <span class="eyebrow">
+            <svg width="15" height="15" viewBox="0 0 24 24"><path d="M12 2 14.5 6 19.1 4.9 18 9.5 22 12 18 14.5 19.1 19.1 14.5 18 12 22 9.5 18 4.9 19.1 6 14.5 2 12 6 9.5 4.9 4.9 9.5 6Z" fill="currentColor"/></svg>
+            Telegram Mini App
+          </span>
+          <h1>Утренние и вечерние поминания</h1>
+          <p class="lead">Азкар помогает спокойно читать поминания из достоверной Сунны: арабский текст, транскрипция, перевод, источник и удобный счётчик-тасбих для повторений.</p>
+          <div class="hero-actions">
+            <a class="cta" href="https://t.me/azkarnurtechbot">
+              <span>Открыть в Telegram</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a class="secondary" href="#start">Как это работает</a>
+          </div>
+          <div class="trust" aria-label="Ключевые возможности">
+            <span class="chip">Утро</span>
+            <span class="chip">Вечер</span>
+            <span class="chip">После намаза</span>
+            <span class="chip">Светлая и тёмная тема</span>
+          </div>
+        </div>
+
+        <div class="phone-area" aria-label="Мокап приложения">
+          <div class="halo"></div>
+          <svg class="soft-star" viewBox="0 0 24 24"><path d="M12 2 14.5 6 19.1 4.9 18 9.5 22 12 18 14.5 19.1 19.1 14.5 18 12 22 9.5 18 4.9 19.1 6 14.5 2 12 6 9.5 4.9 4.9 9.5 6Z" fill="currentColor"/></svg>
+          <div class="phone">
+            <div class="screen">
+              <div class="app-head">
+                <div class="mini-brand"><span class="round">✦</span><span>Азкар</span></div>
+                <span class="round">☾</span>
+              </div>
+              <div class="quote">
+                <div class="ar">فَاذْكُرُونِي أَذْكُرْكُمْ</div>
+                <p>«Поминайте Меня, и Я буду помнить о вас»</p>
+              </div>
+              <div class="session-card morning"><div><span>Утро</span><b>Утренние поминания</b></div></div>
+              <div class="session-card evening"><div><span>Вечер</span><b>Вечерние поминания</b></div></div>
+              <div class="session-card after"><div><span>После молитвы</span><b>После намаза</b></div></div>
+              <div class="tasbih-preview">
+                <div><b>Счётчик-тасбих</b><br><span style="color:var(--muted);font-size:13px">Отмечай повторения касанием</span></div>
+                <div class="counter">33/100</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="wrap band" id="features">
+        <div class="section-head">
+          <h2>Всё нужное для ежедневного чтения</h2>
+          <p>Без лишнего шума: открыл сессию, читаешь сверху вниз, отмечаешь повторения и возвращаешься к своему дню.</p>
+        </div>
+        <div class="features">
+          <article class="feature"><div class="icon">33</div><h3>Счётчик-тасбих</h3><p>Для повторений 3, 10, 33 и 100 раз: видно, сколько осталось и что уже выполнено.</p></article>
+          <article class="feature"><div class="icon">س</div><h3>Достоверная Сунна</h3><p>У каждого зикра указан источник: Бухари, Муслим и другие сборники.</p></article>
+          <article class="feature"><div class="icon">А</div><h3>Транскрипция и перевод</h3><p>Арабский текст крупный, рядом кириллица и русский перевод смысла.</p></article>
+          <article class="feature"><div class="icon">⌖</div><h3>Времена намаза</h3><p>Напоминания могут приходить после Фаджра и Асра по твоей геолокации.</p></article>
+          <article class="feature"><div class="icon">م</div><h3>Выбор мазхаба</h3><p>Расчёт времени Асра учитывает шафиитский или ханафитский мазхаб.</p></article>
+          <article class="feature"><div class="icon">☾</div><h3>Светлая и тёмная тема</h3><p>Мягкая палитра подстраивается под телефон, чтобы читать было спокойно.</p></article>
+          <article class="feature"><div class="icon">Aa</div><h3>Арабский шрифт</h3><p>Можно выбрать удобный стиль и размер арабского текста.</p></article>
+          <article class="feature"><div class="icon">＋</div><h3>На главный экран</h3><p>Добавь приложение как ярлык и открывай азкары в один тап.</p></article>
+          <article class="feature"><div class="icon">♪</div><h3>Аудио-кнопка</h3><p>В карточке зикра есть кнопка озвучки для арабского текста.</p></article>
+        </div>
+      </section>
+
+      <section class="wrap band" aria-label="Разделы">
+        <div class="section-head">
+          <h2>Три спокойных ритуала</h2>
+          <p>Утро, вечер и поминания после обязательной молитвы собраны отдельно, чтобы не искать нужный раздел в бумажной книжке.</p>
+        </div>
+        <div class="sessions-grid">
+          <article class="big-session morning"><div><span>До восхода</span><h3>Утренние поминания</h3></div></article>
+          <article class="big-session evening"><div><span>После Асра</span><h3>Вечерние поминания</h3></div></article>
+          <article class="big-session after"><div><span>После фарда</span><h3>После намаза</h3></div></article>
+        </div>
+      </section>
+
+      <section class="wrap band" id="start">
+        <div class="start">
+          <div>
+            <h2>Как начать</h2>
+            <p class="lead">Открой бота, нажми «Запустить», выбери раздел и читай список сверху вниз.</p>
+            <div class="steps">
+              <span class="step">1. Открой бота</span>
+              <span class="step">2. Нажми «Запустить»</span>
+              <span class="step">3. Читай и отмечай</span>
+            </div>
+          </div>
+          <a class="cta" href="https://t.me/azkarnurtechbot">
+            <span>Открыть в Telegram</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <span>Азкар — поминания на каждый день</span>
+        <a href="https://aiengineer.nurtech.dev">Кейс курса AI Product Engineer</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const root = document.documentElement;
+    const saved = localStorage.getItem('azkar_landing_theme') || 'auto';
+    let theme = saved;
+    function isDark() {
+      if (theme === 'dark') return true;
+      if (theme === 'light') return false;
+      return matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    function applyTheme() {
+      if (theme === 'auto') root.removeAttribute('data-theme');
+      else root.setAttribute('data-theme', theme);
+      document.getElementById('themeIcon').setAttribute('d', isDark()
+        ? 'M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z'
+        : 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z');
+    }
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      theme = isDark() ? 'light' : 'dark';
+      localStorage.setItem('azkar_landing_theme', theme);
+      applyTheme();
+    });
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (theme === 'auto') applyTheme();
+    });
+    applyTheme();
+  </script>
+</body>
+</html>
