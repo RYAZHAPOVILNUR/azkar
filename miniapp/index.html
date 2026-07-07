@@ -351,15 +351,19 @@
   .back:active { transform: scale(.9); }
 
   /* модалка «инфо по зикру» */
+  body.info-open { overflow:hidden; position:fixed; width:100%; left:0; right:0; }
   .modal { position:fixed; inset:0; z-index:40; display:none; }
   .modal.open { display:block; }
   .modal .scrim { position:absolute; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(2px); }
   .modal .sheet { position:absolute; left:0; right:0; bottom:0; max-width:440px; margin-inline:auto; max-height:88%; overflow-y:auto;
+    overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
     background:var(--surface); border-radius:20px 20px 0 0; border-top:1px solid var(--line);
     box-shadow:0 -8px 40px rgba(0,0,0,.25); padding:8px 20px calc(24px + var(--tg-safe-bottom));
     animation:sheetUp .28s cubic-bezier(.2,.8,.2,1); }
   @keyframes sheetUp { from{transform:translateY(100%);} to{transform:none;} }
-  .modal .grip { width:40px; height:4px; border-radius:99px; background:var(--line); margin:8px auto 14px; }
+  .modal .grip { width:40px; height:4px; border-radius:99px; background:var(--line); margin:8px auto 14px;
+    touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none; }
+  .modal .grip:active { cursor:grabbing; }
   .modal .m-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
   .modal .m-badge { width:30px; height:30px; border-radius:50%; background:var(--accent-soft); color:var(--accent-deep);
     display:grid; place-items:center; font-weight:800; font-size:14px; flex-shrink:0; }
@@ -1253,7 +1257,17 @@
 
 
   /* ---------- модалка «инфо по зикру» ---------- */
-  let modalOpen = false, modalZ = null;
+  let modalOpen = false, modalZ = null, infoScrollY = 0;
+  function lockInfoScroll(){
+    infoScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.top = `-${infoScrollY}px`;
+    document.body.classList.add('info-open');
+  }
+  function unlockInfoScroll(){
+    document.body.classList.remove('info-open');
+    document.body.style.top = '';
+    window.scrollTo(0, infoScrollY || 0);
+  }
   function gradeLabel(src){
     if(/сахих/i.test(src)) return 'Достоверный · сахих';
     if(/хасан/i.test(src)) return 'Хороший · хасан';
@@ -1261,6 +1275,9 @@
   }
   function openInfo(z){
     modalZ = z; modalOpen = true;
+    const modal=document.getElementById('infoModal'), sheet=modal.querySelector('.sheet');
+    modal.dataset.closing='';
+    if(sheet){ sheet.style.animation=''; sheet.style.transition=''; sheet.style.transform=''; sheet.scrollTop=0; }
     document.getElementById('miBadge').textContent = z.n;
     document.getElementById('miAr').textContent = z.ar;
     document.getElementById('miTr').textContent = z.tr;
@@ -1268,37 +1285,80 @@
     document.getElementById('miGrade').textContent = gradeLabel(z.src);
     const fadlSec=document.getElementById('miFadlSec'), fadl=document.getElementById('miFadl');
     if(z.fadl){ fadl.textContent = z.fadl; fadlSec.style.display=''; } else { fadlSec.style.display='none'; }
-    document.getElementById('infoModal').classList.add('open');
+    modal.classList.add('open');
+    lockInfoScroll();
     tgBack(true, back);
   }
-  function closeInfo(){
+  function closeInfo(instant=false){
+    instant = instant === true;
+    const modal=document.getElementById('infoModal'), sheet=modal.querySelector('.sheet');
+    if(!modal.classList.contains('open')){ modalOpen=false; unlockInfoScroll(); tgBack(navStack.length>1, back); return; }
+    if(modal.dataset.closing === '1') return;
     modalOpen = false;
-    const sheet=document.querySelector('#infoModal .sheet');
-    if(sheet){ sheet.style.transition=''; sheet.style.transform=''; }
-    document.getElementById('infoModal').classList.remove('open');
     tgBack(navStack.length>1, back);
+    if(instant){
+      if(sheet){ sheet.style.transition=''; sheet.style.transform=''; sheet.style.animation=''; }
+      modal.classList.remove('open'); unlockInfoScroll(); return;
+    }
+    modal.dataset.closing='1';
+    if(sheet){
+      sheet.style.animation='none';
+      sheet.style.transition='none';
+      const m=(sheet.style.transform || '').match(/translateY\(([-\d.]+)px\)/);
+      const y=Math.max(Number(m && m[1] || 0),0);
+      sheet.style.transform=`translateY(${y}px)`;
+      void sheet.offsetWidth;
+      sheet.style.transition='transform .34s cubic-bezier(.32,.72,0,1)';
+      sheet.style.transform='translateY(100%)';
+    }
+    setTimeout(()=>{
+      modal.classList.remove('open'); modal.dataset.closing='';
+      unlockInfoScroll();
+      if(sheet){ sheet.style.transition=''; sheet.style.transform=''; sheet.style.animation=''; }
+    }, 340);
   }
   document.getElementById('miClose').addEventListener('click', closeInfo);
   document.getElementById('infoScrim').addEventListener('click', closeInfo);
 
-  /* ---- шторка тянется вниз пальцем, чтобы закрыть ---- */
+  /* ---- iOS-style drag шторки: страница сзади не скроллится ---- */
   (function(){
-    const sheet=document.querySelector('#infoModal .sheet');
-    let sy=0, dy=0, dragging=false;
-    sheet.addEventListener('touchstart', e=>{
-      if(sheet.scrollTop>0){ dragging=false; return; }
-      dragging=true; sy=e.touches[0].clientY; dy=0; sheet.style.transition='none';
-    }, {passive:true});
-    sheet.addEventListener('touchmove', e=>{
+    const modal=document.getElementById('infoModal'), sheet=modal.querySelector('.sheet'), grip=sheet.querySelector('.grip');
+    let startY=0, dy=0, dragging=false, armed=false;
+    function begin(e){
+      dragging=true; sheet.style.animation='none'; sheet.style.transition='none';
+      try{ sheet.setPointerCapture(e.pointerId); }catch(_e){}
+    }
+    sheet.addEventListener('pointerdown', e=>{
+      if(e.pointerType === 'mouse' && e.button !== 0) return;
+      if(e.target.closest('button,a,input,textarea,select')){ armed=false; return; }
+      startY=e.clientY; dy=0; armed=true; dragging=false;
+      if(grip && grip.contains(e.target)) begin(e);
+    });
+    sheet.addEventListener('pointermove', e=>{
+      if(!armed) return;
+      const d=e.clientY-startY;
+      if(!dragging){
+        if(d>6 && sheet.scrollTop<=0) begin(e);
+        else if(d<-2){ armed=false; return; }
+        else return;
+      }
+      e.preventDefault();
+      dy=d;
+      const v=dy<0 ? dy*.25 : dy;
+      sheet.style.transform=`translateY(${Math.max(v,0)}px)`;
+    }, {passive:false});
+    function end(){
+      armed=false;
       if(!dragging) return;
-      dy=e.touches[0].clientY-sy; if(dy<0) dy=0;
-      sheet.style.transform='translateY('+dy+'px)';
-    }, {passive:true});
-    sheet.addEventListener('touchend', ()=>{
-      if(!dragging) return; dragging=false;
-      sheet.style.transition='transform .25s cubic-bezier(.2,.8,.2,1)';
-      if(dy>110){ closeInfo(); } else { sheet.style.transform='translateY(0)'; }
-    }, {passive:true});
+      dragging=false;
+      if(dy>110) closeInfo();
+      else {
+        sheet.style.transition='transform .3s cubic-bezier(.32,.72,0,1)';
+        sheet.style.transform='';
+      }
+    }
+    sheet.addEventListener('pointerup', end);
+    sheet.addEventListener('pointercancel', end);
   })();
 
   /* ---------- streak (дней подряд) ---------- */
