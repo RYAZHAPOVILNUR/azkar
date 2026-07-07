@@ -3,8 +3,8 @@
 <link rel="icon" type="image/png" href="assets/icon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2D3933" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#F5F3EC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#444340" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F3F2EF" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Азкар">
@@ -15,18 +15,18 @@
   @font-face { font-family:'AzkarAmiri'; src:url('assets/fonts/amiri.woff2') format('woff2'); font-display:swap; }
   @font-face { font-family:'AzkarMushaf'; src:url('assets/fonts/amiri-quran.woff2') format('woff2'); font-display:swap; }
   :root {
-    --bg: #F5F3EC;
-    --bg-2: #ECEFE6;
-    --surface: #FFFCF6;
-    --surface-2: #F0EDE4;
-    --ink: #1F2B27;
-    --ink-soft: #63716B;
-    --ink-faint: #8B938E;
-    --line: #DDD6C8;
-    --accent: #6FA58C;
-    --accent-deep: #3F735E;
-    --accent-soft: #E4F0E8;
-    --good: #3D8666;
+    --bg: #F3F2EF;
+    --bg-2: #E8E7E3;
+    --surface: #FFFDF9;
+    --surface-2: #EDEBE6;
+    --ink: #262624;
+    --ink-soft: #66635D;
+    --ink-faint: #96928A;
+    --line: #D8D4CB;
+    --accent: #86817A;
+    --accent-deep: #5D5953;
+    --accent-soft: #E8E5DE;
+    --good: #7D725F;
     /* liquid glass — адаптируется по теме через ссылки на токены */
     --glass: color-mix(in srgb, var(--surface) 68%, transparent);
     --glass-2: color-mix(in srgb, var(--bg) 72%, transparent);
@@ -46,24 +46,24 @@
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #2D3933; --bg-2: #394841; --surface: #333E39; --surface-2: #405048;
-      --ink: #F7F1E8; --ink-soft: #D2C8B9; --ink-faint: #A79E92; --line: #56655D;
-      --accent: #8DBEA7; --accent-deep: #B4D8C5; --accent-soft: #31483D; --good: #91D0A9;
+      --bg: #444340; --bg-2: #504F4B; --surface: #4A4945; --surface-2: #575652;
+      --ink: #F6F3ED; --ink-soft: #D4D0C7; --ink-faint: #A8A39A; --line: #68655F;
+      --accent: #C8C1B5; --accent-deep: #E2DCCF; --accent-soft: #5B5851; --good: #D2C4A8;
       --shadow: 0 1px 3px rgba(20,25,23,.42), 0 12px 32px rgba(20,25,23,.34);
       --shadow-card: 0 1px 0 rgba(255,255,255,.04), 0 1px 3px rgba(20,25,23,.35);
     }
   }
   :root[data-theme="light"] {
-    --bg: #F5F3EC; --bg-2: #ECEFE6; --surface: #FFFCF6; --surface-2: #F0EDE4;
-    --ink: #1F2B27; --ink-soft: #63716B; --ink-faint: #8B938E; --line: #DDD6C8;
-    --accent: #6FA58C; --accent-deep: #3F735E; --accent-soft: #E4F0E8; --good: #3D8666;
+    --bg: #F3F2EF; --bg-2: #E8E7E3; --surface: #FFFDF9; --surface-2: #EDEBE6;
+    --ink: #262624; --ink-soft: #66635D; --ink-faint: #96928A; --line: #D8D4CB;
+    --accent: #86817A; --accent-deep: #5D5953; --accent-soft: #E8E5DE; --good: #7D725F;
     --shadow: 0 1px 3px rgba(31,35,40,.08), 0 8px 24px rgba(31,35,40,.06);
     --shadow-card: 0 1px 0 rgba(31,35,40,.04), 0 1px 3px rgba(31,35,40,.08);
   }
   :root[data-theme="dark"] {
-    --bg: #2D3933; --bg-2: #394841; --surface: #333E39; --surface-2: #405048;
-    --ink: #F7F1E8; --ink-soft: #D2C8B9; --ink-faint: #A79E92; --line: #56655D;
-    --accent: #8DBEA7; --accent-deep: #B4D8C5; --accent-soft: #31483D; --good: #91D0A9;
+    --bg: #444340; --bg-2: #504F4B; --surface: #4A4945; --surface-2: #575652;
+    --ink: #F6F3ED; --ink-soft: #D4D0C7; --ink-faint: #A8A39A; --line: #68655F;
+    --accent: #C8C1B5; --accent-deep: #E2DCCF; --accent-soft: #5B5851; --good: #D2C4A8;
     --shadow: 0 1px 3px rgba(20,25,23,.42), 0 12px 32px rgba(20,25,23,.34);
     --shadow-card: 0 1px 0 rgba(255,255,255,.04), 0 1px 3px rgba(20,25,23,.35);
   }
@@ -102,7 +102,7 @@
   .home-head { display:flex; align-items:center; justify-content:space-between; padding: calc(14px + var(--tg-safe-top)) 22px 6px; }
   .brand { display:flex; align-items:center; gap:10px; min-width:48px; }
   .brand .mark { width:46px; height:46px; border-radius:15px; overflow:hidden; display:block; box-shadow: var(--shadow-card); }
-  .brand .mark img { width:100%; height:100%; display:block; object-fit:cover; }
+  .brand .mark img { width:100%; height:100%; display:block; object-fit:cover; filter:grayscale(1) saturate(.12) contrast(.96); }
   .brand .name { display:none; }
   .iconbtn { width:42px; height:42px; border-radius:50%; display:grid; place-items:center; cursor:pointer;
     background: var(--glass); border:1px solid var(--glass-brd); color: var(--ink-soft);
@@ -393,7 +393,7 @@
         </div></div>
       </div>
 
-      <div class="session" style="--sess-ink:#33604a" onclick="openReading('after')">
+      <div class="session" style="--sess-ink:#5F625B" onclick="openReading('after')">
         <div class="art" data-img="after"></div>
         <div class="body"><div class="titles">
           <div class="kicker">После обязательной молитвы</div>
