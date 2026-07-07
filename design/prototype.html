@@ -804,7 +804,7 @@
 
   /* ---------- состояние (сохраняется между заходами, сбрасывается на новый день) ---------- */
   const todayStr = (date = new Date()) => date.toLocaleDateString('sv');   // YYYY-MM-DD (локальная дата)
-  const blankProgress = date => ({ date, morning:{}, evening:{}, after:{} });
+  const blankProgress = date => ({ date, morning:{}, evening:{}, after:{}, afterSlot:null });
   function hasSavedLocation(){
     try { const saved = JSON.parse(localStorage.getItem('azkar_loc') || 'null'); return !!(saved && typeof saved.lat === 'number' && typeof saved.lng === 'number'); }
     catch(e){ return false; }
@@ -812,7 +812,7 @@
   function loadProgress(){
     let p=null; try{ p=JSON.parse(localStorage.getItem('azkar_progress')||'null'); }catch(e){}
     if(!p) p=blankProgress(todayStr());
-    p.morning=p.morning||{}; p.evening=p.evening||{}; p.after=p.after||{};
+    p.morning=p.morning||{}; p.evening=p.evening||{}; p.after=p.after||{}; p.afterSlot=p.afterSlot||null;
     return p;
   }
   let PROG = loadProgress();
@@ -824,11 +824,33 @@
     if(t && t.fajr && now < new Date(t.fajr)) day.setDate(day.getDate()-1);
     return todayStr(day);
   }
+  function afterPrayerSlotFromTimes(t){
+    const now = Date.now();
+    const prayers = ['fajr','dhuhr','asr','maghrib','isha'];
+    let current = null;
+    prayers.forEach(k=>{ if(t && t[k] && new Date(t[k]).getTime() <= now) current = k; });
+    if(!current){
+      const prev = new Date();
+      prev.setDate(prev.getDate()-1);
+      return `${todayStr(prev)}:isha`;
+    }
+    return `${todayStr(new Date(t[current]))}:${current}`;
+  }
   function ensureProgressFresh(day = todayStr()){
     if(!PROG || PROG.date !== day){
       PROG = blankProgress(day);
       saveProgress();
       if(CURRENT_KEY) openReading(CURRENT_KEY);
+      else updateHomeProgress();
+    }
+  }
+  function ensureAfterProgressFresh(slot){
+    if(!slot) return;
+    if(PROG.afterSlot !== slot){
+      PROG.after = {};
+      PROG.afterSlot = slot;
+      saveProgress();
+      if(CURRENT_KEY === 'after') openReading('after');
       else updateHomeProgress();
     }
   }
@@ -1103,6 +1125,7 @@
       if(!r.ok) return;
       const t = await r.json();
       ensureProgressFresh(routineDayFromTimes(t));
+      ensureAfterProgressFresh(afterPrayerSlotFromTimes(t));
       const grid = document.getElementById('timesGrid'); grid.innerHTML='';
       const nowMs = Date.now(); let curIdx = -1;
       PRAYERS.forEach(([k],i)=>{ if(new Date(t[k]).getTime()<=nowMs) curIdx=i; });
