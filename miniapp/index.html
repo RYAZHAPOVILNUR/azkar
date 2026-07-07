@@ -145,6 +145,28 @@
   .session { position:relative; border-radius:24px; overflow:hidden; cursor:pointer;
     border:1px solid var(--line); box-shadow: var(--shadow-card);
     height:146px; display:flex; align-items:flex-end; transition: transform .18s; isolation:isolate; }
+  .session.is-current-time {
+    border-color: color-mix(in srgb, #F0C36A 72%, var(--line));
+    box-shadow: 0 0 0 2px color-mix(in srgb, #F0C36A 26%, transparent), 0 14px 34px color-mix(in srgb, #F0C36A 22%, transparent), var(--shadow-card);
+  }
+  .session.is-current-time:before {
+    content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+    background: linear-gradient(120deg, rgba(255,255,255,.34), rgba(240,195,106,.22) 45%, rgba(255,255,255,0) 76%);
+    mix-blend-mode: screen;
+  }
+  .session.is-current-time:after {
+    content:"Сейчас"; position:absolute; top:12px; right:12px; z-index:2;
+    padding:5px 10px; border-radius:999px; font-size:11px; line-height:1; font-weight:800; letter-spacing:.4px; text-transform:uppercase;
+    color:#4F3B11; background:rgba(255,235,179,.92); border:1px solid rgba(122,92,25,.18);
+    box-shadow:0 4px 12px rgba(90,64,12,.14);
+  }
+  :root[data-theme="dark"] .session.is-current-time {
+    border-color: color-mix(in srgb, #D7B66E 68%, var(--line));
+    box-shadow: 0 0 0 2px rgba(215,182,110,.18), 0 16px 42px rgba(215,182,110,.16), var(--shadow-card);
+  }
+  :root[data-theme="dark"] .session.is-current-time:after {
+    color:#f6edd1; background:rgba(78,63,29,.92); border-color:rgba(215,182,110,.28);
+  }
   .session:active { transform: scale(.985); }
   .session .art { position:absolute; inset:0; z-index:-1; }
   .session .art svg { width:100%; height:100%; display:block; }
@@ -394,7 +416,7 @@
     </div>
 
     <div class="sessions">
-      <div class="session" style="--sess-ink:#6b4f36" onclick="openReading('morning')">
+      <div class="session" data-session="morning" style="--sess-ink:#6b4f36" onclick="openReading('morning')">
         <div class="art" data-img="morning"></div>
         <div class="body"><div class="titles">
           <div class="kicker">Утро · до восхода солнца</div>
@@ -406,7 +428,7 @@
         </div></div>
       </div>
 
-      <div class="session" style="--sess-ink:#3f4668" onclick="openReading('evening')">
+      <div class="session" data-session="evening" style="--sess-ink:#3f4668" onclick="openReading('evening')">
         <div class="art" data-img="evening"></div>
         <div class="body"><div class="titles">
           <div class="kicker">Вечер · после ʿасра до заката</div>
@@ -418,7 +440,7 @@
         </div></div>
       </div>
 
-      <div class="session" style="--sess-ink:#5F625B" onclick="openReading('after')">
+      <div class="session" data-session="after" style="--sess-ink:#5F625B" onclick="openReading('after')">
         <div class="art" data-img="after"></div>
         <div class="body"><div class="titles">
           <div class="kicker">После обязательной молитвы</div>
@@ -430,7 +452,7 @@
         </div></div>
       </div>
 
-      <div class="session" style="--sess-ink:#56515f" onclick="openReading('sleep')">
+      <div class="session" data-session="sleep" style="--sess-ink:#56515f" onclick="openReading('sleep')">
         <div class="art" data-img="sleep"></div>
         <div class="body"><div class="titles">
           <div class="kicker">Перед сном · когда ложишься</div>
@@ -1403,6 +1425,17 @@
     txt.textContent = `${next.n} через ${h ? h+' ч ' : ''}${m ? m+' мин' : (h ? '' : 'меньше минуты')}`.trim();
     line.style.display = '';
   }
+  function updateSessionTimeHints(t){
+    const now = Date.now();
+    const active = {
+      morning: t && t.fajr && t.sunrise && now >= new Date(t.fajr).getTime() && now < new Date(t.sunrise).getTime(),
+      evening: t && t.asr && t.maghrib && now >= new Date(t.asr).getTime() && now < new Date(t.maghrib).getTime(),
+    };
+    document.querySelectorAll('.session[data-session]').forEach(card=>{
+      const key = card.dataset.session;
+      card.classList.toggle('is-current-time', !!active[key]);
+    });
+  }
 
   async function fetchTimes(){
     if(!loc) return;
@@ -1425,6 +1458,7 @@
       if(rm){ rm.textContent=fmtTime(t.fajr); document.getElementById('remMorningDesc').textContent='По времени намаза'; }
       if(re){ re.textContent=fmtTime(t.asr); document.getElementById('remEveningDesc').textContent='По времени намаза'; }
       updateNextPrayer(t);
+      updateSessionTimeHints(t);
     }catch(e){}
   }
 
@@ -1457,7 +1491,7 @@
   }));
   renderMadhab();
   if(loc){ locDone(); setLocStatus('Напоминания по времени намаза'); fetchTimes(); }
-  setInterval(()=>{ if(latestTimes) updateNextPrayer(latestTimes); }, 30000);
+  setInterval(()=>{ if(latestTimes){ updateNextPrayer(latestTimes); updateSessionTimeHints(latestTimes); } }, 30000);
   setInterval(()=>{ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); }, 60000);
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); } });
   window.addEventListener('focus', ()=>{ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); });
