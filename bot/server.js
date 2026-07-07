@@ -143,7 +143,10 @@ if (!TOKEN) {
     subs[id] = { ...(subs[id] || {}), id, name: msg.from.first_name || '', since: subs[id]?.since || Date.now() };
     saveSubs(subs);
     bot.sendPhoto(id, WELCOME_IMAGE, { caption: WELCOME_CAPTION, parse_mode: 'HTML', ...kb })
-      .catch(() => bot.sendMessage(id, WELCOME_CAPTION, { parse_mode: 'HTML', ...kb }));
+      .catch((e) => {
+        console.warn('[bot] welcome photo не отправилось:', e?.message || e);
+        return bot.sendMessage(id, WELCOME_CAPTION, { parse_mode: 'HTML', ...kb });
+      });
   });
   bot.onText(/\/help/, (msg) => {
     bot.sendMessage(msg.chat.id, HELP_TEXT, { parse_mode: 'HTML', ...kb });
