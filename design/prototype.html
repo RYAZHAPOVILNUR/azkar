@@ -379,18 +379,16 @@
     </div>
 
     <div class="greet">
-      <div class="hi" id="greetText">Ассаляму алейкум</div>
-      <div class="sub">
-        <span id="greetDate">Сегодня</span><span>·</span>
-        <span class="streak" title="Дней подряд">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C7 9 9 8 9 8s-.5 2 .5 3c0 0 1-1 1-3s1.5-6 1.5-6z"/></svg>
-          <span id="streakText">0 дней</span>
-        </span>
-      </div>
-      <div class="sub" id="nextPrayerLine" style="display:none;margin-top:6px">
+      <div class="sub" id="nextPrayerLine" style="display:none">
         <span class="nextp">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg>
           <span id="nextPrayerText"></span>
+        </span>
+      </div>
+      <div class="sub">
+        <span class="streak" title="Дней подряд">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C7 9 9 8 9 8s-.5 2 .5 3c0 0 1-1 1-3s1.5-6 1.5-6z"/></svg>
+          <span id="streakText">0 дней</span>
         </span>
       </div>
     </div>
@@ -476,7 +474,7 @@
         <div class="halo"></div>
         <div class="who">
           <div class="av"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 2 14.49 5.99 19.07 4.93 18.01 9.51 22 12 18.01 14.49 19.07 19.07 14.49 18.01 12 22 9.51 18.01 4.93 19.07 5.99 14.49 2 12 5.99 9.51 4.93 4.93 9.51 5.99Z" fill="currentColor"/></svg></div>
-          <div><div class="nm">Ассаляму алейкум 🌿</div><div class="sb">Пусть поминание будет постоянным</div></div>
+          <div><div class="nm">Настройки</div><div class="sb">Текст, тема и напоминания</div></div>
         </div>
         <div class="stat-row">
           <div class="stat glass"><div class="v acc" id="statStreak">0</div><div class="k">дней подряд</div></div>
@@ -1388,6 +1386,7 @@
   /* ---------- намаз / геолокация / мазхаб ---------- */
   let madhab = localStorage.getItem('azkar_madhab') || 'shafi';
   let loc = null; try { loc = JSON.parse(localStorage.getItem('azkar_loc') || 'null'); } catch(e){}
+  let latestTimes = null;
   const PRAYERS = [['fajr','Фаджр'],['dhuhr','Зухр'],['asr','Аср'],['maghrib','Магриб'],['isha','Иша']];
   const fmtTime = iso => new Date(iso).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
 
@@ -1397,13 +1396,11 @@
     const now = Date.now();
     let next = PRAYERS.map(([k,n])=>({n, ts:new Date(t[k]).getTime()})).find(p=>p.ts>now);
     const line = document.getElementById('nextPrayerLine'), txt = document.getElementById('nextPrayerText');
-    if(!next){ // все прошли — завтра Фаджр
-      txt.textContent = 'Намазы на сегодня завершены';
-    } else {
-      const mins = Math.round((next.ts-now)/60000);
-      const h = Math.floor(mins/60), m = mins%60;
-      txt.textContent = `Следующий намаз: ${next.n} в ${fmtTime(new Date(next.ts).toISOString())}` + (mins<180 ? ` · через ${h?h+' ч ':''}${m} мин` : '');
-    }
+    if(!next && t.fajr) next = { n:'Фаджр', ts:new Date(t.fajr).getTime()+86400000 };
+    if(!next) return;
+    const mins = Math.max(0, Math.ceil((next.ts-now)/60000));
+    const h = Math.floor(mins/60), m = mins%60;
+    txt.textContent = `${next.n} через ${h ? h+' ч ' : ''}${m ? m+' мин' : (h ? '' : 'меньше минуты')}`.trim();
     line.style.display = '';
   }
 
@@ -1413,6 +1410,7 @@
       const r = await fetch(`/api/times?lat=${loc.lat}&lng=${loc.lng}&madhab=${madhab}`);
       if(!r.ok) return;
       const t = await r.json();
+      latestTimes = t;
       ensureProgressFresh(routineDayFromTimes(t));
       ensureAfterProgressFresh(afterPrayerSlotFromTimes(t));
       const grid = document.getElementById('timesGrid'); grid.innerHTML='';
@@ -1459,15 +1457,11 @@
   }));
   renderMadhab();
   if(loc){ locDone(); setLocStatus('Напоминания по времени намаза'); fetchTimes(); }
+  setInterval(()=>{ if(latestTimes) updateNextPrayer(latestTimes); }, 30000);
   setInterval(()=>{ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); }, 60000);
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); } });
   window.addEventListener('focus', ()=>{ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); });
   updateStreakUI(); updateHomeProgress();
-
-  /* ---- дата на главной ---- */
-  (function(){
-    const gd=document.getElementById('greetDate'); if(gd){ let d=new Date().toLocaleDateString('ru-RU',{weekday:'long', day:'numeric', month:'long'}); gd.textContent = d.charAt(0).toUpperCase()+d.slice(1); }
-  })();
 
   /* ---- добавить приложение иконкой на главный экран телефона ---- */
   (function(){
