@@ -3,8 +3,8 @@
 <link rel="icon" type="image/png" href="assets/icon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#2D3933" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F5F3EC" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Азкар">
@@ -15,19 +15,18 @@
   @font-face { font-family:'AzkarAmiri'; src:url('assets/fonts/amiri.woff2') format('woff2'); font-display:swap; }
   @font-face { font-family:'AzkarMushaf'; src:url('assets/fonts/amiri-quran.woff2') format('woff2'); font-display:swap; }
   :root {
-    /* GitHub Primer — light */
-    --bg: #ffffff;
-    --bg-2: #f6f8fa;
-    --surface: #ffffff;
-    --surface-2: #f6f8fa;
-    --ink: #1f2328;
-    --ink-soft: #59636e;
-    --ink-faint: #818b98;
-    --line: #d1d9e0;
-    --accent: #0969da;
-    --accent-deep: #0550ae;
-    --accent-soft: #ddf4ff;
-    --good: #1a7f37;
+    --bg: #F5F3EC;
+    --bg-2: #ECEFE6;
+    --surface: #FFFCF6;
+    --surface-2: #F0EDE4;
+    --ink: #1F2B27;
+    --ink-soft: #63716B;
+    --ink-faint: #8B938E;
+    --line: #DDD6C8;
+    --accent: #6FA58C;
+    --accent-deep: #3F735E;
+    --accent-soft: #E4F0E8;
+    --good: #3D8666;
     /* liquid glass — адаптируется по теме через ссылки на токены */
     --glass: color-mix(in srgb, var(--surface) 68%, transparent);
     --glass-2: color-mix(in srgb, var(--bg) 72%, transparent);
@@ -47,26 +46,26 @@
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0d1117; --bg-2: #010409; --surface: #161b22; --surface-2: #21262d;
-      --ink: #e6edf3; --ink-soft: #9198a1; --ink-faint: #6e7681; --line: #30363d;
-      --accent: #4493f8; --accent-deep: #388bfd; --accent-soft: #121d2f; --good: #3fb950;
-      --shadow: 0 1px 3px rgba(1,4,9,.5), 0 12px 32px rgba(1,4,9,.5);
-      --shadow-card: 0 1px 0 rgba(1,4,9,.4), 0 1px 3px rgba(1,4,9,.5);
+      --bg: #2D3933; --bg-2: #394841; --surface: #333E39; --surface-2: #405048;
+      --ink: #F7F1E8; --ink-soft: #D2C8B9; --ink-faint: #A79E92; --line: #56655D;
+      --accent: #8DBEA7; --accent-deep: #B4D8C5; --accent-soft: #31483D; --good: #91D0A9;
+      --shadow: 0 1px 3px rgba(20,25,23,.42), 0 12px 32px rgba(20,25,23,.34);
+      --shadow-card: 0 1px 0 rgba(255,255,255,.04), 0 1px 3px rgba(20,25,23,.35);
     }
   }
   :root[data-theme="light"] {
-    --bg: #ffffff; --bg-2: #f6f8fa; --surface: #ffffff; --surface-2: #f6f8fa;
-    --ink: #1f2328; --ink-soft: #59636e; --ink-faint: #818b98; --line: #d1d9e0;
-    --accent: #0969da; --accent-deep: #0550ae; --accent-soft: #ddf4ff; --good: #1a7f37;
+    --bg: #F5F3EC; --bg-2: #ECEFE6; --surface: #FFFCF6; --surface-2: #F0EDE4;
+    --ink: #1F2B27; --ink-soft: #63716B; --ink-faint: #8B938E; --line: #DDD6C8;
+    --accent: #6FA58C; --accent-deep: #3F735E; --accent-soft: #E4F0E8; --good: #3D8666;
     --shadow: 0 1px 3px rgba(31,35,40,.08), 0 8px 24px rgba(31,35,40,.06);
     --shadow-card: 0 1px 0 rgba(31,35,40,.04), 0 1px 3px rgba(31,35,40,.08);
   }
   :root[data-theme="dark"] {
-    --bg: #0d1117; --bg-2: #010409; --surface: #161b22; --surface-2: #21262d;
-    --ink: #e6edf3; --ink-soft: #9198a1; --ink-faint: #6e7681; --line: #30363d;
-    --accent: #4493f8; --accent-deep: #388bfd; --accent-soft: #121d2f; --good: #3fb950;
-    --shadow: 0 1px 3px rgba(1,4,9,.5), 0 12px 32px rgba(1,4,9,.5);
-    --shadow-card: 0 1px 0 rgba(1,4,9,.4), 0 1px 3px rgba(1,4,9,.5);
+    --bg: #2D3933; --bg-2: #394841; --surface: #333E39; --surface-2: #405048;
+    --ink: #F7F1E8; --ink-soft: #D2C8B9; --ink-faint: #A79E92; --line: #56655D;
+    --accent: #8DBEA7; --accent-deep: #B4D8C5; --accent-soft: #31483D; --good: #91D0A9;
+    --shadow: 0 1px 3px rgba(20,25,23,.42), 0 12px 32px rgba(20,25,23,.34);
+    --shadow-card: 0 1px 0 rgba(255,255,255,.04), 0 1px 3px rgba(20,25,23,.35);
   }
 
   :root { --tg-safe-top: 0px; --tg-safe-bottom: 0px; }
@@ -74,7 +73,7 @@
   html,body { margin:0; padding:0; overscroll-behavior:none; }
   body {
     font-family: var(--sans);
-    background: radial-gradient(130% 60% at 50% -10%, var(--bg-2), var(--bg) 62%);
+    background: radial-gradient(120% 70% at 50% -12%, var(--bg-2), var(--bg) 70%);
     color: var(--ink); min-height: 100vh;
     display:flex; justify-content:center; align-items:flex-start; padding: 22px 14px 40px;
     -webkit-font-smoothing: antialiased;
@@ -85,7 +84,7 @@
   @media (max-width:480px){ body{ padding:0; } }
 
   .phone {
-    width:100%; max-width:412px; background: var(--bg);
+    width:100%; max-width:430px; background: var(--bg);
     border-radius:40px; box-shadow: var(--shadow); overflow:hidden; position:relative;
     border:1px solid var(--line); min-height:860px; display:flex; flex-direction:column;
   }
@@ -100,19 +99,19 @@
   @keyframes fade { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
 
   /* HOME */
-  .home-head { display:flex; align-items:center; justify-content:space-between; padding: calc(10px + var(--tg-safe-top)) 22px 4px; }
-  .brand { display:flex; align-items:center; gap:10px; }
-  .brand .mark { width:30px; height:30px; }
-  .brand .name { font-weight:700; font-size:19px; letter-spacing:-.2px; }
-  .brand .name b { color: var(--accent); font-weight:700; }
-  .iconbtn { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; cursor:pointer;
+  .home-head { display:flex; align-items:center; justify-content:space-between; padding: calc(14px + var(--tg-safe-top)) 22px 6px; }
+  .brand { display:flex; align-items:center; gap:10px; min-width:48px; }
+  .brand .mark { width:46px; height:46px; border-radius:15px; overflow:hidden; display:block; box-shadow: var(--shadow-card); }
+  .brand .mark img { width:100%; height:100%; display:block; object-fit:cover; }
+  .brand .name { display:none; }
+  .iconbtn { width:42px; height:42px; border-radius:50%; display:grid; place-items:center; cursor:pointer;
     background: var(--glass); border:1px solid var(--glass-brd); color: var(--ink-soft);
     backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%);
     box-shadow: inset 0 1px 0 var(--glass-hi);
     transition: transform .15s, color .15s; }
   .iconbtn:hover { color: var(--accent); }
   .iconbtn:active { transform: scale(.92); }
-  .head-actions { display:flex; gap:8px; }
+  .head-actions { display:flex; gap:10px; }
 
   .ayah { margin:14px 20px 6px; padding:18px 20px; border-radius:20px;
     background: linear-gradient(180deg, var(--accent-soft), var(--surface));
@@ -124,32 +123,33 @@
   .ayah .src { font-size:11px; color: var(--accent-deep); margin-top:8px; letter-spacing:.4px;
     text-transform:uppercase; font-weight:700; font-family:var(--sans); }
 
-  .greet { padding:16px 22px 4px; }
-  .greet .hi { font-size:22px; font-weight:700; letter-spacing:-.4px; }
-  .greet .sub { font-size:13.5px; color: var(--ink-soft); margin-top:3px; display:flex; align-items:center; gap:7px; }
+  .greet { padding:18px 22px 6px; }
+  .greet .hi { font-size:26px; font-weight:800; letter-spacing:0; }
+  .greet .sub { font-size:14.5px; color: var(--ink-soft); margin-top:5px; display:flex; align-items:center; gap:7px; }
   .streak { display:inline-flex; align-items:center; gap:5px; color: var(--accent-deep); font-weight:600; }
 
-  .sessions { display:flex; flex-direction:column; gap:14px; padding:14px 20px 8px; }
-  .session { position:relative; border-radius:22px; overflow:hidden; cursor:pointer;
+  .sessions { display:flex; flex-direction:column; gap:16px; padding:16px 18px 8px; }
+  .session { position:relative; border-radius:24px; overflow:hidden; cursor:pointer;
     border:1px solid var(--line); box-shadow: var(--shadow-card);
-    height:120px; display:flex; align-items:flex-end; transition: transform .18s; isolation:isolate; }
+    height:146px; display:flex; align-items:flex-end; transition: transform .18s; isolation:isolate; }
   .session:active { transform: scale(.985); }
   .session .art { position:absolute; inset:0; z-index:-1; }
   .session .art svg { width:100%; height:100%; display:block; }
   .session .art { background-position:center; background-size:cover; }
-  .session .body { padding:15px 18px; width:100%; display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
-    background: linear-gradient(0deg, rgba(255,255,255,.55), rgba(255,255,255,.12) 55%, rgba(255,255,255,0) 85%); }
-  .session .titles .kicker { font-size:10.5px; letter-spacing:1.2px; text-transform:uppercase; color: var(--sess-ink,#5a5348); font-weight:700; opacity:.85; }
-  .session .titles .t { font-size:19px; font-weight:700; color: var(--sess-ink,#4a4238); margin-top:3px; letter-spacing:-.2px; }
-  .session .titles .ar { font-family:var(--ar); font-size:16px; color: var(--sess-ink,#4a4238); opacity:.75; margin-top:3px; direction:rtl; }
-  .session .prog { display:flex; flex-direction:column; align-items:center; gap:4px; flex-shrink:0; }
-  .session .prog small { font-size:11px; color: var(--sess-ink,#4a4238); font-weight:700; font-variant-numeric:tabular-nums; opacity:.8; }
-  .ring { width:44px; height:44px; }
-  .ring circle { fill:none; stroke-width:4; }
+  .session .body { padding:18px 19px; width:100%; display:flex; align-items:flex-end; justify-content:space-between; gap:14px;
+    background: linear-gradient(0deg, rgba(255,252,246,.76), rgba(255,252,246,.26) 58%, rgba(255,252,246,0) 88%); }
+  :root[data-theme="dark"] .session .body { background: linear-gradient(0deg, rgba(238,228,213,.64), rgba(238,228,213,.2) 58%, rgba(238,228,213,0) 88%); }
+  .session .titles .kicker { font-size:11.5px; letter-spacing:.7px; text-transform:uppercase; color: var(--sess-ink,#5a5348); font-weight:800; opacity:.86; }
+  .session .titles .t { font-size:22px; font-weight:800; color: var(--sess-ink,#4a4238); margin-top:4px; letter-spacing:0; line-height:1.14; }
+  .session .titles .ar { font-family:var(--ar); font-size:18px; color: var(--sess-ink,#4a4238); opacity:.78; margin-top:5px; direction:rtl; }
+  .session .prog { display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0; }
+  .session .prog small { font-size:12.5px; color: var(--sess-ink,#4a4238); font-weight:800; font-variant-numeric:tabular-nums; opacity:.84; }
+  .ring { width:54px; height:54px; }
+  .ring circle { fill:none; stroke-width:4.5; }
   .ring .trk { stroke: var(--sess-ink,#4a4238); opacity:.2; }
   .ring .val { stroke: var(--sess-ink,#4a4238); stroke-linecap:round; opacity:.85; transition: stroke-dashoffset .5s cubic-bezier(.4,0,.2,1); }
 
-  .home-foot { text-align:center; font-size:12px; color:var(--ink-faint); padding:6px 20px 22px; }
+  .home-foot { text-align:center; font-size:12.5px; color:var(--ink-faint); padding:8px 20px 24px; }
   .home-foot b { color: var(--accent-deep); font-weight:700; }
 
   /* READING */
@@ -172,9 +172,9 @@
     background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transition: width .5s cubic-bezier(.4,0,.2,1); }
   .rmeta { display:flex; justify-content:space-between; margin-top:6px; font-size:11.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
 
-  .list { padding:14px 14px 30px; display:flex; flex-direction:column; gap:16px; }
-  .zikr { background: var(--surface); border:1px solid var(--line); border-radius:22px;
-    padding:16px 16px 14px; box-shadow: var(--shadow-card);
+  .list { padding:16px 14px 30px; display:flex; flex-direction:column; gap:18px; }
+  .zikr { background: var(--surface); border:1px solid var(--line); border-radius:24px;
+    padding:18px 17px 16px; box-shadow: var(--shadow-card);
     transition: border-color .35s, opacity .35s, background .35s; position:relative; }
   .zikr.done { border-color: color-mix(in srgb, var(--good) 55%, var(--line)); background: color-mix(in srgb, var(--good) 8%, var(--surface)); }
   .zikr .top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
@@ -196,10 +196,10 @@
   .arabic { font-family: var(--ar-font), var(--ar); direction:rtl; text-align:right; color: var(--ink);
     font-size: var(--ar-size); line-height:2.3; margin:4px 2px 2px; cursor:pointer; }
   .ayah .ar { font-family: var(--ar-font), var(--ar); }
-  .translit { font-size:16.5px; color: var(--ink); margin-top:14px; line-height:1.65; font-weight:500; }
+  .translit { font-size:17px; color: var(--ink); margin-top:14px; line-height:1.68; font-weight:500; }
   .divider { height:1px; background: var(--line); margin:16px 2px; border:none; }
-  .translate { font-family: var(--serif); font-size:15.5px; color: var(--ink-soft); line-height:1.7; }
-  .src-note { font-size:13px; color: var(--ink-faint); margin-top:12px; font-style:italic; }
+  .translate { font-family: var(--serif); font-size:16px; color: var(--ink-soft); line-height:1.72; }
+  .src-note { font-size:13.5px; color: var(--ink-faint); margin-top:12px; font-style:italic; }
 
   .cnote { text-align:center; font-size:12px; color:var(--ink-faint); margin-top:12px; font-style:italic; }
   .counter-row { display:flex; align-items:center; justify-content:center; gap:18px; margin-top:10px; padding-top:12px; border-top:1px solid var(--line); }
@@ -338,9 +338,8 @@
     <div class="home-head">
       <div class="brand">
         <span class="mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M12 2 14.49 5.99 19.07 4.93 18.01 9.51 22 12 18.01 14.49 19.07 19.07 14.49 18.01 12 22 9.51 18.01 4.93 19.07 5.99 14.49 2 12 5.99 9.51 4.93 4.93 9.51 5.99Z" fill="currentColor" style="color:var(--accent)"/></svg>
+          <img src="assets/icon.png" alt="">
         </span>
-        <span class="name">Аз<b>к</b>ар</span>
       </div>
       <div class="head-actions">
         <button class="iconbtn" id="themeBtn" title="Тема" aria-label="Сменить тему">
@@ -352,7 +351,7 @@
       </div>
     </div>
 
-    <div class="greet" style="padding-top:20px">
+    <div class="greet">
       <div class="hi" id="greetText">Ассаляму алейкум</div>
       <div class="sub">
         <span id="greetDate">Сегодня</span><span>·</span>
@@ -528,7 +527,7 @@
           <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg></div><div class="txt"><div class="t">Перевод смысла</div><div class="d">На русский язык</div></div><div class="switch on" data-toggle="translate"></div></div>
         </div>
       </div>
-      <div class="home-foot" style="padding-top:26px">Азкар · утренние и вечерние поминания<br><a href="https://aiengineer.nurtech.dev" target="_blank" rel="noopener" class="foot-link" id="caseLink"><b>Кейс курса AI Product Engineer</b></a></div>
+      <div class="home-foot" style="padding-top:26px"><a href="https://aiengineer.nurtech.dev" target="_blank" rel="noopener" class="foot-link" id="caseLink"><b>Кейс курса AI Product Engineer</b></a></div>
     </div>
   </section>
 
