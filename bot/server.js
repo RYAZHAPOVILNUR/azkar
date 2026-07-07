@@ -27,6 +27,32 @@ const APP_URL = process.env.APP_URL || 'https://azkar.nurtech.dev';
 const MORNING_CRON = process.env.MORNING_CRON || '30 6 * * *';
 const EVENING_CRON = process.env.EVENING_CRON || '0 18 * * *';
 const TZ = process.env.TZ || 'Europe/Moscow';
+const WELCOME_IMAGE = path.join(__dirname, 'assets', 'welcome.png');
+const BOT_NAME = 'Азкар — поминания';
+const BOT_SHORT_DESCRIPTION = 'Утренние и вечерние поминания и азкары после намаза. Счётчик-тасбих, напоминания по времени намаза.';
+const BOT_DESCRIPTION = `🕌 Азкар — утренние и вечерние поминания и азкары после намаза из достоверной Сунны.
+
+• Читай список сверху вниз: арабский, транскрипция, перевод и источник
+• Счётчик-тасбих — отмечай повторения касанием
+• Напоминания приходят по времени твоего намаза (после Фаджра и Асра)
+• Выбор мазхаба, светлая и тёмная тема
+
+Нажми «Запустить», чтобы открыть приложение.`;
+const BOT_COMMANDS = [
+  { command: 'start', description: 'Открыть приложение' },
+  { command: 'help', description: 'Как пользоваться' },
+];
+const WELCOME_CAPTION = `<b>Ассаляму алейкум 🌿</b>
+
+Добро пожаловать в <b>Азкар</b> — приложение для утренних и вечерних поминаний и азкаров после намаза.
+
+Читайте список сверху вниз, отмечайте повторения счётчиком-тасбихом и включайте напоминания по времени намаза.`;
+const HELP_TEXT = `<b>Как пользоваться Азкаром</b>
+
+1. Нажмите кнопку ниже, чтобы открыть приложение.
+2. В настройках включите геолокацию — напоминания будут приходить после Фаджра и Асра по вашему времени намаза.
+3. Выберите мазхаб для расчёта времени.
+4. Читайте азкары сверху вниз, а счётчик-тасбих отмечает повторения касанием.`;
 
 // ---------- хранилище ----------
 const DATA_FILE = path.join(__dirname, 'data', 'subscribers.json');
@@ -97,13 +123,30 @@ if (!TOKEN) {
   const TelegramBot = require('node-telegram-bot-api');
   const bot = new TelegramBot(TOKEN, { polling: true });
   const kb = { reply_markup: { inline_keyboard: [[{ text: '🕌 Открыть азкары', web_app: { url: APP_URL } }]] } };
-  bot.setChatMenuButton({ menu_button: { type: 'web_app', text: 'Азкары', web_app: { url: APP_URL } } }).catch(() => {});
+  async function applyBotBranding() {
+    const steps = [
+      ['menu button', () => bot.setChatMenuButton({ menu_button: { type: 'web_app', text: 'Азкары', web_app: { url: APP_URL } } })],
+      ['name', () => bot.setMyName({ name: BOT_NAME })],
+      ['short description', () => bot.setMyShortDescription({ short_description: BOT_SHORT_DESCRIPTION })],
+      ['description', () => bot.setMyDescription({ description: BOT_DESCRIPTION })],
+      ['commands', () => bot.setMyCommands(BOT_COMMANDS)],
+    ];
+    for (const [label, run] of steps) {
+      try { await run(); }
+      catch (e) { console.warn(`[bot] ${label} не применился:`, e?.message || e); }
+    }
+  }
+  applyBotBranding();
 
   bot.onText(/\/start/, (msg) => {
     const id = msg.chat.id, subs = loadSubs();
     subs[id] = { ...(subs[id] || {}), id, name: msg.from.first_name || '', since: subs[id]?.since || Date.now() };
     saveSubs(subs);
-    bot.sendMessage(id, 'Ассаляму алейкум! 🌿\n\nЯ напомню об утренних и вечерних поминаниях и после намаза. Открой приложение и в настройках включи геолокацию — тогда напоминания будут приходить по времени твоего намаза.', kb);
+    bot.sendPhoto(id, WELCOME_IMAGE, { caption: WELCOME_CAPTION, parse_mode: 'HTML', ...kb })
+      .catch(() => bot.sendMessage(id, WELCOME_CAPTION, { parse_mode: 'HTML', ...kb }));
+  });
+  bot.onText(/\/help/, (msg) => {
+    bot.sendMessage(msg.chat.id, HELP_TEXT, { parse_mode: 'HTML', ...kb });
   });
   bot.onText(/\/stop/, (msg) => { const s = loadSubs(); delete s[msg.chat.id]; saveSubs(s); bot.sendMessage(msg.chat.id, 'Напоминания отключены. /start — включить снова.'); });
 
