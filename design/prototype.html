@@ -2,6 +2,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="icon" type="image/png" href="assets/icon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#6FA58C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Азкар">
 <title>Азкар — утренние и вечерние поминания</title>
 <style>
   @font-face { font-family:'AzkarNaskh'; src:url('assets/fonts/noto-naskh.woff2') format('woff2'); font-display:swap; }
@@ -426,6 +431,18 @@
           <div class="stat glass"><div class="v acc" id="statStreak">0</div><div class="k">дней подряд</div></div>
           <div class="stat glass"><div class="v" id="statToday">0/3</div><div class="k">сессий сегодня</div></div>
           <div class="stat glass"><div class="v" id="statAzkar">0</div><div class="k">азкаров сегодня</div></div>
+        </div>
+      </div>
+      <div class="set-group" id="addHomeGroup" style="display:none">
+        <div class="lbl">Приложение</div>
+        <div class="card-set glass">
+          <div class="set-row" style="flex-direction:column;align-items:stretch;gap:10px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M12 6v6M9 9h6"/></svg></div>
+              <div class="txt"><div class="t">Иконка на телефоне</div><div class="d" id="addHomeDesc">Добавь ярлык на главный экран — открывай в один тап</div></div>
+            </div>
+            <button class="btn-loc" id="addHomeBtn">📲 Добавить на главный экран</button>
+          </div>
         </div>
       </div>
       <div class="set-group">
@@ -1012,6 +1029,36 @@
   renderMadhab();
   if(loc){ locDone(); setLocStatus('Напоминания по времени намаза'); fetchTimes(); }
   updateStreakUI(); updateHomeProgress();
+
+  /* ---- добавить приложение иконкой на главный экран телефона ---- */
+  (function(){
+    const group=document.getElementById('addHomeGroup');
+    const btn=document.getElementById('addHomeBtn'), desc=document.getElementById('addHomeDesc');
+    const show=()=>{ group.style.display=''; };
+    const markAdded=()=>{ btn.textContent='✓ Уже на главном экране'; btn.disabled=true; btn.classList.add('done'); };
+    // 1) Telegram Mini App (Bot API 8.0)
+    if(TG && typeof TG.addToHomeScreen==='function'){
+      show();
+      if(typeof TG.checkHomeScreenStatus==='function'){
+        try{ TG.checkHomeScreenStatus(s=>{ if(s==='added') markAdded(); else if(s==='unsupported') group.style.display='none'; }); }catch(e){}
+      }
+      btn.addEventListener('click', ()=>{ tgHaptic('light'); try{ TG.addToHomeScreen(); }catch(e){} });
+      try{ TG.onEvent && TG.onEvent('homeScreenAdded', markAdded); }catch(e){}
+      return;
+    }
+    // 2) Обычный браузер (PWA)
+    if(!TG){
+      if(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return; // уже установлено
+      let deferred=null;
+      window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferred=e; show(); });
+      if(/iphone|ipad|ipod/i.test(navigator.userAgent)){
+        show(); btn.textContent='Как добавить на iPhone';
+        btn.addEventListener('click', ()=>{ desc.textContent='В браузере: кнопка «Поделиться» ⬆️ → пролистай вниз → «На экран „Домой“»'; });
+      } else {
+        btn.addEventListener('click', async ()=>{ if(!deferred) return; deferred.prompt(); const r=await deferred.userChoice; if(r.outcome==='accepted') markAdded(); deferred=null; });
+      }
+    }
+  })();
 
   /* ---- свайп-назад от левого края (как в EasyBot): к выбору азкаров ---- */
   (function(){
