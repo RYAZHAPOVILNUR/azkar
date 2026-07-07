@@ -1,0 +1,27 @@
+# Azkar Mini App + бот напоминаний.
+# Подключается к общему nginx-proxy (сеть webproxy) — SSL выпускает acme-companion
+# автоматически по VIRTUAL_HOST/LETSENCRYPT_HOST. EasyBot и прочее не затрагивается.
+#
+# Запуск на сервере:  docker compose up -d --build
+services:
+  app:
+    build: .
+    container_name: azkar-app
+    env_file: ./bot/.env          # BOT_TOKEN, APP_URL, PORT, TZ, крон-строки
+    environment:
+      - VIRTUAL_HOST=azkar.nurtech.dev
+      - VIRTUAL_PORT=3010
+      - LETSENCRYPT_HOST=azkar.nurtech.dev
+      - LETSENCRYPT_EMAIL=blvckxboy@gmail.com
+    volumes:
+      - azkar_data:/app/bot/data   # подписчики бота переживают пересборку
+    networks: [proxy]
+    restart: always
+
+networks:
+  proxy:
+    external: true
+    name: webproxy
+
+volumes:
+  azkar_data:

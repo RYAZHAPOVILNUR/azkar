@@ -1,0 +1,7 @@
+.git
+node_modules
+bot/node_modules
+content
+design
+*.md
+.gitignore
