@@ -1,0 +1,589 @@
+<title>Азкар — утренние и вечерние поминания</title>
+<style>
+  :root {
+    /* LIGHT — soft, airy, calming */
+    --bg: #F5F3EC;
+    --bg-2: #EEEBE1;
+    --surface: #FCFBF7;
+    --surface-2: #EFEDE3;
+    --ink: #3A433D;
+    --ink-soft: #6E756C;
+    --ink-faint: #9CA29B;
+    --line: #E7E4D8;
+    --accent: #6FA58C;
+    --accent-deep: #517E67;
+    --accent-soft: #E5EFE9;
+    --good: #6FA58C;
+    /* soft pastel sessions (dark text on top) */
+    --m1:#FCE3C6; --m2:#F7D3C4; --m-sun:#FFF1D9;
+    --e1:#D2DAF0; --e2:#C2C9E4; --e-moon:#F3EFDD;
+    --a1:#CFE7D8; --a2:#BCDBC8;
+    --shadow: 0 1px 2px rgba(58,67,61,.05), 0 10px 30px rgba(58,67,61,.07);
+    --shadow-card: 0 1px 2px rgba(58,67,61,.04), 0 5px 16px rgba(58,67,61,.05);
+
+    --ar: "Amiri","Scheherazade New","Noto Naskh Arabic","Traditional Arabic","Geeza Pro",serif;
+    --serif: Georgia,"Times New Roman",serif;
+    --sans: -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    --ar-size: 30px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1B211E; --bg-2: #151A17; --surface: #232A26; --surface-2: #2B332E;
+      --ink: #EAE8DE; --ink-soft: #ABB1A8; --ink-faint: #767C73; --line: #333A35;
+      --accent: #8FC4A9; --accent-deep: #6FA58C; --accent-soft: #26332C; --good: #8FC4A9;
+      --m1:#E9C7A6; --m2:#DFB7A4; --m-sun:#F4E2C4;
+      --e1:#AEB8D8; --e2:#9AA4C8; --e-moon:#E4DEC6;
+      --a1:#A9CEB8; --a2:#95C0A6;
+      --shadow: 0 1px 2px rgba(0,0,0,.28), 0 12px 32px rgba(0,0,0,.4);
+      --shadow-card: 0 1px 2px rgba(0,0,0,.22), 0 6px 18px rgba(0,0,0,.28);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F5F3EC; --bg-2: #EEEBE1; --surface: #FCFBF7; --surface-2: #EFEDE3;
+    --ink: #3A433D; --ink-soft: #6E756C; --ink-faint: #9CA29B; --line: #E7E4D8;
+    --accent: #6FA58C; --accent-deep: #517E67; --accent-soft: #E5EFE9; --good: #6FA58C;
+    --m1:#FCE3C6; --m2:#F7D3C4; --m-sun:#FFF1D9;
+    --e1:#D2DAF0; --e2:#C2C9E4; --e-moon:#F3EFDD;
+    --a1:#CFE7D8; --a2:#BCDBC8;
+    --shadow: 0 1px 2px rgba(58,67,61,.05), 0 10px 30px rgba(58,67,61,.07);
+    --shadow-card: 0 1px 2px rgba(58,67,61,.04), 0 5px 16px rgba(58,67,61,.05);
+  }
+  :root[data-theme="dark"] {
+    --bg: #1B211E; --bg-2: #151A17; --surface: #232A26; --surface-2: #2B332E;
+    --ink: #EAE8DE; --ink-soft: #ABB1A8; --ink-faint: #767C73; --line: #333A35;
+    --accent: #8FC4A9; --accent-deep: #6FA58C; --accent-soft: #26332C; --good: #8FC4A9;
+    --m1:#E9C7A6; --m2:#DFB7A4; --m-sun:#F4E2C4;
+    --e1:#AEB8D8; --e2:#9AA4C8; --e-moon:#E4DEC6;
+    --a1:#A9CEB8; --a2:#95C0A6;
+    --shadow: 0 1px 2px rgba(0,0,0,.28), 0 12px 32px rgba(0,0,0,.4);
+    --shadow-card: 0 1px 2px rgba(0,0,0,.22), 0 6px 18px rgba(0,0,0,.28);
+  }
+
+  * { box-sizing: border-box; }
+  html,body { margin:0; padding:0; }
+  body {
+    font-family: var(--sans);
+    background: radial-gradient(130% 60% at 50% -10%, var(--bg-2), var(--bg) 62%);
+    color: var(--ink); min-height: 100vh;
+    display:flex; justify-content:center; align-items:flex-start; padding: 22px 14px 40px;
+    -webkit-font-smoothing: antialiased;
+  }
+  @media (max-width:480px){ body{ padding:0; } }
+
+  .phone {
+    width:100%; max-width:412px; background: var(--bg);
+    border-radius:40px; box-shadow: var(--shadow); overflow:hidden; position:relative;
+    border:1px solid var(--line); min-height:860px; display:flex; flex-direction:column;
+  }
+  @media (max-width:480px){ .phone{ border-radius:0; border:none; min-height:100vh; } }
+
+  .statusbar { display:flex; justify-content:space-between; align-items:center;
+    padding: 12px 26px 4px; font-size:13px; font-weight:600; letter-spacing:.2px; }
+  .statusbar .dots { display:flex; gap:6px; align-items:center; opacity:.8; }
+
+  .screen { display:none; flex-direction:column; flex:1; }
+  .screen.active { display:flex; animation: fade .3s ease; }
+  @keyframes fade { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+  /* HOME */
+  .home-head { display:flex; align-items:center; justify-content:space-between; padding:8px 22px 4px; }
+  .brand { display:flex; align-items:center; gap:10px; }
+  .brand .mark { width:30px; height:30px; }
+  .brand .name { font-weight:700; font-size:19px; letter-spacing:-.2px; }
+  .brand .name b { color: var(--accent); font-weight:700; }
+  .iconbtn { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; cursor:pointer;
+    background: var(--surface); border:1px solid var(--line); color: var(--ink-soft);
+    transition: transform .15s, color .15s; }
+  .iconbtn:hover { color: var(--accent); }
+  .iconbtn:active { transform: scale(.92); }
+  .head-actions { display:flex; gap:8px; }
+
+  .ayah { margin:14px 20px 6px; padding:18px 20px; border-radius:20px;
+    background: linear-gradient(180deg, var(--accent-soft), var(--surface));
+    border:1px solid var(--line); position:relative; overflow:hidden; }
+  .ayah:before { content:"\201D"; position:absolute; top:-26px; right:10px;
+    font-family: var(--serif); font-size:120px; color: var(--accent); opacity:.12; line-height:1; }
+  .ayah .ar { font-family: var(--ar); font-size:21px; direction:rtl; text-align:right; line-height:2.1; }
+  .ayah .tr { font-family: var(--serif); font-size:14px; color: var(--ink-soft); margin-top:8px; line-height:1.55; }
+  .ayah .src { font-size:11px; color: var(--accent-deep); margin-top:8px; letter-spacing:.4px;
+    text-transform:uppercase; font-weight:700; font-family:var(--sans); }
+
+  .greet { padding:16px 22px 4px; }
+  .greet .hi { font-size:22px; font-weight:700; letter-spacing:-.4px; }
+  .greet .sub { font-size:13.5px; color: var(--ink-soft); margin-top:3px; display:flex; align-items:center; gap:7px; }
+  .streak { display:inline-flex; align-items:center; gap:5px; color: var(--accent-deep); font-weight:600; }
+
+  .sessions { display:flex; flex-direction:column; gap:14px; padding:14px 20px 8px; }
+  .session { position:relative; border-radius:22px; overflow:hidden; cursor:pointer;
+    border:1px solid var(--line); box-shadow: var(--shadow-card);
+    height:120px; display:flex; align-items:flex-end; transition: transform .18s; isolation:isolate; }
+  .session:active { transform: scale(.985); }
+  .session .art { position:absolute; inset:0; z-index:-1; }
+  .session .art svg { width:100%; height:100%; display:block; }
+  .session .body { padding:15px 18px; width:100%; display:flex; align-items:flex-end; justify-content:space-between; gap:12px; }
+  .session .titles .kicker { font-size:10.5px; letter-spacing:1.2px; text-transform:uppercase; color: var(--sess-ink,#5a5348); font-weight:700; opacity:.85; }
+  .session .titles .t { font-size:19px; font-weight:700; color: var(--sess-ink,#4a4238); margin-top:3px; letter-spacing:-.2px; }
+  .session .titles .ar { font-family:var(--ar); font-size:16px; color: var(--sess-ink,#4a4238); opacity:.75; margin-top:3px; direction:rtl; }
+  .session .prog { display:flex; flex-direction:column; align-items:center; gap:4px; flex-shrink:0; }
+  .session .prog small { font-size:11px; color: var(--sess-ink,#4a4238); font-weight:700; font-variant-numeric:tabular-nums; opacity:.8; }
+  .ring { width:44px; height:44px; }
+  .ring circle { fill:none; stroke-width:4; }
+  .ring .trk { stroke: var(--sess-ink,#4a4238); opacity:.2; }
+  .ring .val { stroke: var(--sess-ink,#4a4238); stroke-linecap:round; opacity:.85; transition: stroke-dashoffset .5s cubic-bezier(.4,0,.2,1); }
+
+  .home-foot { text-align:center; font-size:12px; color:var(--ink-faint); padding:6px 20px 22px; }
+  .home-foot b { color: var(--accent-deep); font-weight:700; }
+
+  /* READING */
+  .rhead { position: sticky; top:0; z-index:5;
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom:1px solid var(--line); padding:8px 14px 10px; }
+  .rhead .row { display:flex; align-items:center; gap:8px; }
+  .rhead .ttl { flex:1; text-align:center; }
+  .rhead .ttl .k { font-size:10.5px; letter-spacing:1.2px; text-transform:uppercase; color:var(--accent-deep); font-weight:700; }
+  .rhead .ttl .t { font-size:16px; font-weight:700; margin-top:1px; }
+  .rbar { height:5px; border-radius:99px; background: var(--surface-2); margin-top:10px; overflow:hidden; }
+  .rbar span { display:block; height:100%; width:0%; border-radius:99px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transition: width .5s cubic-bezier(.4,0,.2,1); }
+  .rmeta { display:flex; justify-content:space-between; margin-top:6px; font-size:11.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+
+  .list { padding:14px 14px 30px; display:flex; flex-direction:column; gap:16px; }
+  .zikr { background: var(--surface); border:1px solid var(--line); border-radius:22px;
+    padding:16px 16px 14px; box-shadow: var(--shadow-card);
+    transition: border-color .35s, opacity .35s, background .35s; position:relative; }
+  .zikr.done { border-color: color-mix(in srgb, var(--good) 55%, var(--line)); background: color-mix(in srgb, var(--good) 8%, var(--surface)); }
+  .zikr .top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .badge { position:relative; width:34px; height:34px; flex-shrink:0; display:grid; place-items:center; }
+  .badge svg { position:absolute; inset:0; color: var(--accent); opacity:.55; }
+  .badge b { font-size:13px; font-weight:700; color: var(--accent-deep); font-variant-numeric:tabular-nums; z-index:1; }
+  .pill { font-size:12px; font-weight:700; color: var(--accent-deep);
+    background: var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+    padding:3px 10px; border-radius:99px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .top .sp { flex:1; }
+  .top .mini { width:32px; height:32px; border-radius:50%; display:grid; place-items:center;
+    background: var(--surface-2); color: var(--ink-soft); cursor:pointer; border:1px solid var(--line);
+    transition: color .15s, transform .15s; }
+  .top .mini:hover { color: var(--accent); }
+  .top .mini:active { transform: scale(.9); }
+
+  .arabic { font-family: var(--ar); direction:rtl; text-align:right; color: var(--ink);
+    font-size: var(--ar-size); line-height:2.15; margin:4px 2px 2px; }
+  .translit { font-size:14.5px; color: var(--ink); margin-top:12px; line-height:1.6; font-weight:500; }
+  .divider { display:flex; align-items:center; gap:10px; margin:14px 0; color: var(--accent); opacity:.5; }
+  .divider:before,.divider:after { content:""; height:1px; flex:1; background: currentColor; opacity:.4; }
+  .divider svg { width:14px; height:14px; }
+  .translate { font-family: var(--serif); font-size:14px; color: var(--ink-soft); line-height:1.65; }
+  .src-note { font-size:11.5px; color: var(--ink-faint); margin-top:10px; font-style:italic; }
+
+  .counter-row { display:flex; align-items:center; gap:14px; margin-top:16px; padding-top:14px; border-top:1px dashed var(--line); }
+  .counter-row .label { flex:1; }
+  .counter-row .label .n { font-size:12px; color: var(--ink-faint); text-transform:uppercase; letter-spacing:.5px; font-weight:600; }
+  .counter-row .label .c { font-size:15px; color: var(--ink-soft); font-weight:600; margin-top:2px; font-variant-numeric:tabular-nums; }
+  .counter-row .label .c b { color: var(--accent-deep); }
+
+  .tasbih { width:78px; height:78px; flex-shrink:0; position:relative; cursor:pointer;
+    background:none; border:none; padding:0; -webkit-tap-highlight-color:transparent;
+    transition: transform .12s cubic-bezier(.34,1.56,.64,1); }
+  .tasbih:active { transform: scale(.9); }
+  .tasbih .tr, .tasbih .tv { fill:none; stroke-width:6; }
+  .tasbih .tr { stroke: var(--surface-2); }
+  .tasbih .tv { stroke: var(--accent); stroke-linecap:round; transition: stroke-dashoffset .35s cubic-bezier(.4,0,.2,1); }
+  .tasbih .cx { position:absolute; inset:0; display:grid; place-items:center; text-align:center; }
+  .tasbih .cx .big { font-size:23px; font-weight:800; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums; }
+  .tasbih .cx .cap { font-size:10px; color:var(--ink-faint); margin-top:2px; font-weight:600; }
+  .zikr.done .tasbih .tv { stroke: var(--good); }
+  .zikr.done .tasbih .cx .big { color: var(--good); }
+  .star-pop { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; opacity:0; }
+  .star-pop svg { width:34px; height:34px; color: var(--good); }
+  .zikr.done .star-pop { animation: pop .5s ease; }
+  @keyframes pop { 0%{opacity:0; transform:scale(.4);} 40%{opacity:1;} 100%{opacity:0; transform:scale(1.5);} }
+
+  /* SETTINGS */
+  .settings { padding:6px 18px 30px; }
+  .set-group { margin-top:22px; }
+  .set-group > .lbl { font-size:11.5px; letter-spacing:1.1px; text-transform:uppercase; color: var(--accent-deep); font-weight:700; margin:0 4px 10px; }
+  .card-set { background: var(--surface); border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow: var(--shadow-card); }
+  .set-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--line); }
+  .set-row:last-child { border-bottom:none; }
+  .set-row .ic { width:34px; height:34px; border-radius:10px; display:grid; place-items:center;
+    background: var(--accent-soft); color: var(--accent-deep); flex-shrink:0; }
+  .set-row .txt { flex:1; }
+  .set-row .txt .t { font-size:15px; font-weight:600; }
+  .set-row .txt .d { font-size:12.5px; color: var(--ink-soft); margin-top:1px; }
+  .set-row .val { font-size:15px; color: var(--accent-deep); font-weight:600; font-variant-numeric:tabular-nums; }
+
+  .seg { display:flex; gap:4px; background: var(--surface-2); border-radius:12px; padding:4px; }
+  .seg button { flex:1; border:none; background:none; padding:8px 4px; border-radius:9px; font-size:13px; font-weight:600;
+    color: var(--ink-soft); cursor:pointer; font-family:var(--sans); transition: all .18s; }
+  .seg button.on { background: var(--surface); color: var(--accent-deep); box-shadow: var(--shadow-card); }
+
+  .switch { width:46px; height:28px; border-radius:99px; background: var(--surface-2); border:1px solid var(--line);
+    position:relative; cursor:pointer; flex-shrink:0; transition: background .2s; }
+  .switch:after { content:""; position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%;
+    background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
+  .switch.on { background: var(--accent); border-color: var(--accent); }
+  .switch.on:after { transform: translateX(18px); }
+
+  .slider { -webkit-appearance:none; appearance:none; width:100%; height:5px; border-radius:99px;
+    background: var(--surface-2); outline:none; margin-top:2px; }
+  .slider::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%;
+    background: var(--accent); cursor:pointer; box-shadow: var(--shadow-card); border:2px solid var(--surface); }
+  .slider::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background: var(--accent); cursor:pointer; border:2px solid var(--surface); }
+
+  .back { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; cursor:pointer;
+    background: var(--surface); border:1px solid var(--line); color: var(--ink); transition: transform .15s; }
+  .back:active { transform: scale(.9); }
+
+  @media (prefers-reduced-motion: reduce) { *, *:before, *:after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+</style>
+
+<div class="phone">
+  <div class="statusbar">
+    <span id="clock">7:04</span>
+    <span class="dots">
+      <svg width="17" height="11" viewBox="0 0 17 11"><g fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></g></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12"><path fill="currentColor" d="M8 2.6c2 0 3.8.8 5.1 2l1.3-1.4A9.3 9.3 0 0 0 8 .6 9.3 9.3 0 0 0 1.6 3.2L2.9 4.6A7.3 7.3 0 0 1 8 2.6Zm0 3.4c1 0 2 .4 2.7 1.1l1.4-1.4A6 6 0 0 0 8 4a6 6 0 0 0-4.1 1.7l1.4 1.4A3.8 3.8 0 0 1 8 6Zm0 3.2L9.8 11 8 12.8 6.2 11 8 9.2Z"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="22.5" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".5"/></svg>
+    </span>
+  </div>
+
+  <!-- HOME -->
+  <section class="screen active" id="home">
+    <div class="home-head">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none"><path d="M20 3l4.6 4.6 6.4-1.1-1.1 6.4L34.5 20l-4.6 4.6 1.1 6.4-6.4-1.1L20 34.5l-4.6-4.6-6.4 1.1 1.1-6.4L5.5 20l4.6-4.6-1.1-6.4 6.4 1.1L20 3z" stroke="currentColor" stroke-width="1.4" style="color:var(--accent)"/><circle cx="20" cy="20" r="6.5" stroke="currentColor" stroke-width="1.4" style="color:var(--accent)"/></svg>
+        </span>
+        <span class="name">Ази<b>к</b>р</span>
+      </div>
+      <div class="head-actions">
+        <button class="iconbtn" id="themeBtn" title="Тема" aria-label="Сменить тему">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path id="themeIcon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <button class="iconbtn" onclick="go('settings')" title="Настройки" aria-label="Настройки">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 12a7.4 7.4 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2l-.4-2.6H8.5l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7.4 7.4 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.4 2.6h3.9l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="ayah">
+      <div class="ar">أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ</div>
+      <div class="tr">…которые уверовали, и сердца которых утешаются поминанием Аллаха. Разве не поминанием Аллаха утешаются сердца?</div>
+      <div class="src">Сура Ар-Раʿд · 13:28</div>
+    </div>
+
+    <div class="greet">
+      <div class="hi">Доброе утро</div>
+      <div class="sub">
+        <span>Вторник, 7 июля</span><span>·</span>
+        <span class="streak" title="Дней подряд">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C7 9 9 8 9 8s-.5 2 .5 3c0 0 1-1 1-3s1.5-6 1.5-6z"/></svg>
+          12 дней
+        </span>
+      </div>
+    </div>
+
+    <div class="sessions">
+      <div class="session" style="--sess-ink:#6b4f36" onclick="openReading('morning')">
+        <div class="art"><svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="gM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--m1)"/><stop offset="1" stop-color="var(--m2)"/></linearGradient></defs>
+          <rect width="400" height="120" fill="url(#gM)"/>
+          <circle cx="308" cy="40" r="24" fill="var(--m-sun)"/>
+          <g stroke="var(--m-sun)" stroke-width="2" opacity=".6"><path d="M308 8v-6M308 78v-4M340 40h6M270 40h-4M330 18l4-4M282 62l-4 4M330 62l4 4M282 18l-4-4"/></g>
+          <path d="M0 120 L0 96 L80 74 L160 100 L240 78 L320 102 L400 84 L400 120Z" fill="#fff" opacity=".35"/>
+        </svg></div>
+        <div class="body"><div class="titles">
+          <div class="kicker">Утро · до восхода солнца</div>
+          <div class="t">Утренние поминания</div>
+          <div class="ar">أذكار الصباح</div>
+        </div><div class="prog">
+          <svg class="ring" viewBox="0 0 44 44" data-p="35"><circle class="trk" cx="22" cy="22" r="18"/><circle class="val" cx="22" cy="22" r="18" transform="rotate(-90 22 22)"/></svg>
+          <small id="pMorning">0/8</small>
+        </div></div>
+      </div>
+
+      <div class="session" style="--sess-ink:#3f4668" onclick="openReading('evening')">
+        <div class="art"><svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="gE" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--e1)"/><stop offset="1" stop-color="var(--e2)"/></linearGradient></defs>
+          <rect width="400" height="120" fill="url(#gE)"/>
+          <circle cx="312" cy="38" r="17" fill="var(--e-moon)"/><circle cx="320" cy="34" r="17" fill="var(--e2)"/>
+          <g fill="var(--e-moon)" opacity=".85"><circle cx="60" cy="28" r="1.4"/><circle cx="130" cy="46" r="1.1"/><circle cx="200" cy="24" r="1.5"/><circle cx="250" cy="54" r="1.1"/><circle cx="90" cy="66" r="1.2"/><circle cx="355" cy="74" r="1.3"/></g>
+          <path d="M0 120 L0 98 L90 78 L180 102 L260 80 L340 104 L400 88 L400 120Z" fill="#fff" opacity=".25"/>
+        </svg></div>
+        <div class="body"><div class="titles">
+          <div class="kicker">Вечер · после ʿасра до заката</div>
+          <div class="t">Вечерние поминания</div>
+          <div class="ar">أذكار المساء</div>
+        </div><div class="prog">
+          <svg class="ring" viewBox="0 0 44 44" data-p="0"><circle class="trk" cx="22" cy="22" r="18"/><circle class="val" cx="22" cy="22" r="18" transform="rotate(-90 22 22)"/></svg>
+          <small id="pEvening">0/8</small>
+        </div></div>
+      </div>
+
+      <div class="session" style="--sess-ink:#33604a" onclick="openReading('after')">
+        <div class="art"><svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="gA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--a1)"/><stop offset="1" stop-color="var(--a2)"/></linearGradient></defs>
+          <rect width="400" height="120" fill="url(#gA)"/>
+          <g stroke="#fff" stroke-width="1.4" fill="none" opacity=".4"><path d="M312 22 l12 12 -12 12 -12 -12z"/><path d="M346 46 l9 9 -9 9 -9 -9z"/></g>
+          <path d="M0 120 L0 100 L100 82 L200 104 L300 84 L400 106 L400 120Z" fill="#fff" opacity=".28"/>
+        </svg></div>
+        <div class="body"><div class="titles">
+          <div class="kicker">После обязательной молитвы</div>
+          <div class="t">После намаза</div>
+          <div class="ar">أذكار بعد الصلاة</div>
+        </div><div class="prog">
+          <svg class="ring" viewBox="0 0 44 44" data-p="0"><circle class="trk" cx="22" cy="22" r="18"/><circle class="val" cx="22" cy="22" r="18" transform="rotate(-90 22 22)"/></svg>
+          <small id="pAfter">0/5</small>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="home-foot">Источник текстов — книга шейха <b>Мухаммада ибн Саида Расляна</b><br>«Азкары утра и вечера из достоверной Сунны»</div>
+  </section>
+
+  <!-- READING -->
+  <section class="screen" id="reading">
+    <div class="rhead">
+      <div class="row">
+        <button class="back" onclick="go('home')" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="k" id="rKicker"></div><div class="t" id="rTitle"></div></div>
+        <button class="iconbtn" style="border:none;background:none" aria-label="Настройки текста" onclick="go('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h10M4 12h16M4 17h7"/><path d="M17 5v4M20 15v4"/></svg></button>
+      </div>
+      <div class="rbar"><span id="rBarFill"></span></div>
+      <div class="rmeta"><span id="rProg"></span><span>Тапни счётчик, чтобы считать</span></div>
+    </div>
+    <div class="list" id="zikrList"></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="screen" id="settings">
+    <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
+      <div class="row">
+        <button class="back" onclick="go('home')" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px">Настройки</div></div>
+        <div style="width:38px"></div>
+      </div>
+    </div>
+    <div class="settings">
+      <div class="set-group">
+        <div class="lbl">Оформление</div>
+        <div class="card-set">
+          <div class="set-row" style="flex-direction:column;align-items:stretch;gap:10px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg></div>
+              <div class="txt"><div class="t">Тема</div><div class="d">Авто — по системе телефона</div></div>
+            </div>
+            <div class="seg" id="themeSeg"><button data-theme-set="auto">Авто</button><button data-theme-set="light">Светлая</button><button data-theme-set="dark">Тёмная</button></div>
+          </div>
+          <div class="set-row">
+            <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7V5h16v2M9 20h6M12 5v15"/></svg></div>
+            <div class="txt" style="flex:1"><div class="t">Размер арабского</div><input type="range" class="slider" id="arSize" min="24" max="40" value="30"></div>
+            <div class="val" id="arSizeVal">30</div>
+          </div>
+        </div>
+      </div>
+      <div class="set-group">
+        <div class="lbl">Напоминания в Telegram</div>
+        <div class="card-set">
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg></div><div class="txt"><div class="t">Утром</div><div class="d">Ежедневно после рассвета</div></div><div class="val">06:30</div></div>
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div><div class="txt"><div class="t">Вечером</div><div class="d">Ежедневно после ʿасра</div></div><div class="val">18:00</div></div>
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14v-3a6 6 0 0 0-12 0v3a2 2 0 0 1-.6 1.6L4 17h5m6 0a3 3 0 0 1-6 0"/></svg></div><div class="txt"><div class="t">Присылать напоминания</div><div class="d">Бот напомнит вовремя</div></div><div class="switch on" data-toggle></div></div>
+        </div>
+      </div>
+      <div class="set-group">
+        <div class="lbl">Текст</div>
+        <div class="card-set">
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg></div><div class="txt"><div class="t">Транскрипция</div><div class="d">Кириллицей под арабским</div></div><div class="switch on" data-toggle="translit"></div></div>
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg></div><div class="txt"><div class="t">Перевод смысла</div><div class="d">На русский язык</div></div><div class="switch on" data-toggle="translate"></div></div>
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 5L6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg></div><div class="txt"><div class="t">Аудио-озвучка</div><div class="d">Голос чтеца для каждого зикра</div></div><div class="switch on" data-toggle></div></div>
+        </div>
+      </div>
+      <div class="home-foot" style="padding-top:26px">Азикр · утренние и вечерние поминания<br><b>Кейс курса AI Product Engineer</b></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const STAR = '<svg viewBox="0 0 34 34" fill="none"><path d="M17 2l3.6 3.6 5-.9-.9 5L28 17l-3.3 3.3.9 5-5-.9L17 28l-3.6-3.6-5 .9.9-5L6 17l3.3-3.3-.9-5 5 .9L17 2z" stroke="currentColor" stroke-width="1.1"/></svg>';
+  const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>';
+
+  /* Тексты — из книги шейха Мухаммада ибн Саида Расляна «أذكار الصباح والمساء من صحيح السنة المطهرة».
+     Раздел «после намаза» — из достоверной Сунны (Сахих Муслим и др.). */
+  const AZKAR = {
+    morning: { title:"Утренние поминания", kicker:"Утро · أذكار الصباح", items:[
+      { n:1, target:1, ar:"أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ",
+        tl:"Асбахна ва асбаха-ль-мульку лиллях, валь-хамду лиллях, ля иляха илля-Ллаху вахдаху ля шарика лях, ляху-ль-мульку ва ляху-ль-хамд, ва хува ‘аля кулли шайъин кадир…",
+        tr:"Мы встретили утро, и встретило утро всё, что подвластно Аллаху. Хвала Аллаху. Нет божества, кроме Аллаха Единого, у Которого нет сотоварища. Ему принадлежит власть и хвала, и Он всё может. Господь мой, прошу Тебя о благе этого дня и о благе после него, и прибегаю к Тебе от зла этого дня и зла после него.", src:"Муслим 2723" },
+      { n:2, target:1, ar:"اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ",
+        tl:"Аллахумма бикя асбахна, ва бикя амсайна, ва бикя нахъя, ва бикя намуту, ва иляйкя-н-нушур",
+        tr:"О Аллах, с Тобой мы встретили утро и с Тобой встретили вечер, с Тобой живём и с Тобой умираем, и к Тебе — воскрешение.", src:"Тирмизи 3391 · сахих" },
+      { n:3, target:1, ar:"اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي، فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
+        tl:"Аллахумма анта Рабби, ля иляха илля анта, халякътани ва ана ‘абдук, ва ана ‘аля ‘ахдикя ва ва‘дикя ма-стата‘т…",
+        tr:"Господин прошений о прощении. О Аллах, Ты — мой Господь, нет божества, кроме Тебя. Ты создал меня, и я — раб Твой. Прибегаю к Тебе от зла того, что совершил. Признаю милость Твою ко мне и признаю грех свой — прости же меня, ведь грехи прощает только Ты.", src:"Аль-Бухари 6306 · сахих" },
+      { n:4, target:3, ar:"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
+        tl:"Субханаллахи ва бихамдих",
+        tr:"Пречист Аллах и хвала Ему. (Кто скажет сто раз — простятся его грехи, даже если их как пена морская.)", src:"Аль-Бухари 6405 · сахих", targetHint:"сто раз" },
+      { n:5, target:3, ar:"بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
+        tl:"Бисмилляхи-ллязи ля ядурру ма‘а-смихи шайъун фи-ль-арды ва ля фи-с-самаъи ва хува-с-Сами‘у-ль-‘Алим",
+        tr:"С именем Аллаха, с именем Которого ничто не причинит вреда ни на земле, ни на небе. Он — Слышащий, Знающий.", src:"Абу Дауд 5088, Тирмизи 3388 · сахих" },
+      { n:6, target:3, ar:"رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا",
+        tl:"Радыйту би-Лляхи Раббан, ва би-ль-Ислями динан, ва би Мухаммадин ﷺ набийян",
+        tr:"Я доволен Аллахом как Господом, Исламом — как религией, и Мухаммадом ﷺ — как Пророком.", src:"Ан-Насаи, Ахмад · сахих" },
+      { n:7, target:1, ar:"يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ أَبَدًا",
+        tl:"Йа Хаййу йа Каййум, би рахматикя астагис, аслих ли шаъни куллях, ва ля такильни иля нафси тарфата ‘айнин абада",
+        tr:"О Живой, о Поддерживающий существование! Милостью Твоей взываю о помощи. Исправь все мои дела и не оставляй меня самому себе даже на миг ока.", src:"Аль-Хаким · хасан" },
+      { n:8, target:10, ar:"لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، يُحْيِي وَيُمِيتُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+        tl:"Ля иляха илля-Ллаху вахдаху ля шарика лях, ляху-ль-мульку ва ляху-ль-хамд, юхйи ва юмит, ва хува ‘аля кулли шайъин кадир",
+        tr:"Нет божества, кроме Аллаха Единого, у Которого нет сотоварища. Ему принадлежит власть и хвала, Он оживляет и умерщвляет, и Он всё может.", src:"Ахмад, Ат-Табарани · сахих" },
+    ]},
+    evening: { title:"Вечерние поминания", kicker:"Вечер · أذكار المساء", items:[
+      { n:1, target:1, ar:"أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا",
+        tl:"Амсайна ва амса-ль-мульку лиллях, валь-хамду лиллях, ля иляха илля-Ллаху вахдаху ля шарика лях…",
+        tr:"Мы встретили вечер, и встретило вечер всё, что подвластно Аллаху. Хвала Аллаху… Господь мой, прошу Тебя о благе этой ночи и о благе после неё, и прибегаю к Тебе от зла этой ночи и зла после неё.", src:"Муслим 2723" },
+      { n:2, target:1, ar:"اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ",
+        tl:"Аллахумма бикя амсайна, ва бикя асбахна, ва бикя нахъя, ва бикя намуту, ва иляйкя-ль-масыр",
+        tr:"О Аллах, с Тобой мы встретили вечер и с Тобой встретили утро, с Тобой живём и с Тобой умираем, и к Тебе — возвращение.", src:"Тирмизи 3391 · сахих" },
+      { n:3, target:1, ar:"اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي، فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
+        tl:"Аллахумма анта Рабби, ля иляха илля анта, халякътани ва ана ‘абдук…",
+        tr:"Господин прошений о прощении. О Аллах, Ты — мой Господь, нет божества, кроме Тебя. Признаю милость Твою ко мне и признаю грех свой — прости же меня, ведь грехи прощает только Ты.", src:"Аль-Бухари 6306 · сахих" },
+      { n:4, target:3, ar:"أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+        tl:"А‘узу би калимати-Лляхи-т-таммати мин шарри ма халякъ",
+        tr:"Прибегаю к совершенным словам Аллаха от зла того, что Он сотворил. (Особенно важно вечером.)", src:"Муслим 2709 · сахих" },
+      { n:5, target:3, ar:"بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
+        tl:"Бисмилляхи-ллязи ля ядурру ма‘а-смихи шайъун фи-ль-арды ва ля фи-с-самаъи ва хува-с-Сами‘у-ль-‘Алим",
+        tr:"С именем Аллаха, с именем Которого ничто не причинит вреда ни на земле, ни на небе. Он — Слышащий, Знающий.", src:"Абу Дауд 5088, Тирмизи 3388 · сахих" },
+      { n:6, target:1, ar:"اللَّهُمَّ فَاطِرَ السَّمَوَاتِ وَالْأَرْضِ، عَالِمَ الْغَيْبِ وَالشَّهَادَةِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي وَشَرِّ الشَّيْطَانِ وَشِرْكِهِ",
+        tl:"Аллахумма Фатыра-с-самавати ва-ль-арды, ‘Алима-ль-гайби ва-ш-шахада, Рабба кулли шайъин ва Малйкях…",
+        tr:"О Аллах, Творец небес и земли, Знающий сокровенное и явное, Господь и Владыка всякой вещи! Свидетельствую, что нет божества, кроме Тебя. Прибегаю к Тебе от зла моей души и от зла шайтана и его многобожия.", src:"Тирмизи 3392 · сахих" },
+      { n:7, target:3, ar:"يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ أَبَدًا",
+        tl:"Йа Хаййу йа Каййум, би рахматикя астагис, аслих ли шаъни куллях…",
+        tr:"О Живой, о Поддерживающий существование! Милостью Твоей взываю о помощи. Исправь все мои дела и не оставляй меня самому себе даже на миг ока.", src:"Аль-Хаким · хасан" },
+      { n:8, target:10, ar:"اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ",
+        tl:"Аллахумма солли ‘аля Мухаммад ва ‘аля али Мухаммад, кяма солляйта ‘аля Ибрахим…",
+        tr:"О Аллах, восхвали Мухаммада и род Мухаммада, как Ты восхвалил Ибрахима и род Ибрахима. Поистине, Ты — Хвалимый, Славный. (Кто прочтёт 10 раз утром и вечером — заслужит заступничество Пророка ﷺ.)", src:"Аль-Бухари, Муслим · сахих" },
+    ]},
+    after: { title:"После намаза", kicker:"После намаза · أذكار بعد الصلاة", items:[
+      { n:1, target:1, ar:"أَسْتَغْفِرُ اللَّهَ، أَسْتَغْفِرُ اللَّهَ، أَسْتَغْفِرُ اللَّهَ. اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ",
+        tl:"Астагфируллах (×3). Аллахумма анта-с-Салям ва минкя-с-салям, табаракта йа За-ль-джаляли ва-ль-икрам",
+        tr:"Прошу прощения у Аллаха (трижды). О Аллах, Ты — Мир, и от Тебя — мир. Благословен Ты, о Обладатель величия и щедрости.", src:"Муслим 591" },
+      { n:2, target:33, ar:"سُبْحَانَ اللَّهِ",
+        tl:"Субханаллах",
+        tr:"Пречист Аллах. (Тридцать три раза.)", src:"Муслим 597" },
+      { n:3, target:33, ar:"الْحَمْدُ لِلَّهِ",
+        tl:"Аль-хамду лиллях",
+        tr:"Хвала Аллаху. (Тридцать три раза.)", src:"Муслим 597" },
+      { n:4, target:33, ar:"اللَّهُ أَكْبَرُ",
+        tl:"Аллаху акбар",
+        tr:"Аллах — Велик. (Тридцать три раза, затем завершение ниже — до ста.)", src:"Муслим 597" },
+      { n:5, target:1, ar:"لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+        tl:"Ля иляха илля-Ллаху вахдаху ля шарика лях, ляху-ль-мульку ва ляху-ль-хамд, ва хува ‘аля кулли шайъин кадир",
+        tr:"Нет божества, кроме Аллаха Единого, у Которого нет сотоварища. Ему принадлежит власть и хвала, и Он всё может. (Завершение ста после тасбиха — прощаются грехи.)", src:"Муслим 597" },
+    ]},
+  };
+
+  function go(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelector('.phone').scrollTop = 0; window.scrollTo(0,0);
+  }
+
+  function openReading(key){
+    const data = AZKAR[key];
+    document.getElementById('rTitle').textContent = data.title;
+    document.getElementById('rKicker').textContent = data.kicker;
+    const list = document.getElementById('zikrList'); list.innerHTML = '';
+    data.items.forEach((z)=>{
+      const hint = z.targetHint ? `<div class="n">${z.targetHint}</div>` : `<div class="n">${z.target>1?'повторить '+z.target+' раз':'один раз'}</div>`;
+      const card = document.createElement('div'); card.className = 'zikr';
+      card.innerHTML = `
+        <div class="top">
+          <div class="badge">${STAR}<b>${z.n}</b></div>
+          <div class="pill">×${z.target}</div>
+          <div class="sp"></div>
+          <div class="mini" title="Аудио"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="mini" title="Источник"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 3v6h6"/></svg></div>
+        </div>
+        <div class="arabic">${z.ar}</div>
+        <div class="translit js-translit">${z.tl}</div>
+        <div class="divider"><svg viewBox="0 0 34 34" width="14" height="14" fill="none"><path d="M17 2l3.6 3.6 5-.9-.9 5L28 17l-3.3 3.3.9 5-5-.9L17 28l-3.6-3.6-5 .9.9-5L6 17l3.3-3.3-.9-5 5 .9L17 2z" stroke="currentColor" stroke-width="1.1"/></svg></div>
+        <div class="translate js-translate">${z.tr}</div>
+        <div class="src-note">${z.src}</div>
+        <div class="counter-row">
+          <div class="label">${hint}<div class="c"><b class="js-cur">0</b> / ${z.target}</div></div>
+          <button class="tasbih" data-target="${z.target}" data-cur="0">
+            <svg viewBox="0 0 78 78"><circle class="tr" cx="39" cy="39" r="33"/><circle class="tv" cx="39" cy="39" r="33" transform="rotate(-90 39 39)"/></svg>
+            <div class="cx"><div class="big">${z.target}</div><div class="cap">осталось</div></div>
+            <div class="star-pop">${CHECK}</div>
+          </button>
+        </div>`;
+      list.appendChild(card);
+    });
+    bindCounters(); applyTextToggles(); updateProgress(); go('reading');
+  }
+
+  const CIRC = 2*Math.PI*33;
+  function bindCounters(){
+    document.querySelectorAll('.tasbih').forEach(btn=>{
+      const target = +btn.dataset.target;
+      const val = btn.querySelector('.tv');
+      val.style.strokeDasharray = CIRC; val.style.strokeDashoffset = CIRC;
+      btn.addEventListener('click', ()=>{
+        let cur = +btn.dataset.cur;
+        const card = btn.closest('.zikr');
+        if(cur >= target){ cur = 0; card.classList.remove('done'); }
+        else cur++;
+        btn.dataset.cur = cur;
+        const remain = target - cur;
+        val.style.strokeDashoffset = CIRC*(1 - cur/target);
+        btn.querySelector('.big').textContent = remain>0 ? remain : '✓';
+        btn.querySelector('.cap').textContent = remain>0 ? 'осталось' : 'готово';
+        card.querySelector('.js-cur').textContent = cur;
+        if(cur >= target){ card.classList.add('done'); if(navigator.vibrate) navigator.vibrate(28); }
+        updateProgress();
+      });
+    });
+  }
+
+  function updateProgress(){
+    const cards = document.querySelectorAll('#zikrList .zikr');
+    const total = cards.length, done = document.querySelectorAll('#zikrList .zikr.done').length;
+    document.getElementById('rBarFill').style.width = total ? (done/total*100)+'%' : '0';
+    document.getElementById('rProg').textContent = `Прочитано ${done} из ${total}`;
+  }
+
+  let showTranslit = true, showTranslate = true;
+  function applyTextToggles(){
+    document.querySelectorAll('.js-translit').forEach(e=> e.style.display = showTranslit?'':'none');
+    document.querySelectorAll('.js-translate').forEach(e=> e.style.display = showTranslate?'':'none');
+  }
+
+  const root = document.documentElement;
+  let themeMode = 'auto';
+  function effectiveDark(){ if(themeMode==='dark') return true; if(themeMode==='light') return false; return matchMedia('(prefers-color-scheme: dark)').matches; }
+  function applyTheme(){
+    if(themeMode==='auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', themeMode);
+    const dark = effectiveDark();
+    document.getElementById('themeIcon').setAttribute('d', dark
+      ? 'M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z'
+      : 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z');
+    document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.themeSet===themeMode));
+  }
+  document.getElementById('themeBtn').addEventListener('click', ()=>{ themeMode = effectiveDark()?'light':'dark'; applyTheme(); });
+  document.querySelectorAll('#themeSeg button').forEach(b=> b.addEventListener('click', ()=>{ themeMode=b.dataset.themeSet; applyTheme(); }));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(themeMode==='auto') applyTheme(); });
+
+  document.getElementById('arSize').addEventListener('input', e=>{ root.style.setProperty('--ar-size', e.target.value+'px'); document.getElementById('arSizeVal').textContent = e.target.value; });
+  document.querySelectorAll('.switch[data-toggle]').forEach(sw=> sw.addEventListener('click', ()=>{
+    sw.classList.toggle('on'); const t = sw.dataset.toggle;
+    if(t==='translit'){ showTranslit = sw.classList.contains('on'); applyTextToggles(); }
+    if(t==='translate'){ showTranslate = sw.classList.contains('on'); applyTextToggles(); }
+  }));
+
+  document.querySelectorAll('.ring').forEach(r=>{
+    const p = +r.dataset.p, c = 2*Math.PI*18, val = r.querySelector('.val');
+    val.style.strokeDasharray = c; val.style.strokeDashoffset = c*(1-p/100);
+  });
+
+  applyTheme();
+</script>
