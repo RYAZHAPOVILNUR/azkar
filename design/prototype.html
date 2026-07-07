@@ -211,18 +211,19 @@
   .cbtn.done:hover { color: var(--good); }
   .zikr.done .cbtn.done { background: var(--good); border-color: var(--good); color:#fff; }
 
-  .tasbih { width:120px; height:126px; flex-shrink:0; position:relative; cursor:pointer;
+  .tasbih { width:120px; height:148px; flex-shrink:0; position:relative; cursor:pointer;
     background:none; border:none; padding:0; -webkit-tap-highlight-color:transparent;
     transition: transform .12s cubic-bezier(.34,1.56,.64,1); }
   .tasbih:active { transform: scale(.95); }
+  .tasbih svg { width:120px; height:126px; display:block; }
   .tasbih .tr { fill:none; stroke: var(--line); stroke-width:1.6; }
   .tasbih .bead { fill: var(--surface-2); stroke: var(--line); stroke-width:.7; transition: fill .2s ease, stroke .2s ease; }
   .tasbih .bead.on { fill: var(--accent); stroke: var(--accent); }
   .tasbih .knot { fill: var(--line); }
   .tasbih .tassel { stroke: var(--line); stroke-width:1.6; fill:none; stroke-linecap:round; }
-  .tasbih .cx { position:absolute; left:0; right:0; top:0; bottom:24px; display:grid; place-items:center; text-align:center; }
-  .tasbih .cx .cap { font-size:11px; color:var(--ink-faint); font-weight:600; margin-bottom:2px; }
-  .tasbih .cx .big { font-size:27px; font-weight:800; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums; }
+  .tasbih .cx { position:absolute; inset:0; text-align:center; pointer-events:none; }
+  .tasbih .cx .cap { position:absolute; left:0; right:0; top:128px; font-size:11px; line-height:1; color:var(--ink-faint); font-weight:600; margin:0; white-space:nowrap; }
+  .tasbih .cx .big { position:absolute; left:0; right:0; top:43px; font-size:27px; font-weight:800; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums; }
   .tasbih .cx .big small { font-size:15px; color:var(--ink-faint); font-weight:700; }
   .zikr.done .tasbih .bead.on { fill: var(--good); stroke: var(--good); }
   .zikr.done .tasbih .cx .big, .zikr.done .tasbih .cx .cap { color: var(--good); }
