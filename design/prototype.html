@@ -4,6 +4,9 @@
 <link rel="apple-touch-icon" href="assets/icon.png">
 <title>Азкар — утренние и вечерние поминания</title>
 <style>
+  @font-face { font-family:'AzkarNaskh'; src:url('assets/fonts/noto-naskh.woff2') format('woff2'); font-display:swap; }
+  @font-face { font-family:'AzkarSans'; src:url('assets/fonts/noto-sans-ar.woff2') format('woff2'); font-display:swap; }
+  @font-face { font-family:'AzkarAmiri'; src:url('assets/fonts/amiri.woff2') format('woff2'); font-display:swap; }
   :root {
     /* LIGHT — soft, airy, calming */
     --bg: #F5F3EC;
@@ -31,6 +34,7 @@
     --shadow-card: 0 1px 2px rgba(58,67,61,.04), 0 5px 16px rgba(58,67,61,.05);
 
     --ar: "Amiri","Scheherazade New","Noto Naskh Arabic","Traditional Arabic","Geeza Pro",serif;
+    --ar-font: 'AzkarNaskh';
     --serif: Georgia,"Times New Roman",serif;
     --sans: -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
     --ar-size: 30px;
@@ -177,21 +181,26 @@
     transition: border-color .35s, opacity .35s, background .35s; position:relative; }
   .zikr.done { border-color: color-mix(in srgb, var(--good) 55%, var(--line)); background: color-mix(in srgb, var(--good) 8%, var(--surface)); }
   .zikr .top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-  .badge { position:relative; width:34px; height:34px; flex-shrink:0; display:grid; place-items:center; }
-  .badge svg { position:absolute; inset:0; color: var(--accent); opacity:.55; }
-  .badge b { font-size:13px; font-weight:700; color: var(--accent-deep); font-variant-numeric:tabular-nums; z-index:1; }
+  .badge { width:32px; height:32px; flex-shrink:0; display:grid; place-items:center; border-radius:50%;
+    background: var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 28%, transparent); }
+  .badge b { font-size:14px; font-weight:800; color: var(--accent-deep); font-variant-numeric:tabular-nums; }
   .pill { font-size:12px; font-weight:700; color: var(--accent-deep);
     background: var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 28%, transparent);
     padding:3px 10px; border-radius:99px; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .top .sp { flex:1; }
   .top .mini { width:32px; height:32px; border-radius:50%; display:grid; place-items:center;
     background: var(--surface-2); color: var(--ink-soft); cursor:pointer; border:1px solid var(--line);
-    transition: color .15s, transform .15s; }
+    transition: color .15s, transform .15s, background .15s; padding:0; font:inherit; -webkit-tap-highlight-color:transparent; }
   .top .mini:hover { color: var(--accent); }
   .top .mini:active { transform: scale(.9); }
+  .zikr.playing { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+  .zikr.playing .js-play { background: var(--accent); border-color: var(--accent); color:#fff; }
+  .foot-link { color: var(--accent-deep); text-decoration:none; }
+  .foot-link:active { opacity:.7; }
 
-  .arabic { font-family: var(--ar); direction:rtl; text-align:right; color: var(--ink);
-    font-size: var(--ar-size); line-height:2.15; margin:4px 2px 2px; }
+  .arabic { font-family: var(--ar-font), var(--ar); direction:rtl; text-align:right; color: var(--ink);
+    font-size: var(--ar-size); line-height:2.3; margin:4px 2px 2px; cursor:pointer; }
+  .ayah .ar { font-family: var(--ar-font), var(--ar); }
   .translit { font-size:14.5px; color: var(--ink); margin-top:12px; line-height:1.6; font-weight:500; }
   .divider { display:flex; align-items:center; gap:10px; margin:14px 0; color: var(--accent); opacity:.5; }
   .divider:before,.divider:after { content:""; height:1px; flex:1; background: currentColor; opacity:.4; }
@@ -329,7 +338,7 @@
         <span>Вторник, 7 июля</span><span>·</span>
         <span class="streak" title="Дней подряд">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C7 9 9 8 9 8s-.5 2 .5 3c0 0 1-1 1-3s1.5-6 1.5-6z"/></svg>
-          12 дней
+          <span id="streakText">0 дней</span>
         </span>
       </div>
       <div class="sub" id="nextPrayerLine" style="display:none;margin-top:6px">
@@ -412,9 +421,9 @@
           <div><div class="nm">Ассаляму алейкум 🌿</div><div class="sb">Пусть поминание будет постоянным</div></div>
         </div>
         <div class="stat-row">
-          <div class="stat glass"><div class="v acc">12</div><div class="k">дней подряд</div></div>
-          <div class="stat glass"><div class="v">2/3</div><div class="k">сегодня</div></div>
-          <div class="stat glass"><div class="v">184</div><div class="k">всего сессий</div></div>
+          <div class="stat glass"><div class="v acc" id="statStreak">0</div><div class="k">дней подряд</div></div>
+          <div class="stat glass"><div class="v" id="statToday">0/3</div><div class="k">сессий сегодня</div></div>
+          <div class="stat glass"><div class="v" id="statAzkar">0</div><div class="k">азкаров сегодня</div></div>
         </div>
       </div>
       <div class="set-group">
@@ -427,10 +436,20 @@
             </div>
             <div class="seg" id="themeSeg"><button data-theme-set="auto">Авто</button><button data-theme-set="light">Светлая</button><button data-theme-set="dark">Тёмная</button></div>
           </div>
-          <div class="set-row">
-            <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7V5h16v2M9 20h6M12 5v15"/></svg></div>
-            <div class="txt" style="flex:1"><div class="t">Размер арабского</div><input type="range" class="slider" id="arSize" min="24" max="40" value="30"></div>
-            <div class="val" id="arSizeVal">30</div>
+          <div class="set-row" style="flex-direction:column;align-items:stretch;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7V5h16v2M9 20h6M12 5v15"/></svg></div>
+              <div class="txt" style="flex:1"><div class="t">Размер арабского</div></div>
+              <div class="val" id="arSizeVal">30</div>
+            </div>
+            <input type="range" class="slider" id="arSize" min="24" max="44" value="30">
+          </div>
+          <div class="set-row" style="flex-direction:column;align-items:stretch;gap:10px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h10M4 18h7"/></svg></div>
+              <div class="txt"><div class="t">Шрифт арабского</div><div class="d">Выбери самый удобный для чтения</div></div>
+            </div>
+            <div class="seg" id="fontSeg"><button data-font="AzkarNaskh">Насх</button><button data-font="AzkarSans">Простой</button><button data-font="AzkarAmiri">Классика</button></div>
           </div>
         </div>
       </div>
@@ -473,7 +492,7 @@
           <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 5L6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg></div><div class="txt"><div class="t">Аудио-озвучка</div><div class="d">Голос чтеца для каждого зикра</div></div><div class="switch on" data-toggle></div></div>
         </div>
       </div>
-      <div class="home-foot" style="padding-top:26px">Азкар · утренние и вечерние поминания<br><b>Кейс курса AI Product Engineer</b></div>
+      <div class="home-foot" style="padding-top:26px">Азкар · утренние и вечерние поминания<br><a href="https://aiengineer.nurtech.dev" target="_blank" rel="noopener" class="foot-link" id="caseLink"><b>Кейс курса AI Product Engineer</b></a></div>
     </div>
   </section>
 </div>
@@ -711,21 +730,35 @@
     tgBack(id !== 'home', ()=>go('home'));
   }
 
+  /* ---------- состояние (сохраняется между заходами, сбрасывается на новый день) ---------- */
+  const todayStr = () => new Date().toLocaleDateString('sv');   // YYYY-MM-DD (локальная дата)
+  function loadProgress(){
+    let p=null; try{ p=JSON.parse(localStorage.getItem('azkar_progress')||'null'); }catch(e){}
+    if(!p || p.date!==todayStr()) p={ date:todayStr(), morning:{}, evening:{}, after:{} };
+    p.morning=p.morning||{}; p.evening=p.evening||{}; p.after=p.after||{};
+    return p;
+  }
+  let PROG = loadProgress();
+  function saveProgress(){ try{ localStorage.setItem('azkar_progress', JSON.stringify(PROG)); }catch(e){} }
+  let CURRENT_KEY = null;
+
   function openReading(key){
+    CURRENT_KEY = key;
     const data = AZKAR[key];
     document.getElementById('rTitle').textContent = data.title;
     document.getElementById('rKicker').textContent = data.kicker;
     const list = document.getElementById('zikrList'); list.innerHTML = '';
-    data.items.forEach((z)=>{
+    data.items.forEach((z, idx)=>{
       const note = z.targetHint ? `<div class="cnote">${z.targetHint}</div>` : '';
-      const card = document.createElement('div'); card.className = 'zikr';
+      const saved = PROG[key][idx] || 0;
+      const card = document.createElement('div'); card.className = 'zikr'; card.dataset.i = idx;
       card.innerHTML = `
         <div class="top">
-          <div class="badge">${STAR}<b>${z.n}</b></div>
+          <div class="badge"><b>${z.n}</b></div>
           <div class="pill">×${z.target}</div>
           <div class="sp"></div>
-          <div class="mini" title="Аудио"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-          <div class="mini" title="Источник"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 3v6h6"/></svg></div>
+          <button class="mini js-play" title="Слушать" aria-label="Слушать"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+          <div class="mini js-src" title="Источник"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 3v6h6"/></svg></div>
         </div>
         <div class="arabic">${z.ar}</div>
         <div class="translit js-translit">${z.tl}</div>
@@ -735,7 +768,7 @@
         ${note}
         <div class="counter-row">
           <button class="cbtn reset" title="Сбросить"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/></svg></button>
-          <button class="tasbih" data-target="${z.target}" data-cur="0">
+          <button class="tasbih" data-target="${z.target}" data-cur="${saved}">
             <svg viewBox="0 0 120 126">
               <circle class="tr" cx="60" cy="55" r="47"/>
               <g class="beads">${beadsSVG(z.target)}</g>
@@ -763,6 +796,7 @@
   }
   function bindCounters(){
     document.querySelectorAll('#zikrList .zikr').forEach(card=>{
+      const idx = +card.dataset.i;
       const btn = card.querySelector('.tasbih');
       const target = +btn.dataset.target;
       const beads = Array.from(card.querySelectorAll('.bead'));
@@ -776,18 +810,22 @@
         capEl.textContent = remain>0 ? ('Осталось '+remain) : 'Готово';
         card.classList.toggle('done', cur>=target);
       }
-      render(0);
-      btn.addEventListener('click', ()=>{
-        let cur = +btn.dataset.cur;
-        cur = cur>=target ? 0 : cur+1;
-        render(cur);
+      function persist(cur){ PROG[CURRENT_KEY][idx] = cur; saveProgress(); }
+      function inc(){
+        let cur = +btn.dataset.cur; cur = cur>=target ? 0 : cur+1;
+        render(cur); persist(cur);
         const done = cur>=target && cur>0;
         tgHaptic(done ? 'medium' : 'light');
         if(done && navigator.vibrate) navigator.vibrate(28);
         updateProgress();
-      });
-      card.querySelector('.cbtn.reset').addEventListener('click', e=>{ e.stopPropagation(); render(0); tgHaptic('light'); updateProgress(); });
-      card.querySelector('.cbtn.done').addEventListener('click', e=>{ e.stopPropagation(); render(target); tgHaptic('medium'); if(navigator.vibrate) navigator.vibrate(28); updateProgress(); });
+      }
+      render(+btn.dataset.cur || 0);
+      btn.addEventListener('click', e=>{ e.stopPropagation(); inc(); });
+      // тап по всей карточке (арабский/фон) тоже считает — палец не надо тянуть к центру
+      card.addEventListener('click', e=>{ if(e.target.closest('.cbtn, .mini, a, .tasbih')) return; inc(); });
+      card.querySelector('.cbtn.reset').addEventListener('click', e=>{ e.stopPropagation(); render(0); persist(0); tgHaptic('light'); updateProgress(); });
+      card.querySelector('.cbtn.done').addEventListener('click', e=>{ e.stopPropagation(); render(target); persist(target); tgHaptic('medium'); if(navigator.vibrate) navigator.vibrate(28); updateProgress(); });
+      card.querySelector('.js-play').addEventListener('click', e=>{ e.stopPropagation(); playZikr(card); });
     });
   }
 
@@ -796,6 +834,58 @@
     const total = cards.length, done = document.querySelectorAll('#zikrList .zikr.done').length;
     document.getElementById('rBarFill').style.width = total ? (done/total*100)+'%' : '0';
     document.getElementById('rProg').textContent = `Прочитано ${done} из ${total}`;
+    if(total && done===total) bumpStreak();
+    updateHomeProgress();
+  }
+
+  /* ---------- аудио (озвучка через встроенный синтез речи устройства) ---------- */
+  let speakingCard = null;
+  function playZikr(card){
+    if(!('speechSynthesis' in window)) return;
+    if(speakingCard===card){ speechSynthesis.cancel(); return; }
+    speechSynthesis.cancel();
+    const txt = card.querySelector('.arabic').textContent;
+    const u = new SpeechSynthesisUtterance(txt); u.lang='ar-SA'; u.rate=0.8; u.pitch=1;
+    const ar = speechSynthesis.getVoices().find(v=>/^ar/i.test(v.lang));
+    if(ar) u.voice = ar;
+    document.querySelectorAll('.zikr.playing').forEach(c=>c.classList.remove('playing'));
+    card.classList.add('playing'); speakingCard = card;
+    u.onend = u.onerror = ()=>{ card.classList.remove('playing'); if(speakingCard===card) speakingCard=null; };
+    speechSynthesis.speak(u);
+  }
+  try { speechSynthesis.onvoiceschanged = ()=>{}; } catch(e){}
+
+  /* ---------- streak (дней подряд) ---------- */
+  function plural(n,a,b,c){ n=Math.abs(n)%100; const d=n%10; if(n>10&&n<20)return c; if(d>1&&d<5)return b; if(d===1)return a; return c; }
+  function loadStreak(){ try{ return JSON.parse(localStorage.getItem('azkar_streak')||'null')||{last:null,count:0}; }catch(e){ return {last:null,count:0}; } }
+  function bumpStreak(){
+    const s=loadStreak(), t=todayStr();
+    if(s.last===t) return;
+    const y=new Date(Date.now()-864e5).toLocaleDateString('sv');
+    s.count = (s.last===y) ? (s.count+1) : 1; s.last=t;
+    try{ localStorage.setItem('azkar_streak', JSON.stringify(s)); }catch(e){}
+    updateStreakUI();
+  }
+  function updateStreakUI(){
+    const s=loadStreak();
+    const el=document.getElementById('streakText'); if(el) el.textContent = s.count+' '+plural(s.count,'день','дня','дней');
+    const st=document.getElementById('statStreak'); if(st) st.textContent = s.count;
+  }
+
+  /* ---------- прогресс на главной и в статистике настроек ---------- */
+  function updateHomeProgress(){
+    let azkarToday=0, sessionsDone=0;
+    ['morning','evening','after'].forEach(key=>{
+      const items=AZKAR[key].items, total=items.length; let done=0;
+      items.forEach((z,i)=>{ if((PROG[key][i]||0)>=z.target) done++; });
+      azkarToday+=done; if(done===total) sessionsDone++;
+      const small=document.getElementById('p'+key.charAt(0).toUpperCase()+key.slice(1));
+      if(small) small.textContent = done+'/'+total;
+      const ring = small && small.parentElement.querySelector('.ring .val');
+      if(ring){ const c=2*Math.PI*18; ring.style.strokeDasharray=c; ring.style.strokeDashoffset=c*(1-(total?done/total:0)); }
+    });
+    const stT=document.getElementById('statToday'); if(stT) stT.textContent = sessionsDone+'/3';
+    const stA=document.getElementById('statAzkar'); if(stA) stA.textContent = azkarToday;
   }
 
   let showTranslit = true, showTranslate = true;
@@ -820,7 +910,22 @@
   document.querySelectorAll('#themeSeg button').forEach(b=> b.addEventListener('click', ()=>{ themeMode=b.dataset.themeSet; applyTheme(); }));
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(themeMode==='auto') applyTheme(); });
 
-  document.getElementById('arSize').addEventListener('input', e=>{ root.style.setProperty('--ar-size', e.target.value+'px'); document.getElementById('arSizeVal').textContent = e.target.value; });
+  // размер арабского (с сохранением)
+  const arSizeEl = document.getElementById('arSize');
+  const savedSize = localStorage.getItem('azkar_arsize');
+  if(savedSize){ arSizeEl.value = savedSize; root.style.setProperty('--ar-size', savedSize+'px'); document.getElementById('arSizeVal').textContent = savedSize; }
+  arSizeEl.addEventListener('input', e=>{ const v=e.target.value; root.style.setProperty('--ar-size', v+'px'); document.getElementById('arSizeVal').textContent = v; localStorage.setItem('azkar_arsize', v); });
+
+  // выбор арабского шрифта
+  let arFont = localStorage.getItem('azkar_font') || 'AzkarNaskh';
+  function applyFont(){ root.style.setProperty('--ar-font', "'"+arFont+"'");
+    document.querySelectorAll('#fontSeg button').forEach(b=>b.classList.toggle('on', b.dataset.font===arFont)); }
+  document.querySelectorAll('#fontSeg button').forEach(b=> b.addEventListener('click', ()=>{ arFont=b.dataset.font; localStorage.setItem('azkar_font', arFont); applyFont(); }));
+  applyFont();
+
+  // ссылка-кейс: внутри Telegram открываем во внешнем браузере через SDK
+  const caseLink = document.getElementById('caseLink');
+  if(caseLink){ caseLink.addEventListener('click', e=>{ if(TG && TG.openLink){ e.preventDefault(); TG.openLink(caseLink.href); } }); }
   document.querySelectorAll('.switch[data-toggle]').forEach(sw=> sw.addEventListener('click', ()=>{
     sw.classList.toggle('on'); const t = sw.dataset.toggle;
     if(t==='translit'){ showTranslit = sw.classList.contains('on'); applyTextToggles(); }
@@ -904,6 +1009,7 @@
   }));
   renderMadhab();
   if(loc){ locDone(); setLocStatus('Напоминания по времени намаза'); fetchTimes(); }
+  updateStreakUI(); updateHomeProgress();
 
   /* ---- свайп-назад от левого края (как в EasyBot): к выбору азкаров ---- */
   (function(){
