@@ -1,0 +1,18 @@
+# /etc/systemd/system/azkar.service
+# systemctl daemon-reload && systemctl enable --now azkar
+
+[Unit]
+Description=Azkar Telegram Mini App + reminder bot
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/azkar/bot
+EnvironmentFile=/opt/azkar/bot/.env
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+User=azkar
+
+[Install]
+WantedBy=multi-user.target
