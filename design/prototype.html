@@ -50,7 +50,7 @@
     :root {
       --bg: #0d1117; --bg-2: #010409; --surface: #161b22; --surface-2: #21262d;
       --ink: #e6edf3; --ink-soft: #9198a1; --ink-faint: #6e7681; --line: #30363d;
-      --accent: #4493f8; --accent-deep: #388bfd; --accent-soft: #121d2f; --good: #3fb950;
+      --accent: #8b949e; --accent-deep: #c9d1d9; --accent-soft: #21262d; --good: #9a948a;
       --home-bg: #24292f; --home-bg-2: #30363d;
       --shadow: 0 1px 3px rgba(1,4,9,.5), 0 12px 32px rgba(1,4,9,.5);
       --shadow-card: 0 1px 0 rgba(1,4,9,.4), 0 1px 3px rgba(1,4,9,.5);
@@ -67,7 +67,7 @@
   :root[data-theme="dark"] {
     --bg: #0d1117; --bg-2: #010409; --surface: #161b22; --surface-2: #21262d;
     --ink: #e6edf3; --ink-soft: #9198a1; --ink-faint: #6e7681; --line: #30363d;
-    --accent: #4493f8; --accent-deep: #388bfd; --accent-soft: #121d2f; --good: #3fb950;
+    --accent: #8b949e; --accent-deep: #c9d1d9; --accent-soft: #21262d; --good: #9a948a;
     --home-bg: #24292f; --home-bg-2: #30363d;
     --shadow: 0 1px 3px rgba(1,4,9,.5), 0 12px 32px rgba(1,4,9,.5);
     --shadow-card: 0 1px 0 rgba(1,4,9,.4), 0 1px 3px rgba(1,4,9,.5);
@@ -198,7 +198,7 @@
   .zikr.drag-shadow { opacity:.46; }
   .zikr-placeholder { border:1.5px dashed color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius:24px;
     background:color-mix(in srgb, var(--accent-soft) 60%, transparent); min-height:110px; flex-shrink:0; }
-  .zikr.done { border-color: color-mix(in srgb, var(--good) 55%, var(--line)); background: color-mix(in srgb, var(--good) 8%, var(--surface)); }
+  .zikr.done { border-color: color-mix(in srgb, var(--good) 42%, var(--line)); background: color-mix(in srgb, var(--good) 7%, var(--surface)); }
   .zikr .top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
   .badge { width:32px; height:32px; flex-shrink:0; display:grid; place-items:center; border-radius:50%;
     background: var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 28%, transparent); }
@@ -233,7 +233,7 @@
   .cbtn:active { transform: scale(.88); }
   .cbtn.reset:hover { color: var(--ink); }
   .cbtn.done:hover { color: var(--good); }
-  .zikr.done .cbtn.done { background: var(--good); border-color: var(--good); color:#fff; }
+  .zikr.done .cbtn.done { background: color-mix(in srgb, var(--good) 22%, var(--surface-2)); border-color: color-mix(in srgb, var(--good) 45%, var(--line)); color:var(--ink); }
 
   .tasbih { width:120px; height:126px; flex-shrink:0; position:relative; cursor:pointer;
     background:none; border:none; padding:0; -webkit-tap-highlight-color:transparent;
@@ -287,10 +287,13 @@
   .seg button { flex:1; border:none; background:none; padding:8px 4px; border-radius:9px; font-size:13px; font-weight:600;
     color: var(--ink-soft); cursor:pointer; font-family:var(--sans); transition: all .18s; }
   .seg button.on { background: var(--surface); color: var(--accent-deep); box-shadow: var(--shadow-card); }
-  #fontSeg button { display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 2px; }
-  #fontSeg .fprev { font-size:19px; line-height:1.15; direction:rtl; color:var(--ink); }
+  #fontSeg { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+  #fontSeg button { display:flex; align-items:center; justify-content:center; gap:8px; min-height:54px; padding:8px 6px; }
+  #fontSeg .fprev { font-size:21px; line-height:1.35; direction:rtl; color:var(--ink); display:block; min-width:42px; }
   #fontSeg button.on .fprev { color:var(--accent-deep); }
-  #fontSeg .flbl { font-size:10.5px; font-weight:600; }
+  #fontSeg .flbl { font-size:12px; font-weight:700; line-height:1.15; }
+  .ar-preview { border:1px solid var(--line); border-radius:14px; background:var(--surface-2); padding:12px 14px;
+    font-family:var(--ar-font), var(--ar); font-size:var(--ar-size); line-height:1.8; direction:rtl; text-align:center; color:var(--ink); }
 
   .switch { width:46px; height:28px; border-radius:99px; background: var(--surface-2); border:1px solid var(--line);
     position:relative; cursor:pointer; flex-shrink:0; transition: background .2s; }
@@ -309,7 +312,7 @@
     background: var(--accent-soft); color: var(--accent-deep); font-weight:700; font-size:14px;
     cursor:pointer; font-family:var(--sans); transition: transform .15s; }
   .btn-loc:active { transform: scale(.98); }
-  .btn-loc.done { background: color-mix(in srgb, var(--good) 14%, transparent); border-color: var(--good); color: var(--good); }
+  .btn-loc.done { background: color-mix(in srgb, var(--good) 12%, var(--surface)); border-color: color-mix(in srgb, var(--good) 36%, var(--line)); color: var(--accent-deep); }
   .times-head { border-bottom:1px solid var(--line); }
   .times-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:2px; padding:8px 8px 14px; }
   .times-grid .tcell { text-align:center; padding:8px 2px; border-radius:10px; }
@@ -510,6 +513,7 @@
               <div class="val" id="arSizeVal">30</div>
             </div>
             <input type="range" class="slider" id="arSize" min="24" max="44" value="30">
+            <div class="ar-preview" id="arPreview">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
           </div>
           <div class="set-row" style="flex-direction:column;align-items:stretch;gap:10px">
             <div style="display:flex;align-items:center;gap:12px">
@@ -1050,6 +1054,15 @@
         card.classList.toggle('done', cur>=target);
       }
       function persist(cur){ PROG[CURRENT_KEY][id] = cur; saveProgress(); }
+      function scrollToNextTasbih(){
+        const cards = Array.from(document.querySelectorAll('#zikrList .zikr'));
+        const pos = cards.indexOf(card);
+        const next = cards.slice(pos + 1).find(el=>!el.classList.contains('done'));
+        if(!next) return;
+        const targetEl = next.querySelector('.tasbih') || next;
+        const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+        setTimeout(()=> targetEl.scrollIntoView({ behavior, block:'center' }), 180);
+      }
       function inc(){
         if(card.dataset.dragLock === '1') return;
         let cur = +btn.dataset.cur; if(cur>=target) return; cur = cur+1;
@@ -1058,6 +1071,7 @@
         tgHaptic(done ? 'medium' : 'light');
         if(done && navigator.vibrate) navigator.vibrate(28);
         updateProgress();
+        if(done) scrollToNextTasbih();
       }
       render(+btn.dataset.cur || 0);
       let pullStart=0, pull=0, pulled=false, suppressClick=false, lastGesture=0;
@@ -1450,11 +1464,8 @@
   window.addEventListener('focus', ()=>{ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); });
   updateStreakUI(); updateHomeProgress();
 
-  /* ---- приветствие по времени суток + дата ---- */
+  /* ---- дата на главной ---- */
   (function(){
-    const h = new Date().getHours();
-    const g = (h>=5&&h<12) ? 'Доброе утро' : (h>=12&&h<17) ? 'Добрый день' : (h>=17&&h<23) ? 'Добрый вечер' : 'Доброй ночи';
-    const gt=document.getElementById('greetText'); if(gt) gt.textContent = g;
     const gd=document.getElementById('greetDate'); if(gd){ let d=new Date().toLocaleDateString('ru-RU',{weekday:'long', day:'numeric', month:'long'}); gd.textContent = d.charAt(0).toUpperCase()+d.slice(1); }
   })();
 
