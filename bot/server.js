@@ -7,7 +7,8 @@
  *   геолокации пользователя для персональных напоминаний, с проверкой Telegram initData).
  * - Бот: /start (кнопка Mini App), /stop. Напоминания:
  *     • у кого задана геолокация — по времени намаза (утренние после Фаджра, вечерние после Асра);
- *     • у кого нет — по фиксированному расписанию (MORNING_CRON/EVENING_CRON).
+ *     • у кого нет — по фиксированному расписанию (MORNING_CRON/EVENING_CRON);
+ *     • перед сном — по SLEEP_CRON для всех подписчиков.
  */
 
 const express = require('express');
@@ -26,15 +27,17 @@ const TOKEN = process.env.BOT_TOKEN || '';
 const APP_URL = process.env.APP_URL || 'https://azkar.nurtech.dev/app';
 const MORNING_CRON = process.env.MORNING_CRON || '30 6 * * *';
 const EVENING_CRON = process.env.EVENING_CRON || '0 18 * * *';
+const SLEEP_CRON = process.env.SLEEP_CRON || '30 22 * * *';
 const TZ = process.env.TZ || 'Europe/Moscow';
 const WELCOME_IMAGE = path.join(__dirname, 'assets', 'welcome.png');
 const BOT_NAME = 'Азкар — поминания';
-const BOT_SHORT_DESCRIPTION = 'Утренние и вечерние поминания и азкары после намаза. Счётчик-тасбих, напоминания по времени намаза.';
-const BOT_DESCRIPTION = `🕌 Азкар — утренние и вечерние поминания и азкары после намаза из достоверной Сунны.
+const BOT_SHORT_DESCRIPTION = 'Утренние, вечерние, перед сном и после намаза. Счётчик-тасбих, напоминания по времени намаза.';
+const BOT_DESCRIPTION = `🕌 Азкар — утренние, вечерние, перед сном и азкары после намаза из достоверной Сунны.
 
 • Читай список сверху вниз: арабский, транскрипция, перевод и источник
 • Счётчик-тасбих — отмечай повторения касанием
-• Напоминания приходят по времени твоего намаза (после Фаджра и Асра)
+• Есть поминания перед сном
+• Напоминания приходят по времени твоего намаза (после Фаджра и Асра) и вечером перед сном
 • Выбор мазхаба, светлая и тёмная тема
 
 Нажми «Запустить», чтобы открыть приложение.`;
@@ -44,7 +47,7 @@ const BOT_COMMANDS = [
 ];
 const WELCOME_CAPTION = `<b>Ассаляму алейкум 🌿</b>
 
-Добро пожаловать в <b>Азкар</b> — приложение для утренних и вечерних поминаний и азкаров после намаза.
+Добро пожаловать в <b>Азкар</b> — приложение для утренних, вечерних, перед сном и азкаров после намаза.
 
 Читайте список сверху вниз, отмечайте повторения счётчиком-тасбихом и включайте напоминания по времени намаза.`;
 const HELP_TEXT = `<b>Как пользоваться Азкаром</b>
@@ -52,7 +55,8 @@ const HELP_TEXT = `<b>Как пользоваться Азкаром</b>
 1. Нажмите кнопку ниже, чтобы открыть приложение.
 2. В настройках включите геолокацию — напоминания будут приходить после Фаджра и Асра по вашему времени намаза.
 3. Выберите мазхаб для расчёта времени.
-4. Читайте азкары сверху вниз, а счётчик-тасбих отмечает повторения касанием.`;
+4. Читайте азкары сверху вниз, а счётчик-тасбих отмечает повторения касанием или свайпом вниз.
+5. Перед сном бот пришлёт отдельное спокойное напоминание.`;
 
 // ---------- хранилище ----------
 const DATA_FILE = path.join(__dirname, 'data', 'subscribers.json');
@@ -173,6 +177,7 @@ if (!TOKEN) {
   }
   const MORNING_MSG = '🌅 Время утренних поминаний. Начни день с зикра.';
   const EVENING_MSG = '🌙 Время вечерних поминаний.';
+  const SLEEP_MSG = '🌙 Поминания перед сном. Закрой день спокойно — открой раздел «Перед сном».';
   const todayKey = () => new Date().toISOString().slice(0, 10);
   function hhmm(d, tz) { return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: tz || TZ }); }
 
@@ -206,5 +211,16 @@ if (!TOKEN) {
   cron.schedule(MORNING_CRON, () => fixedBroadcast(MORNING_MSG, 'lastMorning'), { timezone: TZ });
   cron.schedule(EVENING_CRON, () => fixedBroadcast(EVENING_MSG, 'lastEvening'), { timezone: TZ });
 
-  console.log(`[bot] запущен. Персональные напоминания по намазу + фикс. фолбэк (${TZ}).`);
+  function allBroadcast(text, mark) {
+    const subs = loadSubs(); const day = todayKey(); let changed = false;
+    for (const id in subs) {
+      const u = subs[id];
+      if (u[mark] === day) continue;
+      u[mark] = day; changed = true; send(id, text);
+    }
+    if (changed) saveSubs(subs);
+  }
+  cron.schedule(SLEEP_CRON, () => allBroadcast(SLEEP_MSG, 'lastSleep'), { timezone: TZ });
+
+  console.log(`[bot] запущен. Персональные напоминания по намазу + фикс. фолбэк + перед сном (${TZ}).`);
 }
