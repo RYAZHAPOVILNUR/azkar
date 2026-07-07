@@ -126,9 +126,19 @@ if (!TOKEN) {
   const TelegramBot = require('node-telegram-bot-api');
   const bot = new TelegramBot(TOKEN, { polling: true });
   const kb = { reply_markup: { inline_keyboard: [[{ text: '🕌 Открыть азкары', web_app: { url: APP_URL } }]] } };
+  async function botApi(method, payload) {
+    const res = await fetch(`https://api.telegram.org/bot${TOKEN}/${method}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.description || `${method} failed`);
+    return json.result;
+  }
   async function applyBotBranding() {
     const steps = [
-      ['menu button', () => bot.setChatMenuButton({ menu_button: { type: 'web_app', text: 'Азкары', web_app: { url: APP_URL } } })],
+      ['menu button', () => botApi('setChatMenuButton', { menu_button: { type: 'web_app', text: 'Азкары', web_app: { url: APP_URL } } })],
       ['name', () => bot.setMyName({ name: BOT_NAME })],
       ['short description', () => bot.setMyShortDescription({ short_description: BOT_SHORT_DESCRIPTION })],
       ['description', () => bot.setMyDescription({ description: BOT_DESCRIPTION })],
