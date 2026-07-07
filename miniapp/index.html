@@ -36,6 +36,7 @@
     --m1:#FCE3C6; --m2:#F7D3C4; --m-sun:#FFF1D9;
     --e1:#D2DAF0; --e2:#C2C9E4; --e-moon:#F3EFDD;
     --a1:#CFE7D8; --a2:#BCDBC8;
+    --session-body-bg: linear-gradient(0deg, rgba(255,255,255,.55), rgba(255,255,255,.12) 55%, rgba(255,255,255,0) 85%);
     --shadow: 0 1px 2px rgba(58,67,61,.05), 0 10px 30px rgba(58,67,61,.07);
     --shadow-card: 0 1px 2px rgba(58,67,61,.04), 0 5px 16px rgba(58,67,61,.05);
 
@@ -53,6 +54,7 @@
       --m1:#E9C7A6; --m2:#DFB7A4; --m-sun:#F4E2C4;
       --e1:#AEB8D8; --e2:#9AA4C8; --e-moon:#E4DEC6;
       --a1:#A9CEB8; --a2:#95C0A6;
+      --session-body-bg: linear-gradient(0deg, rgba(13,20,17,.72), rgba(13,20,17,.36) 55%, rgba(13,20,17,0) 85%);
       --shadow: 0 1px 2px rgba(0,0,0,.28), 0 12px 32px rgba(0,0,0,.4);
       --shadow-card: 0 1px 2px rgba(0,0,0,.22), 0 6px 18px rgba(0,0,0,.28);
     }
@@ -64,6 +66,7 @@
     --m1:#FCE3C6; --m2:#F7D3C4; --m-sun:#FFF1D9;
     --e1:#D2DAF0; --e2:#C2C9E4; --e-moon:#F3EFDD;
     --a1:#CFE7D8; --a2:#BCDBC8;
+    --session-body-bg: linear-gradient(0deg, rgba(255,255,255,.55), rgba(255,255,255,.12) 55%, rgba(255,255,255,0) 85%);
     --shadow: 0 1px 2px rgba(58,67,61,.05), 0 10px 30px rgba(58,67,61,.07);
     --shadow-card: 0 1px 2px rgba(58,67,61,.04), 0 5px 16px rgba(58,67,61,.05);
   }
@@ -74,6 +77,7 @@
     --m1:#E9C7A6; --m2:#DFB7A4; --m-sun:#F4E2C4;
     --e1:#AEB8D8; --e2:#9AA4C8; --e-moon:#E4DEC6;
     --a1:#A9CEB8; --a2:#95C0A6;
+    --session-body-bg: linear-gradient(0deg, rgba(13,20,17,.72), rgba(13,20,17,.36) 55%, rgba(13,20,17,0) 85%);
     --shadow: 0 1px 2px rgba(0,0,0,.28), 0 12px 32px rgba(0,0,0,.4);
     --shadow-card: 0 1px 2px rgba(0,0,0,.22), 0 6px 18px rgba(0,0,0,.28);
   }
@@ -146,8 +150,8 @@
   .session .art { position:absolute; inset:0; z-index:-1; }
   .session .art svg { width:100%; height:100%; display:block; }
   .session .art { background-position:center; background-size:cover; }
-  .session .body { padding:15px 18px; width:100%; display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
-    background: linear-gradient(0deg, rgba(255,255,255,.55), rgba(255,255,255,.12) 55%, rgba(255,255,255,0) 85%); }
+  .session .body { padding:15px 18px; width:100%; min-height:100%; display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
+    background: var(--session-body-bg); }
   .session .titles .kicker { font-size:10.5px; letter-spacing:1.2px; text-transform:uppercase; color: var(--sess-ink,#5a5348); font-weight:700; opacity:.85; }
   .session .titles .t { font-size:19px; font-weight:700; color: var(--sess-ink,#4a4238); margin-top:3px; letter-spacing:-.2px; }
   .session .titles .ar { font-family:var(--ar); font-size:16px; color: var(--sess-ink,#4a4238); opacity:.75; margin-top:3px; direction:rtl; }
@@ -157,6 +161,8 @@
   .ring circle { fill:none; stroke-width:4; }
   .ring .trk { stroke: var(--sess-ink,#4a4238); opacity:.2; }
   .ring .val { stroke: var(--sess-ink,#4a4238); stroke-linecap:round; opacity:.85; transition: stroke-dashoffset .5s cubic-bezier(.4,0,.2,1); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .session { --sess-ink:#F7F3E8 !important; } }
+  :root[data-theme="dark"] .session { --sess-ink:#F7F3E8 !important; }
 
   .home-foot { text-align:center; font-size:12px; color:var(--ink-faint); padding:6px 20px 22px; }
   .home-foot b { color: var(--accent-deep); font-weight:700; }
@@ -745,19 +751,67 @@
   };
 
   let navStack = ['home'];
-  function showScreen(id){
+  let CURRENT_KEY = null;
+  function scrollDate(){ return new Date().toLocaleDateString('sv'); }
+  function loadReadingScrolls(){
+    let s=null; try{ s=JSON.parse(localStorage.getItem('azkar_reading_scrolls')||'null'); }catch(e){}
+    if(!s || s.date!==scrollDate()) s={ date:scrollDate(), morning:0, evening:0, after:0 };
+    return s;
+  }
+  let READING_SCROLLS = loadReadingScrolls();
+  function saveReadingScrolls(){ try{ localStorage.setItem('azkar_reading_scrolls', JSON.stringify(READING_SCROLLS)); }catch(e){} }
+  function pageScrollTop(){
+    const se = document.scrollingElement || document.documentElement;
+    const phone = document.querySelector('.phone');
+    return Math.max(window.scrollY||0, se?.scrollTop||0, document.body.scrollTop||0, phone?.scrollTop||0);
+  }
+  function setPageScrollTop(y){
+    const top = Math.max(0, Math.round(+y || 0));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      window.scrollTo(0, top);
+      const se = document.scrollingElement || document.documentElement;
+      if(se) se.scrollTop = top;
+      document.body.scrollTop = top;
+      const phone = document.querySelector('.phone');
+      if(phone) phone.scrollTop = top;
+    }));
+  }
+  function activeScreenId(){ return document.querySelector('.screen.active')?.id || null; }
+  function saveReadingScroll(){
+    if(activeScreenId()==='reading' && CURRENT_KEY){
+      READING_SCROLLS[CURRENT_KEY] = pageScrollTop();
+      saveReadingScrolls();
+    }
+  }
+  let scrollSaveQueued = false;
+  function queueReadingScrollSave(){
+    if(scrollSaveQueued) return;
+    scrollSaveQueued = true;
+    requestAnimationFrame(()=>{ scrollSaveQueued = false; saveReadingScroll(); });
+  }
+  window.addEventListener('scroll', queueReadingScrollSave, { passive:true });
+  window.addEventListener('beforeunload', saveReadingScroll);
+  document.addEventListener('visibilitychange', ()=>{ if(document.hidden) saveReadingScroll(); });
+
+  function showScreen(id, opts={}){
+    saveReadingScroll();
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    document.querySelector('.phone').scrollTop = 0; window.scrollTo(0,0);
+    if(id==='reading' && opts.restoreScroll){
+      setPageScrollTop(READING_SCROLLS[CURRENT_KEY] || 0);
+    } else {
+      setPageScrollTop(0);
+    }
     tgBack(navStack.length > 1, back);
   }
-  function go(id){
+  function go(id, opts={}){
     if(navStack[navStack.length-1] !== id) navStack.push(id);
-    showScreen(id);
+    showScreen(id, opts);
   }
   function back(){
     if(navStack.length > 1) navStack.pop();
-    showScreen(navStack[navStack.length-1] || 'home');
+    const id = navStack[navStack.length-1] || 'home';
+    showScreen(id, { restoreScroll:id==='reading' });
   }
 
   /* ---------- состояние (сохраняется между заходами, сбрасывается на новый день) ---------- */
@@ -770,7 +824,6 @@
   }
   let PROG = loadProgress();
   function saveProgress(){ try{ localStorage.setItem('azkar_progress', JSON.stringify(PROG)); }catch(e){} }
-  let CURRENT_KEY = null;
 
   function openReading(key){
     CURRENT_KEY = key;
@@ -811,7 +864,7 @@
         </div>`;
       list.appendChild(card);
     });
-    bindCounters(); applyTextToggles(); updateProgress(); go('reading');
+    bindCounters(); applyTextToggles(); updateProgress(); go('reading', { restoreScroll:true });
   }
 
   function beadsSVG(n){
