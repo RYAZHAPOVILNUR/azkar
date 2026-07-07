@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Азкар — утренние и вечерние поминания</title>
 <style>
   :root {
@@ -189,28 +191,34 @@
   .translate { font-family: var(--serif); font-size:14px; color: var(--ink-soft); line-height:1.65; }
   .src-note { font-size:11.5px; color: var(--ink-faint); margin-top:10px; font-style:italic; }
 
-  .counter-row { display:flex; align-items:center; gap:14px; margin-top:16px; padding-top:14px; border-top:1px dashed var(--line); }
-  .counter-row .label { flex:1; }
-  .counter-row .label .n { font-size:12px; color: var(--ink-faint); text-transform:uppercase; letter-spacing:.5px; font-weight:600; }
-  .counter-row .label .c { font-size:15px; color: var(--ink-soft); font-weight:600; margin-top:2px; font-variant-numeric:tabular-nums; }
-  .counter-row .label .c b { color: var(--accent-deep); }
+  .cnote { text-align:center; font-size:12px; color:var(--ink-faint); margin-top:12px; font-style:italic; }
+  .counter-row { display:flex; align-items:center; justify-content:center; gap:20px; margin-top:10px; padding-top:12px; border-top:1px dashed var(--line); }
+  .cbtn { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; cursor:pointer; flex-shrink:0;
+    background: var(--surface-2); border:1px solid var(--line); color: var(--ink-soft);
+    transition: transform .15s, color .15s, background .15s, border-color .15s; }
+  .cbtn:active { transform: scale(.88); }
+  .cbtn.reset:hover { color: var(--ink); }
+  .cbtn.done:hover { color: var(--good); }
+  .zikr.done .cbtn.done { background: var(--good); border-color: var(--good); color:#fff; }
 
-  .tasbih { width:78px; height:78px; flex-shrink:0; position:relative; cursor:pointer;
+  .tasbih { width:120px; height:126px; flex-shrink:0; position:relative; cursor:pointer;
     background:none; border:none; padding:0; -webkit-tap-highlight-color:transparent;
     transition: transform .12s cubic-bezier(.34,1.56,.64,1); }
-  .tasbih:active { transform: scale(.9); }
-  .tasbih .tr, .tasbih .tv { fill:none; stroke-width:6; }
+  .tasbih:active { transform: scale(.95); }
+  .tasbih .tr, .tasbih .tv { fill:none; stroke-width:5; }
   .tasbih .tr { stroke: var(--surface-2); }
   .tasbih .tv { stroke: var(--accent); stroke-linecap:round; transition: stroke-dashoffset .35s cubic-bezier(.4,0,.2,1); }
-  .tasbih .cx { position:absolute; inset:0; display:grid; place-items:center; text-align:center; }
-  .tasbih .cx .big { font-size:23px; font-weight:800; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums; }
-  .tasbih .cx .cap { font-size:10px; color:var(--ink-faint); margin-top:2px; font-weight:600; }
+  .tasbih .bead { fill: var(--accent); opacity:.5; transition: fill .3s; }
+  .tasbih .knot { fill: var(--accent); opacity:.65; }
+  .tasbih .tassel { stroke: var(--accent); opacity:.55; stroke-width:1.6; fill:none; stroke-linecap:round; }
+  .tasbih .cx { position:absolute; left:0; right:0; top:0; bottom:24px; display:grid; place-items:center; text-align:center; }
+  .tasbih .cx .cap { font-size:11px; color:var(--ink-faint); font-weight:600; margin-bottom:2px; }
+  .tasbih .cx .big { font-size:27px; font-weight:800; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums; }
+  .tasbih .cx .big small { font-size:15px; color:var(--ink-faint); font-weight:700; }
   .zikr.done .tasbih .tv { stroke: var(--good); }
-  .zikr.done .tasbih .cx .big { color: var(--good); }
-  .star-pop { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; opacity:0; }
-  .star-pop svg { width:34px; height:34px; color: var(--good); }
-  .zikr.done .star-pop { animation: pop .5s ease; }
-  @keyframes pop { 0%{opacity:0; transform:scale(.4);} 40%{opacity:1;} 100%{opacity:0; transform:scale(1.5);} }
+  .zikr.done .tasbih .bead, .zikr.done .tasbih .knot { fill: var(--good); }
+  .zikr.done .tasbih .tassel { stroke: var(--good); }
+  .zikr.done .tasbih .cx .big, .zikr.done .tasbih .cx .cap { color: var(--good); }
 
   /* SETTINGS */
   .settings { padding:6px 18px 30px; }
@@ -588,7 +596,7 @@
     document.getElementById('rKicker').textContent = data.kicker;
     const list = document.getElementById('zikrList'); list.innerHTML = '';
     data.items.forEach((z)=>{
-      const hint = z.targetHint ? `<div class="n">${z.targetHint}</div>` : `<div class="n">${z.target>1?'повторить '+z.target+' раз':'один раз'}</div>`;
+      const note = z.targetHint ? `<div class="cnote">${z.targetHint}</div>` : '';
       const card = document.createElement('div'); card.className = 'zikr';
       card.innerHTML = `
         <div class="top">
@@ -603,40 +611,60 @@
         <div class="divider"><svg viewBox="0 0 34 34" width="14" height="14" fill="none"><path d="M17 2l3.6 3.6 5-.9-.9 5L28 17l-3.3 3.3.9 5-5-.9L17 28l-3.6-3.6-5 .9.9-5L6 17l3.3-3.3-.9-5 5 .9L17 2z" stroke="currentColor" stroke-width="1.1"/></svg></div>
         <div class="translate js-translate">${z.tr}</div>
         <div class="src-note">${z.src}</div>
+        ${note}
         <div class="counter-row">
-          <div class="label">${hint}<div class="c"><b class="js-cur">0</b> / ${z.target}</div></div>
+          <button class="cbtn reset" title="Сбросить"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/></svg></button>
           <button class="tasbih" data-target="${z.target}" data-cur="0">
-            <svg viewBox="0 0 78 78"><circle class="tr" cx="39" cy="39" r="33"/><circle class="tv" cx="39" cy="39" r="33" transform="rotate(-90 39 39)"/></svg>
-            <div class="cx"><div class="big">${z.target}</div><div class="cap">осталось</div></div>
-            <div class="star-pop">${CHECK}</div>
+            <svg viewBox="0 0 120 126">
+              <circle class="tr" cx="60" cy="55" r="47"/>
+              <circle class="tv" cx="60" cy="55" r="47" transform="rotate(-90 60 55)"/>
+              <g class="beads">${beadsSVG()}</g>
+              <circle class="knot" cx="60" cy="105" r="3"/>
+              <path class="tassel" d="M60 108 L55 119 M60 108 L60 121 M60 108 L65 119"/>
+            </svg>
+            <div class="cx"><div class="cap js-cap">Осталось ${z.target}</div><div class="big"><b class="js-cur">0</b><small>/${z.target}</small></div></div>
           </button>
+          <button class="cbtn done" title="Отметить готовым"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg></button>
         </div>`;
       list.appendChild(card);
     });
     bindCounters(); applyTextToggles(); updateProgress(); go('reading');
   }
 
-  const CIRC = 2*Math.PI*33;
+  const CIRC = 2*Math.PI*47;
+  function beadsSVG(){
+    let s=''; const cx=60, cy=55, R=47, n=24;
+    for(let i=0;i<n;i++){ const a=(i/n)*2*Math.PI - Math.PI/2;
+      s += `<circle class="bead" cx="${(cx+R*Math.cos(a)).toFixed(1)}" cy="${(cy+R*Math.sin(a)).toFixed(1)}" r="3"/>`; }
+    return s;
+  }
   function bindCounters(){
-    document.querySelectorAll('.tasbih').forEach(btn=>{
+    document.querySelectorAll('#zikrList .zikr').forEach(card=>{
+      const btn = card.querySelector('.tasbih');
       const target = +btn.dataset.target;
       const val = btn.querySelector('.tv');
-      val.style.strokeDasharray = CIRC; val.style.strokeDashoffset = CIRC;
-      btn.addEventListener('click', ()=>{
-        let cur = +btn.dataset.cur;
-        const card = btn.closest('.zikr');
-        if(cur >= target){ cur = 0; card.classList.remove('done'); }
-        else cur++;
+      const capEl = card.querySelector('.js-cap'), curEl = card.querySelector('.js-cur');
+      val.style.strokeDasharray = CIRC;
+      function render(cur){
         btn.dataset.cur = cur;
         const remain = target - cur;
         val.style.strokeDashoffset = CIRC*(1 - cur/target);
-        btn.querySelector('.big').textContent = remain>0 ? remain : '✓';
-        btn.querySelector('.cap').textContent = remain>0 ? 'осталось' : 'готово';
-        card.querySelector('.js-cur').textContent = cur;
-        tgHaptic(cur >= target ? 'medium' : 'light');
-        if(cur >= target){ card.classList.add('done'); if(navigator.vibrate) navigator.vibrate(28); }
+        curEl.textContent = cur;
+        capEl.textContent = remain>0 ? ('Осталось '+remain) : 'Готово';
+        card.classList.toggle('done', cur>=target);
+      }
+      render(0);
+      btn.addEventListener('click', ()=>{
+        let cur = +btn.dataset.cur;
+        cur = cur>=target ? 0 : cur+1;
+        render(cur);
+        const done = cur>=target && cur>0;
+        tgHaptic(done ? 'medium' : 'light');
+        if(done && navigator.vibrate) navigator.vibrate(28);
         updateProgress();
       });
+      card.querySelector('.cbtn.reset').addEventListener('click', e=>{ e.stopPropagation(); render(0); tgHaptic('light'); updateProgress(); });
+      card.querySelector('.cbtn.done').addEventListener('click', e=>{ e.stopPropagation(); render(target); tgHaptic('medium'); if(navigator.vibrate) navigator.vibrate(28); updateProgress(); });
     });
   }
 

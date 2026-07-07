@@ -38,15 +38,20 @@ azkar/
 
 ## ЗАДАЧА A — Задеплоить на сервер
 
-**Сервер:** `85.239.36.234` (это IP, на который указывает A-запись `azkar.nurtech.dev`).
+**Сервер:** `45.77.66.108` (это IP, на который указывает A-запись `azkar.nurtech.dev`).
+**⚠️ ЭТО ОБЩИЙ PROD-СЕРВЕР EasyBot!** На нём крутится боевой проект EasyBot с реальными
+данными. Ставь azkar РЯДОМ, ничего чужого не трогая: отдельный порт `3010`, отдельный
+systemd-юнит `azkar`, отдельный пользователь `azkar`, отдельный nginx-vhost. НЕ трогай
+существующие сайты/сервисы/nginx-конфиги EasyBot, НЕ делай `systemctl restart nginx`
+(только `reload`), НЕ трогай базы. Только `reload nginx` после добавления своего vhost.
 **Пользователь SSH:** `root`.
-**Домен:** `azkar.nurtech.dev` (DNS уже настроен владельцем, A-запись → 85.239.36.234).
+**Домен:** `azkar.nurtech.dev` (DNS настроен владельцем, A-запись → 45.77.66.108).
 **Токен бота:** возьми из локального `bot/.env` (значение `BOT_TOKEN=...`). На сервере создай
 `/opt/azkar/bot/.env` с этим токеном. НИКОГДА не коммить токен в git.
 
 Шаги (подробности — в `DEPLOY.md`):
 
-1. Проверь SSH: `ssh root@85.239.36.234 'hostname'`.
+1. Проверь SSH: `ssh root@45.77.66.108 'hostname'`.
 2. Проверь, что порт `3010` свободен и nginx/node/certbot стоят (`apt install` при необходимости).
    Если на сервере уже крутятся другие сайты — НЕ трогай их конфиги, добавляй только своё.
 3. `git clone https://github.com/RYAZHAPOVILNUR/azkar.git /opt/azkar`.
@@ -119,7 +124,7 @@ Negative для всех: `text, letters, people, faces, realistic photo, mosque
 ### Финал задачи B
 
 - `git add -A && git commit -m "feat(azkar): обложки сессий + иконка"` и `git push`.
-- Передеплой: `ssh root@85.239.36.234 'cd /opt/azkar && bash deploy/deploy.sh'`.
+- Передеплой: `ssh root@45.77.66.108 'cd /opt/azkar && bash deploy/deploy.sh'`.
 - Открой `https://azkar.nurtech.dev`, убедись что карточки с картинками и всё читается.
 
 ---
