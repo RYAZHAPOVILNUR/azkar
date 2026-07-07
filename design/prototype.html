@@ -221,7 +221,7 @@
   .cbtn.done:hover { color: var(--good); }
   .zikr.done .cbtn.done { background: var(--good); border-color: var(--good); color:#fff; }
 
-  .tasbih { width:120px; height:148px; flex-shrink:0; position:relative; cursor:pointer;
+  .tasbih { width:120px; height:126px; flex-shrink:0; position:relative; cursor:pointer;
     background:none; border:none; padding:0; -webkit-tap-highlight-color:transparent;
     transition: transform .12s cubic-bezier(.34,1.56,.64,1); }
   .tasbih:active { transform: scale(.95); }
@@ -232,11 +232,10 @@
   .tasbih .knot { fill: var(--line); }
   .tasbih .tassel { stroke: var(--line); stroke-width:1.6; fill:none; stroke-linecap:round; }
   .tasbih .cx { position:absolute; inset:0; text-align:center; pointer-events:none; }
-  .tasbih .cx .cap { position:absolute; left:0; right:0; top:128px; font-size:11px; line-height:1; color:var(--ink-faint); font-weight:600; margin:0; white-space:nowrap; }
   .tasbih .cx .big { position:absolute; left:0; right:0; top:43px; font-size:27px; font-weight:800; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums; }
   .tasbih .cx .big small { font-size:15px; color:var(--ink-faint); font-weight:700; }
   .zikr.done .tasbih .bead.on { fill: var(--good); stroke: var(--good); }
-  .zikr.done .tasbih .cx .big, .zikr.done .tasbih .cx .cap { color: var(--good); }
+  .zikr.done .tasbih .cx .big { color: var(--good); }
 
   /* SETTINGS */
   .settings { padding:6px 18px 30px; }
@@ -846,7 +845,7 @@
               <circle class="knot" cx="60" cy="105" r="3"/>
               <path class="tassel" d="M60 108 L55 119 M60 108 L60 121 M60 108 L65 119"/>
             </svg>
-            <div class="cx"><div class="cap js-cap">Осталось ${z.target}</div><div class="big"><b class="js-cur">0</b><small>/${z.target}</small></div></div>
+            <div class="cx"><div class="big"><b class="js-cur">0</b><small>/${z.target}</small></div></div>
           </button>
         </div>`;
       list.appendChild(card);
@@ -870,14 +869,12 @@
       const btn = card.querySelector('.tasbih');
       const target = +btn.dataset.target;
       const beads = Array.from(card.querySelectorAll('.bead'));
-      const capEl = card.querySelector('.js-cap'), curEl = card.querySelector('.js-cur');
+      const curEl = card.querySelector('.js-cur');
       function render(cur){
         btn.dataset.cur = cur;
-        const remain = target - cur;
         const filled = cur>=target ? beads.length : Math.round(cur/target*beads.length);
         beads.forEach((b,i)=> b.classList.toggle('on', i < filled));
         curEl.textContent = cur;
-        capEl.textContent = remain>0 ? ('Осталось '+remain) : 'Готово';
         card.classList.toggle('done', cur>=target);
       }
       function persist(cur){ PROG[CURRENT_KEY][idx] = cur; saveProgress(); }
