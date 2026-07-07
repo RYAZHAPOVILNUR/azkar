@@ -45,6 +45,23 @@ Negative: `text, letters, people, faces, realistic photo, mosque building, harsh
 
 Генерируй доступным image-инструментом (gpt-image / DALL·E). Баннеры оптимизируй в webp (~q80, < 200 КБ).
 
+### Тёмная тема — отдельные обложки (ПРИЛОЖЕНИЕ УЖЕ ЖДЁТ ЭТИ ФАЙЛЫ)
+
+Сгенерируй тёмные версии трёх баннеров. Фронт уже настроен: в тёмной теме подхватывает
+`assets/{morning,evening,after}-dark.webp` автоматически (с фолбэком на светлые, если тёмных нет).
+Просто создай эти 3 файла:
+
+| Файл | Размер | Промпт |
+|---|---|---|
+| `miniapp/assets/morning-dark.webp` | 1600×900 | pre-dawn calm hills, deep muted indigo-to-warm-amber sky, faint first light, moody twilight, soft |
+| `miniapp/assets/evening-dark.webp` | 1600×900 | deep night over calm hills, muted navy and violet sky, crescent moon and soft stars, tranquil dark twilight |
+| `miniapp/assets/after-dark.webp` | 1600×900 | serene dark-green night scene, deep muted teal/emerald tones, faint geometric islamic star pattern, calm |
+
+ВАЖНО для тёмных: приятно-тёмные, приглушённые (НЕ чёрные, НЕ кислотные). Текст заголовка на
+карточке остаётся ТЁМНЫМ (как в светлой теме), поэтому **нижняя-левая зона баннера должна оставаться
+средне-светлой/мягкой**, чтобы тёмный текст читался (как в светлых версиях — светлее слева-снизу).
+Тот же спокойный минимализм, без текста/людей/мечетей. webp ~q80, < 200 КБ.
+
 ### Куда вставлять (в `miniapp/index.html` И синхронно в `design/prototype.html`)
 
 1. В каждой из 3 карточек `.session` замени содержимое `<div class="art">…</div>` на фон-картинку:
