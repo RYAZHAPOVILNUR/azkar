@@ -112,8 +112,8 @@
   @keyframes fade { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
 
   /* HOME */
-  .home-head { display:flex; align-items:center; justify-content:space-between; padding: calc(14px + var(--tg-safe-top)) 22px 6px; }
-  .brand { display:flex; align-items:center; gap:10px; min-width:48px; }
+  .home-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding: calc(14px + var(--tg-safe-top)) 20px 6px; }
+  .brand { display:flex; align-items:center; gap:10px; min-width:46px; flex:0 0 46px; }
   .brand .mark { width:46px; height:46px; border-radius:15px; overflow:hidden; display:block; box-shadow: var(--shadow-card); }
   .brand .mark img { width:100%; height:100%; display:block; object-fit:cover; }
   .brand .name { display:none; }
@@ -124,7 +124,8 @@
     transition: transform .15s, color .15s; }
   .iconbtn:hover { color: var(--accent); }
   .iconbtn:active { transform: scale(.92); }
-  .head-actions { display:flex; gap:10px; }
+  .head-prayer { flex:1 1 auto; min-width:0; display:flex; justify-content:center; }
+  .head-actions { display:flex; gap:10px; flex:0 0 auto; }
 
   .ayah { margin:14px 20px 6px; padding:18px 20px; border-radius:20px;
     background: linear-gradient(180deg, var(--accent-soft), var(--surface));
@@ -136,7 +137,7 @@
   .ayah .src { font-size:11px; color: var(--accent-deep); margin-top:8px; letter-spacing:.4px;
     text-transform:uppercase; font-weight:700; font-family:var(--sans); }
 
-  .greet { padding:18px 22px 6px; }
+  .greet { padding:6px 22px 0; }
   .greet .hi { font-size:26px; font-weight:800; letter-spacing:0; }
   .greet .sub { font-size:14.5px; color: var(--ink-soft); margin-top:5px; display:flex; align-items:center; gap:7px; }
   .streak { display:inline-flex; align-items:center; gap:5px; color: var(--accent-deep); font-weight:600; }
@@ -343,6 +344,11 @@
   .times-grid .tcell.now { background: var(--accent-soft); }
   .times-grid .tcell.now .tv, .times-grid .tcell.now .tn { color: var(--accent-deep); }
   .nextp { display:inline-flex; align-items:center; gap:6px; color: var(--accent-deep); font-weight:600; }
+  .head-prayer .nextp { max-width:100%; justify-content:center; border-radius:999px; padding:8px 10px;
+    border:1px solid var(--glass-brd); background:var(--glass); box-shadow:inset 0 1px 0 var(--glass-hi);
+    font-size:12.5px; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .head-prayer .nextp svg { flex:0 0 auto; width:13px; height:13px; }
+  .head-prayer .nextp span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
 
   .back { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; cursor:pointer;
     background: var(--glass); border:1px solid var(--glass-brd); color: var(--ink);
@@ -391,7 +397,13 @@
     <div class="home-head">
       <div class="brand">
         <span class="mark" aria-hidden="true">
-          <img src="assets/icon.png" alt="">
+          <img id="brandIcon" src="assets/icon.png" alt="">
+        </span>
+      </div>
+      <div class="head-prayer" id="nextPrayerLine" style="display:none">
+        <span class="nextp">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg>
+          <span id="nextPrayerText"></span>
         </span>
       </div>
       <div class="head-actions">
@@ -405,12 +417,6 @@
     </div>
 
     <div class="greet">
-      <div class="sub" id="nextPrayerLine" style="display:none">
-        <span class="nextp">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg>
-          <span id="nextPrayerText"></span>
-        </span>
-      </div>
       <div class="sub">
         <span class="streak" title="Дней подряд">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C7 9 9 8 9 8s-.5 2 .5 3c0 0 1-1 1-3s1.5-6 1.5-6z"/></svg>
@@ -1424,6 +1430,14 @@
         : `url('assets/${n}.webp')`;
     });
   }
+  function updateBrandIcon(){
+    const src = effectiveDark() ? 'assets/icon-dark.png' : 'assets/icon.png';
+    const icon = document.getElementById('brandIcon');
+    if(icon && icon.getAttribute('src') !== src) icon.setAttribute('src', src);
+    document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]').forEach(link=>{
+      link.setAttribute('href', src);
+    });
+  }
   function applyTheme(){
     if(themeMode==='auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', themeMode);
     const dark = effectiveDark();
@@ -1431,7 +1445,7 @@
       ? 'M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z'
       : 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z');
     document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.themeSet===themeMode));
-    applyTgColors(); updateArtImages();
+    applyTgColors(); updateArtImages(); updateBrandIcon();
   }
   document.getElementById('themeBtn').addEventListener('click', ()=>{ themeMode = effectiveDark()?'light':'dark'; applyTheme(); });
   document.querySelectorAll('#themeSeg button').forEach(b=> b.addEventListener('click', ()=>{ themeMode=b.dataset.themeSet; applyTheme(); }));
