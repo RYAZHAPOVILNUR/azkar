@@ -1089,9 +1089,12 @@
         const pos = cards.indexOf(card);
         const next = cards.slice(pos + 1).find(el=>!el.classList.contains('done'));
         if(!next) return;
-        const targetEl = next.querySelector('.tasbih') || next;
-        const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-        setTimeout(()=> targetEl.scrollIntoView({ behavior, block:'center' }), 180);
+        const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const rhead = document.querySelector('.rhead');
+        const headerH = (rhead ? rhead.offsetHeight : 60) + 12;
+        const top = next.getBoundingClientRect().top + window.scrollY - headerH;
+        // прокручиваем к НАЧАЛУ следующего зикра (мягко, короткая дистанция), не центрируем счётчик
+        setTimeout(()=> window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' }), 260);
       }
       function inc(){
         if(card.dataset.dragLock === '1') return;
