@@ -272,22 +272,6 @@
   .list.reordering .zikr > .arabic, .list.reordering .zikr > .translit, .list.reordering .zikr > .divider,
   .list.reordering .zikr > .translate, .list.reordering .zikr > .src-row, .list.reordering .zikr > .cnote,
   .list.reordering .zikr > .counter-row { display:none; }
-  .tasbih .bead { transform-box:fill-box; transform-origin:center; }
-  @keyframes beadPop { 0%{transform:scale(1)} 45%{transform:scale(1.45)} 100%{transform:scale(1)} }
-  .tasbih .bead.pop { animation:beadPop .26s cubic-bezier(.34,1.56,.64,1); }
-  .tasbih.armed .tr { stroke:var(--accent); stroke-width:2.2; }
-  .tasbih.armed .bead.next { fill:color-mix(in srgb, var(--accent) 60%, var(--surface-2)); stroke:var(--accent); animation:none; transform:scale(1.12); }
-  .zikr.done .tasbih .tr { stroke:var(--good); stroke-width:2.2; }
-  .zikr.done .tasbih .cx .big small { color:color-mix(in srgb, var(--good) 60%, var(--ink-faint)); }
-  .tasbih.single { width:auto; height:46px; padding:0 16px 0 12px; display:inline-flex; align-items:center; gap:10px;
-    background:var(--surface-2); border:1px solid var(--line); border-radius:99px; }
-  .tasbih.single .dot { width:22px; height:22px; border-radius:50%; border:2px solid var(--line); position:relative; transition:.2s; }
-  .tasbih.single .lbl { font-size:14px; font-weight:700; color:var(--ink-soft); }
-  .tasbih.single:active { transform:scale(.96); }
-  .zikr.done .tasbih.single { background:color-mix(in srgb, var(--good) 14%, var(--surface-2)); border-color:color-mix(in srgb, var(--good) 45%, var(--line)); }
-  .zikr.done .tasbih.single .dot { background:var(--good); border-color:var(--good); }
-  .zikr.done .tasbih.single .lbl { color:var(--good); }
-
   .cnote { text-align:center; font-size:12px; color:var(--ink-faint); margin-top:12px; font-style:italic; }
   .counter-row { display:flex; align-items:center; justify-content:flex-end; gap:18px; margin-top:10px; padding:12px 0 0 0; border-top:1px solid var(--line); }
   .cbtn { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; cursor:pointer; flex-shrink:0;
@@ -298,26 +282,28 @@
   .cbtn.done:hover { color: var(--good); }
   .zikr.done .cbtn.done { background: color-mix(in srgb, var(--good) 22%, var(--surface-2)); border-color: color-mix(in srgb, var(--good) 45%, var(--line)); color:var(--ink); }
 
-  .tasbih { width:120px; height:126px; flex-shrink:0; position:relative; cursor:pointer;
-    background:none; border:none; padding:0; -webkit-tap-highlight-color:transparent;
-    transition: transform .12s cubic-bezier(.34,1.56,.64,1); touch-action:none; }
-  .tasbih:active { transform: scale(.95); }
-  .tasbih svg { width:120px; height:126px; display:block; transform:translateY(var(--pull,0px)); transition:transform .22s cubic-bezier(.2,.8,.2,1); }
-  .tasbih.pulling svg { transition:none; }
-  .tasbih .tr { fill:none; stroke: var(--line); stroke-width:1.6; }
-  .tasbih .bead { fill:#D8D2C4; stroke:#C7C1B1; stroke-width:.8; transition: fill .2s ease, stroke .2s ease; }
-  .tasbih .bead.on { fill: var(--accent); stroke: var(--accent); filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.22)); }
-  :root[data-theme="dark"] .tasbih .bead { fill:#37342B; stroke:#423E34; }
-  @media (prefers-color-scheme: dark){ :root:not([data-theme]) .tasbih .bead { fill:#37342B; stroke:#423E34; } }
-  @keyframes beadBreathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.13)} }
-  .tasbih .bead.next { animation: beadBreathe 2.4s ease-in-out infinite; }
-  .tasbih .knot { fill: var(--line); }
-  .tasbih .tassel { stroke: var(--line); stroke-width:1.6; fill:none; stroke-linecap:round; }
-  .tasbih .cx { position:absolute; inset:0; text-align:center; pointer-events:none; }
-  .tasbih .cx .big { position:absolute; left:0; right:0; top:38px; font-size:38px; font-weight:300; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
-  .tasbih .cx .big small { font-size:15px; color:var(--ink-faint); font-weight:500; letter-spacing:0; }
-  .zikr.done .tasbih .bead.on { fill: var(--good); stroke: var(--good); }
-  .zikr.done .tasbih .cx .big { color: var(--good); }
+  .tasbih { width:min(168px, 52vw); min-height:78px; flex-shrink:0; position:relative; overflow:hidden; cursor:pointer;
+    display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:7px; padding:13px 16px 12px;
+    background:linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 92%, white), var(--surface-2));
+    border:1px solid color-mix(in srgb, var(--line) 82%, var(--ink-faint)); border-radius:20px; color:var(--ink);
+    box-shadow:0 10px 26px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,.42);
+    -webkit-tap-highlight-color:transparent; transition:transform .18s cubic-bezier(.2,.8,.2,1), border-color .18s, background .18s, box-shadow .18s; touch-action:none; }
+  .tasbih:active { transform:scale(.97); }
+  .tasbih.pulling { transform:translateY(var(--pull,0px)) scale(.985); transition:none; }
+  .tasbih.armed { border-color:color-mix(in srgb, var(--accent) 42%, var(--line)); box-shadow:0 12px 30px rgba(15,23,42,.1), 0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent); }
+  .tasbih::before { content:""; position:absolute; inset:auto 10px 10px 10px; height:6px; border-radius:999px; background:color-mix(in srgb, var(--ink-faint) 14%, transparent); }
+  .tasbih .fill { position:absolute; left:10px; bottom:10px; height:6px; width:var(--progress,0%); border-radius:999px;
+    background:linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 70%, white)); transition:width .22s cubic-bezier(.2,.8,.2,1), background .18s; }
+  .tasbih .count { position:relative; z-index:1; display:flex; align-items:baseline; gap:3px; font-variant-numeric:tabular-nums; }
+  .tasbih .count b { font-size:30px; line-height:1; font-weight:700; color:var(--ink); letter-spacing:0; }
+  .tasbih .count small { font-size:15px; line-height:1; font-weight:600; color:var(--ink-faint); letter-spacing:0; }
+  .tasbih .lbl { position:relative; z-index:1; font-size:11px; line-height:1.1; color:var(--ink-faint); font-weight:700; letter-spacing:0; }
+  .tasbih.pulse .count b { animation:countPulse .24s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes countPulse { 0%{transform:scale(1)} 50%{transform:scale(1.14)} 100%{transform:scale(1)} }
+  .zikr.done .tasbih { border-color:color-mix(in srgb, var(--good) 38%, var(--line)); background:color-mix(in srgb, var(--good) 10%, var(--surface-2)); }
+  .zikr.done .tasbih .fill { width:100%; background:linear-gradient(90deg, var(--good), color-mix(in srgb, var(--good) 72%, white)); }
+  .zikr.done .tasbih .count b { color:var(--good); }
+  .zikr.done .tasbih .count small, .zikr.done .tasbih .lbl { color:color-mix(in srgb, var(--good) 62%, var(--ink-soft)); }
 
   /* SETTINGS */
   .settings { padding:4px 16px 26px; }
@@ -704,7 +690,7 @@
       { n:3, target:1, ar:"اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي، فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
         tl:"Аллахумма анта Рабби, ля иляха илля анта, халякътани ва ана ‘абдук, ва ана ‘аля ‘ахдикя ва ва‘дикя ма-стата‘т, а‘узу бикя мин шарри ма сана‘т, абу’у лякя би-ни‘матикя ‘аляйя, ва абу’у би-занби, фагфир ли, фа-иннаху ля ягфиру-з-зунуба илля ант",
         tr:"Господин прошений о прощении. О Аллах, Ты — мой Господь, нет божества, кроме Тебя. Ты создал меня, и я — раб Твой. Прибегаю к Тебе от зла того, что совершил. Признаю милость Твою ко мне и признаю грех свой — прости же меня, ведь грехи прощает только Ты.", src:"Аль-Бухари 6306 · сахих" },
-      { n:4, target:3, ar:"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
+      { n:4, target:100, ar:"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
         tl:"Субханаллахи ва бихамдих",
         tr:"Пречист Аллах и хвала Ему. (Кто скажет сто раз — простятся его грехи, даже если их как пена морская.)", src:"Аль-Бухари 6405 · сахих", targetHint:"сто раз" },
       { n:5, target:3, ar:"بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
@@ -855,13 +841,13 @@
       { n:10, target:1, ar:"اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ، لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ، لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ، مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ، يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ، وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ، وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ، وَلَا يَئُودُهُ حِفْظُهُمَا، وَهُوَ الْعَلِيُّ الْعَظِيمُ",
         tl:"Аллаху ля иляха илля хува-ль-Хаййю-ль-Каййум, ля та’хузуху синатун ва ля наум, ляху ма фи-с-самавати ва ма фи-ль-ард, ман за-ллязи яшфа‘у ‘индаху илля би-изнихи, я‘ляму ма байна айдихим ва ма хальфахум, ва ля юхитуна би шайъин мин ‘ильмихи илля бима ша’, васи‘а курсийюху-с-самавати ва-ль-ард, ва ля яудуху хифзухума, ва хува-ль-‘Алийю-ль-‘Азым",
         tr:"Аят аль-Курси. «Аллах — нет божества, кроме Него, Живого, Вседержителя. Им не овладевают ни дремота, ни сон…» (аль-Бакара, 255). Кто прочтёт его после каждой обязательной молитвы — ничто не помешает ему войти в Рай, кроме смерти.", src:"Ан-Насаи · сахих" },
-      { n:11, target:1, ar:"قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
+      { n:11, target:1, afterTargets:{fajr:3, maghrib:3}, ar:"قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
         tl:"Куль хува-Ллаху ахад, Аллаху-с-самад, лям ялид ва лям юляд, ва лям якул-ляху куфуван ахад",
         tr:"Сура «Аль-Ихлас» (112). Читается один раз (после фаджра и магриба — трижды).", src:"Абу Дауд, Тирмизи · сахих" },
-      { n:12, target:1, ar:"قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِنْ شَرِّ مَا خَلَقَ ۝ وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+      { n:12, target:1, afterTargets:{fajr:3, maghrib:3}, ar:"قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِنْ شَرِّ مَا خَلَقَ ۝ وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
         tl:"Куль а‘узу би-Рабби-ль-фаляк, мин шарри ма халяк, ва мин шарри гасикын иза вакаб, ва мин шарри-н-наффасати фи-ль-‘укад, ва мин шарри хасидин иза хасад",
         tr:"Сура «Аль-Фаляк» (113). Читается один раз (после фаджра и магриба — трижды).", src:"Абу Дауд, Тирмизи · сахих" },
-      { n:13, target:1, ar:"قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَهِ النَّاسِ ۝ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ",
+      { n:13, target:1, afterTargets:{fajr:3, maghrib:3}, ar:"قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَهِ النَّاسِ ۝ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ",
         tl:"Куль а‘узу би-Рабби-н-нас, Малики-н-нас, Иляхи-н-нас, мин шарри-ль-васваси-ль-ханнас, аллязи ювасвису фи судури-н-нас, мина-ль-джиннати ва-н-нас",
         tr:"Сура «Ан-Нас» (114). Читается один раз (после фаджра и магриба — трижды).", src:"Абу Дауд, Тирмизи · сахих" },
       { n:14, target:10, ar:"لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، يُحْيِي وَيُمِيتُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
@@ -1030,6 +1016,20 @@
     const byOldIndex = bucket[z._idx];
     return byOldIndex || 0;
   }
+  function currentAfterPrayer(){
+    const slot = PROG && PROG.afterSlot ? String(PROG.afterSlot) : '';
+    return slot.includes(':') ? slot.split(':').pop() : '';
+  }
+  function effectiveTarget(key, z){
+    if(key === 'after' && z.afterTargets){
+      return z.afterTargets[currentAfterPrayer()] || z.target;
+    }
+    return z.target;
+  }
+  function countLabel(target){
+    if(target === 1) return 'отметить';
+    return 'повторений';
+  }
   function routineDayFromTimes(t){
     const now = new Date();
     const day = new Date(now);
@@ -1083,24 +1083,19 @@
     const list = document.getElementById('zikrList'); list.innerHTML = '';
     CURRENT_ITEMS = orderedItems(key);
     CURRENT_ITEMS.forEach((z, idx)=>{
+      const target = effectiveTarget(key, z);
       const note = z.targetHint ? `<div class="cnote">${z.targetHint}</div>` : '';
       const saved = savedCount(key, z);
       const card = document.createElement('div'); card.className = 'zikr'; card.dataset.i = idx; card.dataset.id = z._id;
-      const counter = z.target===1
-        ? `<button class="tasbih single" data-target="1" data-cur="${saved}"><span class="dot"></span><span class="lbl">Прочитано</span></button>`
-        : `<button class="tasbih" data-target="${z.target}" data-cur="${saved}">
-            <svg viewBox="0 0 120 126">
-              <circle class="tr" cx="60" cy="55" r="47"/>
-              <g class="beads">${beadsSVG(z.target)}</g>
-              <circle class="knot" cx="60" cy="105" r="3"/>
-              <path class="tassel" d="M60 108 L55 119 M60 108 L60 121 M60 108 L65 119"/>
-            </svg>
-            <div class="cx"><div class="big"><b class="js-cur">0</b><small>/${z.target}</small></div></div>
-          </button>`;
+      const counter = `<button class="tasbih${target===1 ? ' single' : ''}" data-target="${target}" data-cur="${Math.min(saved, target)}" aria-label="Счётчик повторений">
+          <span class="count"><b class="js-cur">0</b><small>/${target}</small></span>
+          <span class="lbl js-count-label">${countLabel(target)}</span>
+          <span class="fill js-fill"></span>
+        </button>`;
       card.innerHTML = `
         <div class="top">
           <div class="badge"><b>${z.n}</b></div>
-          <div class="pill">×${z.target}</div>
+          <div class="pill">×${target}</div>
           <div class="sp"></div>
           <button class="mini drag-grip js-drag" title="Перетащить" aria-label="Перетащить зикр"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.6"/><circle cx="16" cy="6" r="1.6"/><circle cx="8" cy="12" r="1.6"/><circle cx="16" cy="12" r="1.6"/><circle cx="8" cy="18" r="1.6"/><circle cx="16" cy="18" r="1.6"/></svg></button>
         </div>
@@ -1116,16 +1111,6 @@
     bindCounters(); bindSortable(); applyTextToggles(); updateProgress(); go('reading');
   }
 
-  function beadsSVG(n){
-    const cx=60, cy=55, R=47;
-    const count = Math.max(1, Math.min(n, 45));   // бусин = число повторений (кап 45 для больших)
-    const spacing = (2*Math.PI*R)/count;
-    const br = Math.max(2.4, Math.min(6.5, spacing*0.34)); // мало бусин → крупнее, много → мельче
-    let s='';
-    for(let i=0;i<count;i++){ const a=(i/count)*2*Math.PI - Math.PI/2;
-      s += `<circle class="bead" cx="${(cx+R*Math.cos(a)).toFixed(1)}" cy="${(cy+R*Math.sin(a)).toFixed(1)}" r="${br.toFixed(1)}"/>`; }
-    return s;
-  }
   function bindCounters(){
     document.querySelectorAll('#zikrList .zikr').forEach(card=>{
       const id = card.dataset.id;
@@ -1133,19 +1118,24 @@
       const btn = card.querySelector('.tasbih');
       const target = +btn.dataset.target;
       const single = btn.classList.contains('single');
-      const beads = Array.from(card.querySelectorAll('.bead'));
       const curEl = card.querySelector('.js-cur');
+      const fillEl = card.querySelector('.js-fill');
+      const labelEl = card.querySelector('.js-count-label');
       function render(cur, animate){
+        cur = Math.max(0, Math.min(cur, target));
         btn.dataset.cur = cur;
-        if(!single){
-          const filled = cur>=target ? beads.length : Math.round(cur/target*beads.length);
-          beads.forEach((b,i)=>{
-            const on = i<filled;
-            if(on && animate && !b.classList.contains('on')){ b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
-            b.classList.toggle('on', on);
-          });
-          beads.forEach((b,i)=> b.classList.toggle('next', i===filled));
-          if(curEl) curEl.textContent = cur;
+        if(curEl) curEl.textContent = cur;
+        if(fillEl) btn.style.setProperty('--progress', (target ? Math.min(100, cur/target*100) : 0)+'%');
+        if(labelEl){
+          labelEl.textContent = cur >= target
+            ? 'готово'
+            : (single ? 'отметить' : countLabel(target));
+        }
+        if(animate){
+          btn.classList.remove('pulse');
+          void btn.offsetWidth;
+          btn.classList.add('pulse');
+          setTimeout(()=>btn.classList.remove('pulse'), 260);
         }
         card.classList.toggle('done', cur>=target);
       }
@@ -1183,20 +1173,24 @@
         if(done) scrollToNextTasbih();
       }
       render(+btn.dataset.cur || 0, false);
-      if(!single){
-        const PULL_MAX=54, PULL_ARM=26;
-        let pullStart=0, pull=0, active=false, armed=false, suppressClick=false, lastGesture=0;
-        function setPull(px){ pull=Math.max(0,Math.min(PULL_MAX,px)); btn.style.setProperty('--pull',pull+'px'); const a=pull>=PULL_ARM; if(a!==armed){ armed=a; btn.classList.toggle('armed',armed); if(armed) tgHaptic('light'); } }
-        function resetPull(){ btn.classList.remove('pulling','armed'); btn.style.setProperty('--pull','0px'); armed=false; }
-        function gestureInc(){ const now=Date.now(); if(now-lastGesture<160) return; lastGesture=now; suppressClick=true; inc(); setTimeout(()=>{ suppressClick=false; }, 180); }
-        btn.addEventListener('pointerdown', e=>{ if(REORDER) return; if(e.button!=null && e.button!==0) return; pullStart=e.clientY; active=true; armed=false; btn.classList.add('pulling'); try{ btn.setPointerCapture(e.pointerId); }catch(_e){} });
-        btn.addEventListener('pointermove', e=>{ if(!active) return; let d=e.clientY-pullStart; if(d>PULL_ARM) d=PULL_ARM+(d-PULL_ARM)*0.5; setPull(d); });
-        btn.addEventListener('pointerup', e=>{ if(!active) return; active=false; try{ btn.releasePointerCapture(e.pointerId); }catch(_e){} if(armed) gestureInc(); resetPull(); });
-        btn.addEventListener('pointercancel', ()=>{ active=false; resetPull(); });
-        btn.addEventListener('click', e=>{ e.stopPropagation(); if(suppressClick || REORDER) return; inc(); });
-      } else {
-        btn.addEventListener('click', e=>{ e.stopPropagation(); if(REORDER) return; inc(); });
+      const PULL_MAX=42, PULL_ARM=22;
+      let pullStart=0, active=false, armed=false, suppressClick=false, lastGesture=0;
+      function setPull(raw){
+        const sign = raw < 0 ? -1 : 1;
+        const abs = Math.abs(raw);
+        const eased = abs > PULL_ARM ? PULL_ARM + (abs - PULL_ARM) * .45 : abs;
+        const px = sign * Math.min(PULL_MAX, eased);
+        btn.style.setProperty('--pull', px+'px');
+        const a = abs >= PULL_ARM;
+        if(a!==armed){ armed=a; btn.classList.toggle('armed', armed); if(armed) tgHaptic('light'); }
       }
+      function resetPull(){ btn.classList.remove('pulling','armed'); btn.style.setProperty('--pull','0px'); armed=false; }
+      function gestureInc(){ const now=Date.now(); if(now-lastGesture<160) return; lastGesture=now; suppressClick=true; inc(); setTimeout(()=>{ suppressClick=false; }, 180); }
+      btn.addEventListener('pointerdown', e=>{ if(REORDER) return; if(e.button!=null && e.button!==0) return; pullStart=e.clientY; active=true; armed=false; btn.classList.add('pulling'); try{ btn.setPointerCapture(e.pointerId); }catch(_e){} });
+      btn.addEventListener('pointermove', e=>{ if(!active) return; setPull(e.clientY-pullStart); });
+      btn.addEventListener('pointerup', e=>{ if(!active) return; active=false; try{ btn.releasePointerCapture(e.pointerId); }catch(_e){} if(armed) gestureInc(); resetPull(); });
+      btn.addEventListener('pointercancel', ()=>{ active=false; resetPull(); });
+      btn.addEventListener('click', e=>{ e.stopPropagation(); if(suppressClick || REORDER) return; inc(); });
       card.addEventListener('click', e=>{ if(REORDER || card.dataset.dragLock==='1' || e.target.closest('.cbtn, .mini, a, .tasbih, .src-row')) return; inc(); });
       card.querySelector('.js-src').addEventListener('click', e=>{ e.stopPropagation(); openInfo(CURRENT_ITEMS.find(x=>x._id===card.dataset.id) || CURRENT_ITEMS[idx]); });
     });
@@ -1443,8 +1437,9 @@
       items.forEach((z,i)=>{
         const id = itemId(key,z);
         const count = ((PROG[key] && (PROG[key][id] ?? PROG[key][i])) || 0);
+        const target = effectiveTarget(key, z);
         if(count > 0) anyStarted = true;
-        if(count >= z.target) done++;
+        if(count >= target) done++;
       });
       azkarToday+=done; totalAzkar+=total;
       const small=document.getElementById('p'+key.charAt(0).toUpperCase()+key.slice(1));
