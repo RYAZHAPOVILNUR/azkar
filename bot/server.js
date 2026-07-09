@@ -106,14 +106,27 @@ function checkInitData(initData) {
 
 // регистрация геолокации пользователя (для персональных напоминаний)
 app.post('/api/location', (req, res) => {
-  const { initData, lat, lng, madhab } = req.body || {};
+  const { initData, lat, lng, madhab, tz } = req.body || {};
   const user = checkInitData(initData);
   if (!user || !user.id) return res.status(401).json({ error: 'bad initData' });
   if (typeof lat !== 'number' || typeof lng !== 'number') return res.status(400).json({ error: 'lat/lng required' });
   const subs = loadSubs();
   subs[user.id] = { ...(subs[user.id] || {}), id: user.id, name: user.first_name || '',
-    lat, lng, madhab: madhab === 'hanafi' ? 'hanafi' : 'shafi', since: subs[user.id]?.since || Date.now() };
+    lat, lng, madhab: madhab === 'hanafi' ? 'hanafi' : 'shafi',
+    tz: (typeof tz === 'string' && tz) ? tz : subs[user.id]?.tz,
+    since: subs[user.id]?.since || Date.now() };
   saveSubs(subs);
+  res.json({ ok: true });
+});
+
+// регистрация таймзоны (чтобы фикс. напоминания шли в локальной зоне) — только для уже подписанных
+app.post('/api/tz', (req, res) => {
+  const { initData, tz } = req.body || {};
+  const user = checkInitData(initData);
+  if (!user || !user.id) return res.status(401).json({ error: 'bad initData' });
+  if (typeof tz !== 'string' || !tz) return res.status(400).json({ error: 'tz required' });
+  const subs = loadSubs();
+  if (subs[user.id]) { subs[user.id].tz = tz; saveSubs(subs); }   // не создаём новых подписчиков из tz
   res.json({ ok: true });
 });
 
@@ -178,49 +191,36 @@ if (!TOKEN) {
   const MORNING_MSG = '🌅 Время утренних поминаний. Начни день с зикра.';
   const EVENING_MSG = '🌙 Время вечерних поминаний.';
   const SLEEP_MSG = '🌙 Поминания перед сном. Закрой день спокойно — открой раздел «Перед сном».';
-  const todayKey = () => new Date().toISOString().slice(0, 10);
   function hhmm(d, tz) { return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: tz || TZ }); }
+  function localDay(d, tz) { return d.toLocaleDateString('sv-SE', { timeZone: tz || TZ }); }   // YYYY-MM-DD в зоне пользователя
+  function cronToHM(expr) { const p = String(expr).trim().split(/\s+/); const h = +p[1], m = +p[0]; return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'); }
+  const FIXED = { morning: cronToHM(MORNING_CRON), evening: cronToHM(EVENING_CRON), sleep: cronToHM(SLEEP_CRON) };
 
-  // персональные напоминания по времени намаза — тик раз в минуту
+  // единый поминутный тик: КАЖДОМУ в ЕГО таймзоне (u.tz), дедуп по локальному дню пользователя
   cron.schedule('* * * * *', () => {
-    const subs = loadSubs(); const now = new Date(); const day = todayKey();
-    const nowHM = hhmm(now, TZ);
-    let changed = false;
+    const subs = loadSubs(); const now = new Date(); let changed = false;
     for (const id in subs) {
       const u = subs[id];
-      if (typeof u.lat !== 'number') continue; // без геолокации — фиксированный крон ниже
       const tz = u.tz || TZ;
-      let t; try { t = prayerTimes(u.lat, u.lng, u.madhab, now); } catch { continue; }
-      if (hhmm(t.fajr, tz) === hhmm(now, tz) && u.lastMorning !== day) { u.lastMorning = day; changed = true; send(id, MORNING_MSG); }
-      if (hhmm(t.asr, tz) === hhmm(now, tz) && u.lastEvening !== day) { u.lastEvening = day; changed = true; send(id, EVENING_MSG); }
+      const day = localDay(now, tz);
+      const nowHM = hhmm(now, tz);
+      if (typeof u.lat === 'number') {
+        // персональные — по времени намаза (в его зоне)
+        let t; try { t = prayerTimes(u.lat, u.lng, u.madhab, now); } catch { t = null; }
+        if (t) {
+          if (hhmm(t.fajr, tz) === nowHM && u.lastMorning !== day) { u.lastMorning = day; changed = true; send(id, MORNING_MSG); }
+          if (hhmm(t.asr, tz) === nowHM && u.lastEvening !== day) { u.lastEvening = day; changed = true; send(id, EVENING_MSG); }
+        }
+      } else {
+        // без геолокации — фикс. расписание в ЛОКАЛЬНОЙ зоне пользователя (а не по МСК)
+        if (nowHM === FIXED.morning && u.lastMorning !== day) { u.lastMorning = day; changed = true; send(id, MORNING_MSG); }
+        if (nowHM === FIXED.evening && u.lastEvening !== day) { u.lastEvening = day; changed = true; send(id, EVENING_MSG); }
+      }
+      // перед сном — всем, в их зоне
+      if (nowHM === FIXED.sleep && u.lastSleep !== day) { u.lastSleep = day; changed = true; send(id, SLEEP_MSG); }
     }
     if (changed) saveSubs(subs);
-  }, { timezone: TZ });
+  });
 
-  // фиксированное расписание — только для тех, у кого нет геолокации
-  function fixedBroadcast(text, mark) {
-    const subs = loadSubs(); const day = todayKey(); let changed = false;
-    for (const id in subs) {
-      const u = subs[id];
-      if (typeof u.lat === 'number') continue;
-      if (u[mark] === day) continue;
-      u[mark] = day; changed = true; send(id, text);
-    }
-    if (changed) saveSubs(subs);
-  }
-  cron.schedule(MORNING_CRON, () => fixedBroadcast(MORNING_MSG, 'lastMorning'), { timezone: TZ });
-  cron.schedule(EVENING_CRON, () => fixedBroadcast(EVENING_MSG, 'lastEvening'), { timezone: TZ });
-
-  function allBroadcast(text, mark) {
-    const subs = loadSubs(); const day = todayKey(); let changed = false;
-    for (const id in subs) {
-      const u = subs[id];
-      if (u[mark] === day) continue;
-      u[mark] = day; changed = true; send(id, text);
-    }
-    if (changed) saveSubs(subs);
-  }
-  cron.schedule(SLEEP_CRON, () => allBroadcast(SLEEP_MSG, 'lastSleep'), { timezone: TZ });
-
-  console.log(`[bot] запущен. Персональные напоминания по намазу + фикс. фолбэк + перед сном (${TZ}).`);
+  console.log(`[bot] запущен. Напоминания в таймзоне пользователя (намаз/фикс/сон), дефолт ${TZ}.`);
 }

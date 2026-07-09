@@ -2288,12 +2288,21 @@
   function setLocStatus(s){ const el=document.getElementById('locStatus'); if(el) el.textContent=s; }
   function locDone(){ const b=document.getElementById('locBtn'); b.classList.add('done'); b.textContent='Местоположение определено'; }
 
+  const CLIENT_TZ = (()=>{ try{ return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; }catch(e){ return ''; } })();
   function postLocation(){
     if(TG && TG.initData && loc){
       fetch('/api/location',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({initData:TG.initData, lat:loc.lat, lng:loc.lng, madhab})}).catch(()=>{});
+        body:JSON.stringify({initData:TG.initData, lat:loc.lat, lng:loc.lng, madhab, tz:CLIENT_TZ})}).catch(()=>{});
     }
   }
+  // отдать боту свою таймзону, чтобы фикс. напоминания шли в локальной зоне (не по МСК)
+  function registerTz(){
+    if(TG && TG.initData && CLIENT_TZ){
+      fetch('/api/tz',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({initData:TG.initData, tz:CLIENT_TZ})}).catch(()=>{});
+    }
+  }
+  registerTz();
 
   function requestLocation(){
     if(!navigator.geolocation){ setLocStatus('Геолокация недоступна на этом устройстве'); return; }
