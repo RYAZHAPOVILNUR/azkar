@@ -179,6 +179,8 @@
   .session[data-session="evening"] { --stint:190,128,104; --stint-a:.13; }
   .session[data-session="after"]   { --stint:120,132,96;  --stint-a:.12; }
   .session[data-session="sleep"]   { --stint:112,104,124; --stint-a:.11; }
+  .session[data-session="favorites"] { --stint:126,132,140; --stint-a:.10; }
+  .session[data-session="favorites"] .body { background:linear-gradient(90deg, var(--surface) 0%, color-mix(in srgb, var(--surface-2) 88%, transparent) 100%); }
   .session .art::after { content:""; position:absolute; inset:0; background:rgba(var(--stint), var(--stint-a)); mix-blend-mode:multiply; }
   :root[data-theme="dark"] .session .art::after { mix-blend-mode:soft-light; background:rgba(var(--stint), .10); }
   @media (prefers-color-scheme: dark){ :root:not([data-theme]) .session .art::after { mix-blend-mode:soft-light; background:rgba(var(--stint), .10); } }
@@ -201,6 +203,9 @@
   .home-today .ht-bar i { display:block; width:0%; height:100%; border-radius:99px; background:var(--accent); transition:width .45s cubic-bezier(.4,0,.2,1); }
   .home-today .ht-all { text-align:center; font-size:12px; color:var(--ink-faint); margin-top:11px; }
   .home-today .ht-all[hidden] { display:none; }
+  .home-insight { display:flex; flex-direction:column; gap:3px; margin-top:12px; color:var(--ink-soft); font-size:12.5px; line-height:1.35; }
+  .home-insight b { color:var(--ink); font-weight:700; }
+  .home-insight .muted { color:var(--ink-faint); }
 
   /* READING */
   /* liquid glass utility */
@@ -221,8 +226,14 @@
   .rbar span { display:block; height:100%; width:0%; border-radius:99px;
     background: var(--accent); opacity:.75; transition: width .5s cubic-bezier(.4,0,.2,1); }
   .rmeta { display:flex; justify-content:space-between; margin-top:6px; font-size:12px; color:var(--ink-faint); font-variant-numeric:tabular-nums; }
+  .learn-seg { display:flex; gap:4px; margin-top:10px; padding:4px; border-radius:13px; background:var(--surface-2); }
+  .learn-seg button { flex:1; min-width:0; border:0; border-radius:10px; padding:8px 4px; background:none; color:var(--ink-soft);
+    font:inherit; font-size:12.5px; font-weight:700; cursor:pointer; }
+  .learn-seg button.on { background:var(--surface); color:var(--ink); box-shadow:var(--shadow-card); }
 
   .list { padding:16px 14px 30px; display:flex; flex-direction:column; gap:18px; }
+  .empty-state { margin:8px 4px; padding:26px 20px; border:1px dashed var(--line); border-radius:22px;
+    color:var(--ink-soft); text-align:center; font-size:14px; line-height:1.55; background:color-mix(in srgb,var(--surface) 72%,transparent); }
   .list.sorting { user-select:none; -webkit-user-select:none; touch-action:none; }
   .zikr { background: var(--surface); border:1px solid var(--line); border-radius:24px;
     padding:18px 17px 16px; box-shadow: var(--shadow-card);
@@ -245,6 +256,7 @@
     transition: color .15s, transform .15s, background .15s; padding:0; font:inherit; -webkit-tap-highlight-color:transparent; }
   .top .mini:hover { color: var(--accent); }
   .top .mini:active { transform: scale(.9); }
+  .top .mini.fav-btn.is-fav { color:var(--accent-deep); background:var(--accent-soft); border-color:color-mix(in srgb, var(--accent) 36%, var(--line)); }
   .top .drag-grip { cursor:grab; touch-action:none; }
   .top .drag-grip:active { cursor:grabbing; }
   .foot-link { color: var(--accent-deep); text-decoration:none; }
@@ -252,6 +264,12 @@
 
   .arabic { font-family: var(--ar-font), var(--ar); direction:rtl; text-align:right; color: var(--ink);
     font-size: var(--ar-size); line-height:2.3; margin:4px 2px 2px; cursor:pointer; }
+  .list[data-learn="check"] .translate { display:none !important; }
+  .list[data-learn="memory"] .translit, .list[data-learn="memory"] .translate { display:none !important; }
+  .list[data-learn="memory"] .arabic { color:transparent; text-shadow:0 0 11px color-mix(in srgb, var(--ink) 72%, transparent); }
+  .list[data-learn="memory"] .zikr.reveal .arabic { color:var(--ink); text-shadow:none; }
+  .list[data-learn="memory"] .zikr:not(.reveal) .arabic:after { content:"Нажми, чтобы открыть текст"; display:block; direction:ltr; text-align:center;
+    font-family:var(--sans); font-size:12px; line-height:1.4; color:var(--ink-faint); text-shadow:none; margin-top:8px; }
   .ayah .ar { font-family: var(--ar-font), var(--ar); }
   .translit { font-size:17px; color: var(--ink); margin-top:14px; line-height:1.68; font-weight:500; }
   .divider { height:1px; background: var(--line); margin:16px 2px; border:none; }
@@ -283,6 +301,7 @@
   .list.reordering .zikr .drag-grip { display:grid; cursor:grab; color:var(--ink-faint); }
   .list.reordering .zikr .drag-grip:active { cursor:grabbing; }
   .list.reordering .zikr .pill, .list.reordering .zikr .sp { display:none; }
+  .list.reordering .zikr .fav-btn { display:none; }
   .list.reordering .zikr .badge { width:26px; height:26px; }
   .list.reordering .zikr .badge b { font-size:12px; }
   .list.reordering .zikr .ro-name { display:flex; align-items:center; gap:6px; flex:1; min-width:0;
@@ -296,6 +315,8 @@
     transition:transform .12s, background .15s, color .15s; -webkit-tap-highlight-color:transparent; }
   .ro-btn:active { transform:scale(.9); background:var(--accent-soft); color:var(--accent-deep); }
   .ro-btn:disabled { opacity:.32; pointer-events:none; }
+  @keyframes roFlash { 0%{ background: color-mix(in srgb, var(--accent) 20%, var(--surface)); } 100%{ background: var(--surface); } }
+  .zikr.ro-flash { animation: roFlash .55s ease; }
   .cnote { text-align:center; font-size:12px; color:var(--ink-faint); margin-top:12px; font-style:italic; }
   .counter-row { display:flex; align-items:center; justify-content:flex-end; gap:18px; margin-top:10px; padding:12px 0 0 0; border-top:1px solid var(--line); }
   .cbtn { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; cursor:pointer; flex-shrink:0;
@@ -430,6 +451,10 @@
   .modal .m-txt { font-size:16px; line-height:1.65; color:var(--ink); }
   .modal .m-txt.soft { color:var(--ink-soft); font-family:var(--serif); }
   .modal .m-txt.sharh { white-space:pre-line; font-size:15.5px; line-height:1.72; color:var(--ink-soft); }
+  .modal .m-sharh-tabs { display:flex; gap:4px; padding:4px; border-radius:12px; background:var(--surface-2); margin-bottom:10px; }
+  .modal .m-sharh-tabs button { flex:1; border:0; border-radius:9px; padding:8px 6px; background:none; color:var(--ink-soft);
+    font:inherit; font-size:13px; font-weight:700; cursor:pointer; }
+  .modal .m-sharh-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--shadow-card); }
   .modal .m-src { font-size:14px; color:var(--ink-soft); }
   .modal .m-refs { display:flex; flex-direction:column; gap:7px; }
   .modal .m-ref { display:flex; align-items:center; gap:8px; min-height:34px; padding:8px 10px; border-radius:10px;
@@ -442,6 +467,20 @@
   .modal .m-note { font-size:13px; color:var(--ink-faint); font-style:italic; margin-top:18px; line-height:1.5; }
   .modal .m-play { display:inline-flex; align-items:center; gap:8px; margin-top:8px; padding:10px 16px; border-radius:12px;
     border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent-deep); font-weight:700; font-size:14.5px; cursor:pointer; }
+
+  .complete-wrap { padding:18px 18px 30px; }
+  .complete-card { border:1px solid var(--line); border-radius:24px; background:var(--surface); box-shadow:var(--shadow-card);
+    padding:22px 20px; text-align:center; }
+  .complete-mark { width:54px; height:54px; margin:0 auto 14px; border-radius:18px; display:grid; place-items:center;
+    background:var(--accent-soft); color:var(--accent-deep); border:1px solid color-mix(in srgb,var(--accent) 26%,transparent); }
+  .complete-title { font-size:22px; line-height:1.2; font-weight:800; color:var(--ink); }
+  .complete-sub { margin-top:10px; color:var(--ink-soft); font-size:15px; line-height:1.55; }
+  .complete-dua { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); font-family:var(--serif); color:var(--ink-soft);
+    font-size:16px; line-height:1.65; }
+  .complete-actions { display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+  .complete-actions button { border:1px solid var(--line); border-radius:14px; padding:12px; font:inherit; font-size:14px; font-weight:800; cursor:pointer;
+    background:var(--surface-2); color:var(--ink); }
+  .complete-actions .primary { background:var(--accent-soft); color:var(--accent-deep); border-color:color-mix(in srgb,var(--accent) 30%,var(--line)); }
 
   @media (prefers-reduced-motion: reduce) { *, *:before, *:after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 </style>
@@ -516,6 +555,16 @@
           <div class="prog"><small id="pSleep">0/17</small><span class="pbar"><i></i></span></div>
         </div>
       </div>
+
+      <div class="session" data-session="favorites" onclick="openReading('favorites')">
+        <div class="body">
+          <div class="lead">
+            <span class="s-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
+            <div class="titles"><div class="t">Избранное</div><div class="sub">Для повторения и заучивания</div></div>
+          </div>
+          <div class="prog"><small id="pFavorites">0</small><span class="pbar"><i></i></span></div>
+        </div>
+      </div>
     </div>
 
     <div class="home-today" id="homeToday">
@@ -525,6 +574,10 @@
       </div>
       <span class="ht-bar"><i id="htBar"></i></span>
       <div class="ht-all" id="htAll" hidden>все поминания на сегодня</div>
+      <div class="home-insight" id="homeInsight">
+        <span id="weekInsight">За неделю пока нет истории</span>
+        <span class="muted" id="favInsight">Избранное пусто</span>
+      </div>
     </div>
   </section>
 
@@ -538,11 +591,39 @@
       </div>
       <div class="rbar"><span id="rBarFill"></span></div>
       <div class="rmeta"><span id="rProg"></span><span id="rHint" class="rhint"></span></div>
+      <div class="learn-seg" id="learnSeg">
+        <button type="button" data-learn="full">Читать</button>
+        <button type="button" data-learn="check">Проверить</button>
+        <button type="button" data-learn="memory">Без подсказки</button>
+      </div>
     </div>
     <div class="list" id="zikrList"></div>
     <div class="reorder-bar">
       <button type="button" class="reorder-reset" id="reorderReset" hidden>Вернуть исходный порядок</button>
       <button type="button" class="reorder-toggle" id="reorderToggle">Изменить порядок</button>
+    </div>
+  </section>
+
+  <!-- COMPLETE -->
+  <section class="screen" id="complete">
+    <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
+      <div class="row">
+        <button class="back" onclick="goHome()" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px">Завершено</div></div>
+        <div style="width:38px"></div>
+      </div>
+    </div>
+    <div class="complete-wrap">
+      <div class="complete-card">
+        <div class="complete-mark"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div class="complete-title" id="completeTitle">Поминания завершены</div>
+        <div class="complete-sub" id="completeSub">Аллах принял благие слова и сделал их причиной спокойствия.</div>
+        <div class="complete-dua">О Аллах, помоги нам поминать Тебя, благодарить Тебя и прекрасно поклоняться Тебе.</div>
+        <div class="complete-actions">
+          <button class="primary" type="button" onclick="goHome()">Вернуться</button>
+          <button type="button" onclick="openRandomSharh()">Прочитать шарх одного зикра</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -662,7 +743,7 @@
       <div class="m-ar" id="miAr"></div>
       <div class="m-sec"><div class="m-lbl">Перевод и достоинство</div><div class="m-txt soft" id="miTr"></div></div>
       <div class="m-sec"><div class="m-lbl">Источник</div><div class="m-src" id="miSrc"></div><div style="margin-top:8px"><span class="m-grade" id="miGrade"></span></div></div>
-      <div class="m-sec" id="miSharhSec"><div class="m-lbl">Развёрнутый шарх</div><div class="m-txt sharh" id="miSharh"></div><div class="m-note" id="miSharhSrc"></div></div>
+      <div class="m-sec" id="miSharhSec"><div class="m-lbl">Шарх</div><div class="m-sharh-tabs" id="miSharhTabs"><button type="button" data-sharh-mode="brief">Кратко</button><button type="button" data-sharh-mode="deep">Подробно</button></div><div class="m-txt sharh" id="miSharh"></div><div class="m-note" id="miSharhSrc"></div></div>
       <div class="m-sec" id="miRefsSec"><div class="m-lbl">Оригиналы и шархи</div><div class="m-refs" id="miRefs"></div></div>
       <div class="m-sec" id="miFadlSec" style="display:none"><div class="m-lbl">Достоинство (фадль)</div><div class="m-txt" id="miFadl"></div></div>
       <div class="m-note">Шарх — авторское пояснение по смыслу зикра с опорой на книги учёных; это не дословная цитата из переводов.</div>
@@ -1554,6 +1635,7 @@
   /* ---------- состояние (сохраняется между заходами, сбрасывается на новый день) ---------- */
   const todayStr = (date = new Date()) => date.toLocaleDateString('sv');   // YYYY-MM-DD (локальная дата)
   const SESSION_KEYS = ['morning','evening','after','sleep'];
+  const SESSION_TITLES = { morning:'Утренние поминания', evening:'Вечерние поминания', after:'Поминания после намаза', sleep:'Поминания перед сном', favorites:'Избранное' };
   const blankProgress = date => ({ date, morning:{}, evening:{}, after:{}, sleep:{}, afterSlot:null });
   function hasSavedLocation(){
     try { const saved = JSON.parse(localStorage.getItem('azkar_loc') || 'null'); return !!(saved && typeof saved.lat === 'number' && typeof saved.lng === 'number'); }
@@ -1569,11 +1651,34 @@
   let CURRENT_KEY = null;
   let CURRENT_ITEMS = [];
   let REORDER = false;
+  let reorderPendingRefresh = false;   // фоновое обновление отложено, пока идёт перестановка
+  let LEARN_MODE = localStorage.getItem('azkar_learn_mode') || 'full';
+  let modalSharhMode = 'brief';
+  let completeItems = [];
   function saveProgress(){ try{ localStorage.setItem('azkar_progress', JSON.stringify(PROG)); }catch(e){} }
   function itemId(key, z){ return z.id || `${key}-${z.n}`; }
   function orderKey(key){ return `azkar_order_${key}`; }
+  function loadFavoriteIds(){ try{ return JSON.parse(localStorage.getItem('azkar_favorites') || '[]'); }catch(e){ return []; } }
+  function saveFavoriteIds(ids){ try{ localStorage.setItem('azkar_favorites', JSON.stringify(Array.from(new Set(ids)))); }catch(e){} }
+  function isFavorite(id){ return loadFavoriteIds().includes(id); }
+  function toggleFavorite(id, on){
+    let ids = loadFavoriteIds();
+    if(on == null) on = !ids.includes(id);
+    ids = on ? Array.from(new Set([...ids, id])) : ids.filter(x=>x!==id);
+    saveFavoriteIds(ids);
+    updateHomeProgress();
+    return on;
+  }
+  function allAzkarItems(){
+    return SESSION_KEYS.flatMap(key => (AZKAR[key].items || []).map((z, idx)=>({ ...z, _idx:idx, _id:itemId(key,z), _session:key })));
+  }
+  function favoriteItems(){
+    const byId = new Map(allAzkarItems().map(z=>[z._id,z]));
+    return loadFavoriteIds().map(id=>byId.get(id)).filter(Boolean);
+  }
   function orderedItems(key){
-    const items = (AZKAR[key].items || []).map((z, idx)=>({ ...z, _idx:idx, _id:itemId(key,z) }));
+    if(key === 'favorites') return favoriteItems();
+    const items = (AZKAR[key].items || []).map((z, idx)=>({ ...z, _idx:idx, _id:itemId(key,z), _session:key }));
     let order=[]; try{ order=JSON.parse(localStorage.getItem(orderKey(key))||'[]'); }catch(e){}
     const rank = new Map(order.map((id,i)=>[id,i]));
     return items.sort((a,b)=>{
@@ -1599,6 +1704,19 @@
     const byId = new Map(orderedItems(CURRENT_KEY).map(z=>[z._id, z]));
     CURRENT_ITEMS = Array.from(list.querySelectorAll('.zikr[data-id]')).map((c,i)=>{ c.dataset.i = i; return byId.get(c.dataset.id); }).filter(Boolean);
   }
+  // плавный доезд строки из старой позиции в новую (FLIP)
+  function flipSlide(el, firstTop){
+    const dy = firstTop - el.getBoundingClientRect().top;
+    if(!dy) return;
+    el.style.transition = 'none';
+    el.style.transform = 'translateY(' + dy + 'px)';
+    void el.offsetWidth;                         // зафиксировать стартовую позицию
+    requestAnimationFrame(function(){
+      el.style.transition = 'transform .3s cubic-bezier(.2,.8,.2,1)';
+      el.style.transform = '';
+    });
+    setTimeout(function(){ el.style.transition=''; el.style.transform=''; }, 340);
+  }
   // ↑/↓ доступность: первую нельзя выше, последнюю ниже
   function updateRoArrows(){
     const cards = Array.from(document.querySelectorAll('#zikrList .zikr'));
@@ -1609,7 +1727,8 @@
     });
   }
   function savedCount(key, z){
-    const bucket = PROG[key] || {};
+    const progressKey = z._session || key;
+    const bucket = PROG[progressKey] || {};
     const byId = bucket[z._id];
     if(byId != null) return byId;
     const byOldIndex = bucket[z._idx];
@@ -1647,7 +1766,8 @@
     if(!PROG || PROG.date !== day){
       PROG = blankProgress(day);
       saveProgress();
-      if(CURRENT_KEY) openReading(CURRENT_KEY);
+      if(REORDER){ reorderPendingRefresh = true; }          // не рушить активную перестановку
+      else if(CURRENT_KEY) openReading(CURRENT_KEY);
       else updateHomeProgress();
     }
   }
@@ -1657,7 +1777,8 @@
       PROG.after = {};
       PROG.afterSlot = slot;
       saveProgress();
-      if(CURRENT_KEY === 'after') openReading('after');
+      if(REORDER){ reorderPendingRefresh = true; }          // не рушить активную перестановку
+      else if(CURRENT_KEY === 'after') openReading('after');
       else updateHomeProgress();
     }
   }
@@ -1671,18 +1792,26 @@
   }
   function openReading(key){
     CURRENT_KEY = key;
-    const data = AZKAR[key];
+    const data = key === 'favorites' ? { title:'Избранное' } : AZKAR[key];
     document.getElementById('rTitle').textContent = data.title;
     const rHint = document.getElementById('rHint');
     if(rHint){ if(!localStorage.getItem('azkar_taphint_seen')){ rHint.textContent='Тапни или потяни счётчик'; localStorage.setItem('azkar_taphint_seen','1'); } else rHint.textContent=''; }
     resetReorder();
     const list = document.getElementById('zikrList'); list.innerHTML = '';
     CURRENT_ITEMS = orderedItems(key);
+    if(key === 'favorites' && !CURRENT_ITEMS.length){
+      list.innerHTML = '<div class="empty-state">Здесь будут зикры, которые ты отметишь закладкой. Открой любой раздел и нажми значок закладки на нужной карточке.</div>';
+      applyLearnMode();
+      updateProgress(true);
+      go('reading');
+      return;
+    }
     CURRENT_ITEMS.forEach((z, idx)=>{
-      const target = effectiveTarget(key, z);
+      const progressKey = z._session || key;
+      const target = effectiveTarget(progressKey, z);
       const note = z.targetHint ? `<div class="cnote">${z.targetHint}</div>` : '';
-      const saved = savedCount(key, z);
-      const card = document.createElement('div'); card.className = 'zikr'; card.dataset.i = idx; card.dataset.id = z._id;
+      const saved = savedCount(progressKey, z);
+      const card = document.createElement('div'); card.className = 'zikr'; card.dataset.i = idx; card.dataset.id = z._id; card.dataset.session = progressKey;
       const counter = `<button class="tasbih${target===1 ? ' single' : ''}" data-target="${target}" data-cur="${Math.min(saved, target)}" aria-label="Счётчик повторений">
           <span class="count"><b class="js-cur">0</b><small>/${target}</small></span>
           <span class="fill js-fill"></span>
@@ -1692,6 +1821,7 @@
           <button class="mini drag-grip js-drag" title="Перетащить" aria-label="Перетащить зикр"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.6"/><circle cx="16" cy="6" r="1.6"/><circle cx="8" cy="12" r="1.6"/><circle cx="16" cy="12" r="1.6"/><circle cx="8" cy="18" r="1.6"/><circle cx="16" cy="18" r="1.6"/></svg></button>
           <div class="badge"><b>${z.n}</b></div>
           <div class="pill">×${target}</div>
+          <button class="mini fav-btn js-fav ${isFavorite(z._id) ? 'is-fav' : ''}" title="В избранное" aria-label="В избранное"><svg width="16" height="16" viewBox="0 0 24 24" fill="${isFavorite(z._id) ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
           <span class="ro-name"><span class="ro-name-txt">${shortLabel(z)}</span><svg class="ro-peek" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
           <div class="sp"></div>
           <div class="ro-move">
@@ -1708,13 +1838,14 @@
         <div class="counter-row">${counter}</div>`;
       list.appendChild(card);
     });
-    bindCounters(); bindSortable(); applyTextToggles(); updateProgress(); go('reading');
+    bindCounters(); bindSortable(); applyTextToggles(); applyLearnMode(); updateProgress(true); go('reading');
   }
 
   function bindCounters(){
     document.querySelectorAll('#zikrList .zikr').forEach(card=>{
       const id = card.dataset.id;
       const idx = +card.dataset.i;
+      const progressKey = card.dataset.session || CURRENT_KEY;
       const btn = card.querySelector('.tasbih');
       const target = +btn.dataset.target;
       const single = btn.classList.contains('single');
@@ -1733,7 +1864,11 @@
         }
         card.classList.toggle('done', cur>=target);
       }
-      function persist(cur){ PROG[CURRENT_KEY][id] = cur; saveProgress(); }
+      function persist(cur){
+        PROG[progressKey][id] = cur;
+        saveProgress();
+        recordHistory(progressKey, cur >= target);
+      }
       function fadeHint(){ const h=document.getElementById('rHint'); if(h && h.textContent){ h.style.opacity='0'; setTimeout(()=>{ h.textContent=''; h.style.opacity=''; },300); } }
       function scrollToNextTasbih(){
         const cards = Array.from(document.querySelectorAll('#zikrList .zikr'));
@@ -1787,6 +1922,18 @@
       btn.addEventListener('click', e=>{ e.stopPropagation(); if(suppressClick || REORDER) return; inc(); });
       card.addEventListener('click', e=>{ if(REORDER || card.dataset.dragLock==='1' || e.target.closest('.cbtn, .mini, a, .tasbih, .src-row')) return; inc(); });
       card.querySelector('.js-src').addEventListener('click', e=>{ e.stopPropagation(); openInfo(CURRENT_ITEMS.find(x=>x._id===card.dataset.id) || CURRENT_ITEMS[idx]); });
+      card.querySelector('.js-fav').addEventListener('click', e=>{
+        e.stopPropagation();
+        const nowFav = toggleFavorite(id);
+        if(CURRENT_KEY === 'favorites' && !nowFav){ openReading('favorites'); return; }
+        const icon = e.currentTarget.querySelector('svg');
+        e.currentTarget.classList.toggle('is-fav', nowFav);
+        if(icon) icon.setAttribute('fill', nowFav ? 'currentColor' : 'none');
+        tgHaptic('light');
+      });
+      card.querySelector('.arabic').addEventListener('click', e=>{
+        if(LEARN_MODE === 'memory'){ e.stopPropagation(); card.classList.toggle('reveal'); tgHaptic('light'); }
+      });
     });
   }
 
@@ -1869,6 +2016,7 @@
       list.classList.remove('sorting');
       card.style.position=''; card.style.left=''; card.style.top=''; card.style.width='';
       card.style.zIndex=''; card.style.transform=''; card.style.pointerEvents='';
+      card.classList.remove('ro-flash'); void card.offsetWidth; card.classList.add('ro-flash');  // мгновенная отдача о применении
       syncCurrentOrder();
       tgHaptic('medium');
       setTimeout(()=>{ card.dataset.dragLock='0'; }, 180);
@@ -1912,6 +2060,12 @@
       rt.classList.toggle('active', on);
       if(rr) rr.hidden = !on;
       if(on) updateRoArrows();
+      // мягкий кросс-фейд — маскирует резкую перекомпоновку карточек при входе/выходе
+      l.style.transition='none'; l.style.opacity='.4'; void l.offsetWidth;
+      requestAnimationFrame(function(){ l.style.transition='opacity .22s ease'; l.style.opacity='1'; });
+      setTimeout(function(){ l.style.transition=''; }, 260);
+      // выходим из режима и накопилось отложенное фоновое обновление — применить сейчас
+      if(!on && reorderPendingRefresh){ reorderPendingRefresh = false; if(CURRENT_KEY) openReading(CURRENT_KEY); }
     }
     rt.addEventListener('click', ()=>{ setMode(!l.classList.contains('reordering')); tgHaptic('light'); });
     if(rr) rr.addEventListener('click', ()=>{
@@ -1928,8 +2082,13 @@
       if(up || dn){
         e.stopPropagation();
         const card = e.target.closest('.zikr'); if(!card) return;
-        if(up){ const prev=card.previousElementSibling; if(prev && prev.classList.contains('zikr')) l.insertBefore(card, prev); }
-        else  { const next=card.nextElementSibling;     if(next && next.classList.contains('zikr')) l.insertBefore(next, card); }
+        const neighbor = up ? card.previousElementSibling : card.nextElementSibling;
+        if(!neighbor || !neighbor.classList.contains('zikr')) return;  // край — двигать некуда
+        const cardTop = card.getBoundingClientRect().top;      // FLIP: запомнить старые позиции
+        const nbTop = neighbor.getBoundingClientRect().top;
+        if(up) l.insertBefore(card, neighbor); else l.insertBefore(neighbor, card);
+        flipSlide(card, cardTop); flipSlide(neighbor, nbTop);  // плавно доехать до новых мест
+        try{ card.scrollIntoView({ block:'nearest', behavior:'smooth' }); }catch(_e){ card.scrollIntoView(); }
         syncOrderFromDom(); updateRoArrows(); tgHaptic('light');
         return;
       }
@@ -1941,13 +2100,53 @@
     });
   })();
 
-  function updateProgress(){
+  function completionKey(key){
+    return `azkar_complete_seen_${PROG.date}_${key}_${key === 'after' ? (PROG.afterSlot || '') : ''}`;
+  }
+  function goHome(){
+    rememberScroll();
+    navStack = ['home'];
+    showScreen('home', { keepScroll:true });
+  }
+  function openComplete(key){
+    if(!SESSION_KEYS.includes(key)) return;
+    const seenKey = completionKey(key);
+    if(localStorage.getItem(seenKey) === '1') return;
+    localStorage.setItem(seenKey, '1');
+    completeItems = CURRENT_ITEMS.slice();
+    document.getElementById('completeTitle').textContent = `${SESSION_TITLES[key]} завершены`;
+    document.getElementById('completeSub').textContent = 'Пусть эти слова останутся в сердце после чтения.';
+    recordHistory(key, true);
+    tgHaptic('medium');
+    go('complete');
+  }
+  function openRandomSharh(){
+    const pool = completeItems.length ? completeItems : CURRENT_ITEMS;
+    const z = pool[Math.floor(Math.random() * Math.max(pool.length, 1))];
+    if(z) openInfo(z);
+  }
+  function updateProgress(silent=false){
     const cards = document.querySelectorAll('#zikrList .zikr');
     const total = cards.length, done = document.querySelectorAll('#zikrList .zikr.done').length;
     document.getElementById('rBarFill').style.width = total ? (done/total*100)+'%' : '0';
     document.getElementById('rProg').textContent = `${done} / ${total}`;
     updateHomeProgress();
+    if(!silent && total > 0 && done === total) openComplete(CURRENT_KEY);
   }
+
+  function applyLearnMode(){
+    if(!['full','check','memory'].includes(LEARN_MODE)) LEARN_MODE = 'full';
+    const list = document.getElementById('zikrList');
+    if(list) list.dataset.learn = LEARN_MODE;
+    document.querySelectorAll('#learnSeg button').forEach(b=> b.classList.toggle('on', b.dataset.learn === LEARN_MODE));
+  }
+  document.querySelectorAll('#learnSeg button').forEach(b=> b.addEventListener('click', ()=>{
+    LEARN_MODE = b.dataset.learn || 'full';
+    localStorage.setItem('azkar_learn_mode', LEARN_MODE);
+    document.querySelectorAll('#zikrList .zikr').forEach(card=>card.classList.remove('reveal'));
+    applyLearnMode();
+    tgHaptic('light');
+  }));
 
 
   /* ---------- модалка «инфо по зикру» ---------- */
@@ -1967,8 +2166,14 @@
     if(/хасан/i.test(src)) return 'Хороший · хасан';
     return 'Достоверная Сунна';
   }
+  function renderModalSharh(){
+    if(!modalZ) return;
+    document.getElementById('miSharh').textContent = modalSharhMode === 'deep' ? richSharhFor(modalZ) : sharhFor(modalZ);
+    document.querySelectorAll('#miSharhTabs button').forEach(b=> b.classList.toggle('on', b.dataset.sharhMode === modalSharhMode));
+  }
   function openInfo(z){
     modalZ = z; modalOpen = true;
+    modalSharhMode = 'brief';
     const modal=document.getElementById('infoModal'), sheet=modal.querySelector('.sheet');
     modal.dataset.closing='';
     if(sheet){ sheet.style.animation=''; sheet.style.transition=''; sheet.style.transform=''; sheet.scrollTop=0; }
@@ -1977,7 +2182,7 @@
     document.getElementById('miTr').textContent = z.tr;
     document.getElementById('miSrc').textContent = z.src;
     document.getElementById('miGrade').textContent = gradeLabel(z.src);
-    document.getElementById('miSharh').textContent = richSharhFor(z);
+    renderModalSharh();
     document.getElementById('miSharhSrc').textContent = SHARH_SOURCE_NOTE;
     const refs = refsFor(z);
     const refsSec = document.getElementById('miRefsSec');
@@ -2020,6 +2225,11 @@
   }
   document.getElementById('miClose').addEventListener('click', closeInfo);
   document.getElementById('infoScrim').addEventListener('click', closeInfo);
+  document.querySelectorAll('#miSharhTabs button').forEach(b=> b.addEventListener('click', ()=>{
+    modalSharhMode = b.dataset.sharhMode || 'brief';
+    renderModalSharh();
+    tgHaptic('light');
+  }));
 
   /* ---- iOS-style drag шторки: страница сзади не скроллится ---- */
   (function(){
@@ -2068,6 +2278,49 @@
     sheet.addEventListener('pointerup', end);
     sheet.addEventListener('pointercancel', end);
   })();
+
+  /* ---------- мягкая история без давления ---------- */
+  function loadHistory(){ try{ return JSON.parse(localStorage.getItem('azkar_history') || '{}'); }catch(e){ return {}; } }
+  function saveHistory(h){ try{ localStorage.setItem('azkar_history', JSON.stringify(h)); }catch(e){} }
+  function recordHistory(key, completed=false){
+    if(!SESSION_KEYS.includes(key)) return;
+    const h = loadHistory();
+    const d = PROG.date || todayStr();
+    const day = h[d] || { sessions:{} };
+    const s = day.sessions[key] || { started:false, completed:false, touches:0 };
+    s.started = true;
+    s.touches = (s.touches || 0) + 1;
+    if(completed) s.completed = true;
+    day.sessions[key] = s;
+    h[d] = day;
+    saveHistory(h);
+  }
+  function lastDays(n){
+    return Array.from({length:n}, (_,i)=>{
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return todayStr(d);
+    }).reverse();
+  }
+  function updateSoftStats(){
+    const h = loadHistory();
+    const days = lastDays(7);
+    const activeDays = days.filter(d=> h[d] && Object.values(h[d].sessions || {}).some(s=>s.started)).length;
+    const counts = Object.fromEntries(SESSION_KEYS.map(k=>[k,0]));
+    days.forEach(d=> Object.entries((h[d] && h[d].sessions) || {}).forEach(([k,s])=>{ if(counts[k] != null && s.started) counts[k]++; }));
+    const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+    const weekEl = document.getElementById('weekInsight');
+    if(weekEl){
+      weekEl.innerHTML = activeDays
+        ? `За неделю: <b>${activeDays}</b> ${plural(activeDays,'день','дня','дней')} с азкарами${top && top[1] ? `. Чаще всего: <b>${SESSION_TITLES[top[0]].toLowerCase()}</b>` : ''}.`
+        : 'За неделю пока нет истории';
+    }
+    const favEl = document.getElementById('favInsight');
+    if(favEl){
+      const n = favoriteItems().length;
+      favEl.textContent = n ? `В избранном: ${n} ${plural(n,'зикр','зикра','зикров')}` : 'Избранное пусто';
+    }
+  }
 
   /* ---------- streak (дней подряд) ---------- */
   function plural(n,a,b,c){ n=Math.abs(n)%100; const d=n%10; if(n>10&&n<20)return c; if(d>1&&d<5)return b; if(d===1)return a; return c; }
@@ -2118,6 +2371,15 @@
     const htTotal=document.getElementById('htTotal'); if(htTotal) htTotal.textContent = totalAzkar;
     const htBar=document.getElementById('htBar'); if(htBar) htBar.style.width = (totalAzkar ? azkarToday/totalAzkar*100 : 0)+'%';
     const htAll=document.getElementById('htAll'); if(htAll) htAll.hidden = azkarToday < totalAzkar;
+    const favs = favoriteItems();
+    const favSmall = document.getElementById('pFavorites');
+    if(favSmall){
+      const favDone = favs.filter(z=> savedCount(z._session, z) >= effectiveTarget(z._session, z)).length;
+      favSmall.textContent = String(favs.length);
+      const favBar = favSmall.parentElement.querySelector('.pbar i');
+      if(favBar) favBar.style.width = favs.length ? (favDone / favs.length * 100) + '%' : '0%';
+    }
+    updateSoftStats();
   }
 
   function savedBool(key, fallback = true){
