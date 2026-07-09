@@ -512,7 +512,7 @@
     </div>
 
     <div class="sessions">
-      <div class="session" data-session="morning" onclick="openReading('morning')">
+      <div class="session" data-session="morning" onclick="openReading('morning', {resume:true})">
         <div class="art" data-img="morning"></div>
         <div class="body">
           <div class="lead">
@@ -523,7 +523,7 @@
         </div>
       </div>
 
-      <div class="session" data-session="evening" onclick="openReading('evening')">
+      <div class="session" data-session="evening" onclick="openReading('evening', {resume:true})">
         <div class="art" data-img="evening"></div>
         <div class="body">
           <div class="lead">
@@ -534,7 +534,7 @@
         </div>
       </div>
 
-      <div class="session" data-session="after" onclick="openReading('after')">
+      <div class="session" data-session="after" onclick="openReading('after', {resume:true})">
         <div class="art" data-img="after"></div>
         <div class="body">
           <div class="lead">
@@ -545,7 +545,7 @@
         </div>
       </div>
 
-      <div class="session" data-session="sleep" onclick="openReading('sleep')">
+      <div class="session" data-session="sleep" onclick="openReading('sleep', {resume:true})">
         <div class="art" data-img="sleep"></div>
         <div class="body">
           <div class="lead">
@@ -556,7 +556,7 @@
         </div>
       </div>
 
-      <div class="session" data-session="favorites" onclick="openReading('favorites')">
+      <div class="session" data-session="favorites" onclick="openReading('favorites', {resume:true})">
         <div class="body">
           <div class="lead">
             <span class="s-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
@@ -1790,7 +1790,8 @@
     const rt = document.getElementById('reorderToggle'); if(rt){ rt.textContent='Изменить порядок'; rt.classList.remove('active'); }
     const rr = document.getElementById('reorderReset'); if(rr) rr.hidden = true;
   }
-  function openReading(key){
+  function openReading(key, opts){
+    opts = opts || {};
     CURRENT_KEY = key;
     const data = key === 'favorites' ? { title:'Избранное' } : AZKAR[key];
     document.getElementById('rTitle').textContent = data.title;
@@ -1839,6 +1840,41 @@
       list.appendChild(card);
     });
     bindCounters(); bindSortable(); applyTextToggles(); applyLearnMode(); updateProgress(true); go('reading');
+    if(opts.resume) resumeToUndone();
+  }
+
+  // плавный скролл через rAF (надёжно везде: не зависит от поддержки behavior:'smooth')
+  function smoothScrollTo(se, toY, dur){
+    toY = Math.max(0, toY); dur = dur || 460;
+    const fromY = se.scrollTop, dist = toY - fromY, t0 = performance.now();
+    if(Math.abs(dist) < 4){ se.scrollTop = toY; return; }
+    function step(now){
+      const t = Math.min(1, (now - t0) / dur);
+      const e = t < .5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2)/2;   // easeInOutQuad
+      se.scrollTop = fromY + dist * e;
+      if(t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  // «продолжить с места»: при открытии частично пройденной сессии — доскролл к первому невыполненному
+  function resumeToUndone(){
+    const cards = Array.from(document.querySelectorAll('#zikrList .zikr'));
+    if(cards.length < 3) return;
+    const doneCount = cards.filter(c=>c.classList.contains('done')).length;
+    if(doneCount === 0 || doneCount === cards.length) return;   // не начато / всё готово — остаёмся сверху
+    const target = cards.find(c=>!c.classList.contains('done'));
+    if(!target) return;
+    setTimeout(()=>{
+      const se = document.scrollingElement || document.documentElement;
+      const y = target.getBoundingClientRect().top + se.scrollTop - 84;
+      smoothScrollTo(se, y, 480);
+      const h = document.getElementById('rHint');
+      if(h){
+        h.textContent = 'Продолжаем с незавершённого';
+        h.style.opacity = '';
+        setTimeout(()=>{ if(h.textContent==='Продолжаем с незавершённого'){ h.style.opacity='0'; setTimeout(()=>{ h.textContent=''; h.style.opacity=''; }, 350); } }, 2600);
+      }
+    }, 60);
   }
 
   function bindCounters(){
