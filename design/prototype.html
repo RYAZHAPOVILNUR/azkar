@@ -15,18 +15,18 @@
   @font-face { font-family:'AzkarAmiri'; src:url('assets/fonts/amiri.woff2') format('woff2'); font-display:swap; }
   @font-face { font-family:'AzkarMushaf'; src:url('assets/fonts/amiri-quran.woff2') format('woff2'); font-display:swap; }
   :root {
-    --bg: #ffffff;
-    --bg-2: #f6f8fa;
-    --surface: #ffffff;
-    --surface-2: #f6f8fa;
-    --ink: #1f2328;
-    --ink-soft: #59636e;
-    --ink-faint: #818b98;
-    --line: #d1d9e0;
-    --accent: #0969da;
-    --accent-deep: #0550ae;
-    --accent-soft: #ddf4ff;
-    --good: #1a7f37;
+    --bg: #FBFAF6;
+    --bg-2: #F3F1E8;
+    --surface: #FFFFFF;
+    --surface-2: #F2F1E9;
+    --ink: #23231E;
+    --ink-soft: #66614F;
+    --ink-faint: #97907F;
+    --line: #E5E0D4;
+    --accent: #56594B;
+    --accent-deep: #3E4035;
+    --accent-soft: #E9E7DC;
+    --good: var(--accent); /* done = тёплый графит-акцент, отдельного зелёного нет */
     --home-bg: var(--bg);
     --home-bg-2: var(--bg-2);
     /* liquid glass — адаптируется по теме через ссылки на токены */
@@ -48,27 +48,27 @@
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0d1117; --bg-2: #010409; --surface: #161b22; --surface-2: #21262d;
-      --ink: #e6edf3; --ink-soft: #9198a1; --ink-faint: #6e7681; --line: #30363d;
-      --accent: #4493f8; --accent-deep: #388bfd; --accent-soft: #121d2f; --good: #3fb950;
-      --home-bg: #161b22; --home-bg-2: #0d1117;
+      --bg: #111315; --bg-2: #0A0C0E; --surface: #171A1D; --surface-2: #202428;
+      --ink: #ECEFF1; --ink-soft: #AEB5BA; --ink-faint: #788189; --line: #30363B;
+      --accent: #AEB5BA; --accent-deep: #D3D8DC; --accent-soft: #252A2E; --good: var(--accent);
+      --home-bg: #171A1D; --home-bg-2: #22272B;
       --shadow: 0 1px 3px rgba(1,4,9,.5), 0 12px 32px rgba(1,4,9,.5);
       --shadow-card: 0 1px 0 rgba(1,4,9,.4), 0 1px 3px rgba(1,4,9,.5);
     }
   }
   :root[data-theme="light"] {
-    --bg: #ffffff; --bg-2: #f6f8fa; --surface: #ffffff; --surface-2: #f6f8fa;
-    --ink: #1f2328; --ink-soft: #59636e; --ink-faint: #818b98; --line: #d1d9e0;
-    --accent: #0969da; --accent-deep: #0550ae; --accent-soft: #ddf4ff; --good: #1a7f37;
+    --bg: #FBFAF6; --bg-2: #F3F1E8; --surface: #FFFFFF; --surface-2: #F2F1E9;
+    --ink: #23231E; --ink-soft: #66614F; --ink-faint: #97907F; --line: #E5E0D4;
+    --accent: #56594B; --accent-deep: #3E4035; --accent-soft: #E9E7DC; --good: var(--accent);
     --home-bg: var(--bg); --home-bg-2: var(--bg-2);
     --shadow: 0 1px 3px rgba(31,35,40,.08), 0 8px 24px rgba(31,35,40,.06);
     --shadow-card: 0 1px 0 rgba(31,35,40,.04), 0 1px 3px rgba(31,35,40,.08);
   }
   :root[data-theme="dark"] {
-    --bg: #0d1117; --bg-2: #010409; --surface: #161b22; --surface-2: #21262d;
-    --ink: #e6edf3; --ink-soft: #9198a1; --ink-faint: #6e7681; --line: #30363d;
-    --accent: #4493f8; --accent-deep: #388bfd; --accent-soft: #121d2f; --good: #3fb950;
-    --home-bg: #161b22; --home-bg-2: #0d1117;
+    --bg: #111315; --bg-2: #0A0C0E; --surface: #171A1D; --surface-2: #202428;
+    --ink: #ECEFF1; --ink-soft: #AEB5BA; --ink-faint: #788189; --line: #30363B;
+    --accent: #AEB5BA; --accent-deep: #D3D8DC; --accent-soft: #252A2E; --good: var(--accent);
+    --home-bg: #171A1D; --home-bg-2: #22272B;
     --shadow: 0 1px 3px rgba(1,4,9,.5), 0 12px 32px rgba(1,4,9,.5);
     --shadow-card: 0 1px 0 rgba(1,4,9,.4), 0 1px 3px rgba(1,4,9,.5);
   }
@@ -142,6 +142,11 @@
     backdrop-filter:blur(16px) saturate(160%); -webkit-backdrop-filter:blur(16px) saturate(160%); box-shadow:inset 0 1px 0 var(--glass-hi); }
   .streak-badge[hidden] { display:none; }
 
+  .prayer-line { display:flex; align-items:center; gap:7px; padding:8px 22px 0; font-size:13px; line-height:1.2; }
+  .prayer-line .pl-glyph { display:inline-flex; color:var(--ink-faint); }
+  .prayer-line .pl-glyph svg { display:block; }
+  .prayer-line .pl-name { color:var(--ink); font-weight:600; }
+  .prayer-line .pl-rest { color:var(--ink-faint); font-weight:400; }
   .sessions { display:flex; flex-direction:column; gap:10px; padding:10px 16px 6px; }
   .session { position:relative; border-radius:18px; overflow:hidden; cursor:pointer;
     border:1px solid var(--line); box-shadow: var(--shadow-card);
@@ -155,15 +160,25 @@
   .session .art { position:absolute; inset:0; z-index:-1; background-position:center; background-size:cover; }
   .session .body { position:relative; padding:0 16px; width:100%; height:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
     background: linear-gradient(90deg, color-mix(in srgb, var(--surface) 90%, transparent) 0%, color-mix(in srgb, var(--surface) 78%, transparent) 62%, color-mix(in srgb, var(--surface) 58%, transparent) 100%); }
-  :root[data-theme="dark"] .session .art { filter:brightness(.55) saturate(.85); }
+  :root[data-theme="dark"] .session .art { filter:brightness(.80) saturate(.70) contrast(.96) sepia(.08); }
   :root[data-theme="dark"] .session .body { background: linear-gradient(90deg, color-mix(in srgb, var(--surface) 88%, transparent) 0%, color-mix(in srgb, var(--surface) 72%, transparent) 62%, color-mix(in srgb, var(--surface) 52%, transparent) 100%); }
   @media (prefers-color-scheme: dark){
-    :root:not([data-theme]) .session .art { filter:brightness(.55) saturate(.85); }
+    :root:not([data-theme]) .session .art { filter:brightness(.80) saturate(.70) contrast(.96) sepia(.08); }
     :root:not([data-theme]) .session .body { background: linear-gradient(90deg, color-mix(in srgb, var(--surface) 88%, transparent) 0%, color-mix(in srgb, var(--surface) 72%, transparent) 62%, color-mix(in srgb, var(--surface) 52%, transparent) 100%); }
   }
+  .session .lead { display:flex; align-items:center; gap:11px; min-width:0; flex:1; }
+  .session .s-ic { flex-shrink:0; width:22px; height:22px; display:grid; place-items:center; color:var(--ink-soft); opacity:.92; }
   .session .titles { min-width:0; }
   .session .titles .t { font-size:16px; font-weight:700; color:var(--ink); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .session .titles .sub { font-size:12.5px; font-weight:500; color:var(--ink-soft); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* мягкий тон на картинке — различает утро/вечер/после-намаза/сон без игры яркостью */
+  .session[data-session="morning"] { --stint:201,164,102; --stint-a:.14; }
+  .session[data-session="evening"] { --stint:190,128,104; --stint-a:.13; }
+  .session[data-session="after"]   { --stint:120,132,96;  --stint-a:.12; }
+  .session[data-session="sleep"]   { --stint:112,104,124; --stint-a:.11; }
+  .session .art::after { content:""; position:absolute; inset:0; background:rgba(var(--stint), var(--stint-a)); mix-blend-mode:multiply; }
+  :root[data-theme="dark"] .session .art::after { mix-blend-mode:soft-light; background:rgba(var(--stint), .10); }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme]) .session .art::after { mix-blend-mode:soft-light; background:rgba(var(--stint), .10); } }
   .session .prog { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
   .session .prog small { font-size:13px; font-weight:700; color:var(--ink-soft); font-variant-numeric:tabular-nums; line-height:1; }
   .session .pbar { width:46px; height:4px; border-radius:99px; overflow:hidden; background: color-mix(in srgb, var(--ink) 12%, transparent); }
@@ -173,6 +188,17 @@
 
   .home-foot { text-align:center; font-size:12.5px; color:var(--ink-faint); padding:8px 20px 24px; }
   .home-foot b { color: var(--accent-deep); font-weight:700; }
+
+  .home-today { margin:16px 20px 4px; padding:14px 2px 4px; border-top:1px solid var(--line); }
+  .home-today .ht-top { display:flex; align-items:center; justify-content:space-between; }
+  .home-today .ht-label { font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; }
+  .home-today .ht-count { font-size:13px; color:var(--ink-soft); font-weight:500; font-variant-numeric:tabular-nums; }
+  .home-today .ht-count b { color:var(--ink); font-weight:700; }
+  .home-today .ht-dots { display:flex; gap:8px; margin-top:11px; }
+  .home-today .ht-dots i { width:8px; height:8px; border-radius:50%; border:1.5px solid var(--line); box-sizing:border-box; transition:background .35s, border-color .35s; }
+  .home-today .ht-dots i.on { background:var(--accent); border-color:var(--accent); }
+  .home-today .ht-all { text-align:center; font-size:12px; color:var(--ink-faint); margin-top:11px; }
+  .home-today .ht-all[hidden] { display:none; }
 
   /* READING */
   /* liquid glass utility */
@@ -189,10 +215,10 @@
   .rhead .ttl { flex:1; text-align:center; }
   .rhead .ttl .k { font-size:10.5px; letter-spacing:1.2px; text-transform:uppercase; color:var(--accent-deep); font-weight:700; }
   .rhead .ttl .t { font-size:16px; font-weight:700; margin-top:1px; }
-  .rbar { height:5px; border-radius:99px; background: var(--surface-2); margin-top:10px; overflow:hidden; }
+  .rbar { height:4px; border-radius:99px; background: var(--surface-2); margin-top:10px; overflow:hidden; }
   .rbar span { display:block; height:100%; width:0%; border-radius:99px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transition: width .5s cubic-bezier(.4,0,.2,1); }
-  .rmeta { display:flex; justify-content:space-between; margin-top:6px; font-size:11.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+    background: var(--accent); opacity:.75; transition: width .5s cubic-bezier(.4,0,.2,1); }
+  .rmeta { display:flex; justify-content:space-between; margin-top:6px; font-size:12px; color:var(--ink-faint); font-variant-numeric:tabular-nums; }
 
   .list { padding:16px 14px 30px; display:flex; flex-direction:column; gap:18px; }
   .list.sorting { user-select:none; -webkit-user-select:none; touch-action:none; }
@@ -251,10 +277,7 @@
   @keyframes beadPop { 0%{transform:scale(1)} 45%{transform:scale(1.45)} 100%{transform:scale(1)} }
   .tasbih .bead.pop { animation:beadPop .26s cubic-bezier(.34,1.56,.64,1); }
   .tasbih.armed .tr { stroke:var(--accent); stroke-width:2.2; }
-  .tasbih.armed .bead.next { fill:color-mix(in srgb, var(--accent) 55%, var(--surface-2)); stroke:var(--accent); }
-  .tasbih .cx .chk { position:absolute; top:6px; left:50%; transform:translateX(-50%) scale(.4); width:20px; height:20px; border-radius:50%;
-    background:var(--good); color:#fff; display:grid; place-items:center; font-size:13px; opacity:0; transition:opacity .25s, transform .3s cubic-bezier(.34,1.56,.64,1); }
-  .zikr.done .tasbih .cx .chk { opacity:1; transform:translateX(-50%) scale(1); }
+  .tasbih.armed .bead.next { fill:color-mix(in srgb, var(--accent) 60%, var(--surface-2)); stroke:var(--accent); animation:none; transform:scale(1.12); }
   .zikr.done .tasbih .tr { stroke:var(--good); stroke-width:2.2; }
   .zikr.done .tasbih .cx .big small { color:color-mix(in srgb, var(--good) 60%, var(--ink-faint)); }
   .tasbih.single { width:auto; height:46px; padding:0 16px 0 12px; display:inline-flex; align-items:center; gap:10px;
@@ -264,7 +287,6 @@
   .tasbih.single:active { transform:scale(.96); }
   .zikr.done .tasbih.single { background:color-mix(in srgb, var(--good) 14%, var(--surface-2)); border-color:color-mix(in srgb, var(--good) 45%, var(--line)); }
   .zikr.done .tasbih.single .dot { background:var(--good); border-color:var(--good); }
-  .zikr.done .tasbih.single .dot::after { content:"✓"; position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-size:13px; }
   .zikr.done .tasbih.single .lbl { color:var(--good); }
 
   .cnote { text-align:center; font-size:12px; color:var(--ink-faint); margin-top:12px; font-style:italic; }
@@ -284,20 +306,24 @@
   .tasbih svg { width:120px; height:126px; display:block; transform:translateY(var(--pull,0px)); transition:transform .22s cubic-bezier(.2,.8,.2,1); }
   .tasbih.pulling svg { transition:none; }
   .tasbih .tr { fill:none; stroke: var(--line); stroke-width:1.6; }
-  .tasbih .bead { fill: var(--surface-2); stroke: var(--line); stroke-width:.7; transition: fill .2s ease, stroke .2s ease; }
-  .tasbih .bead.on { fill: var(--accent); stroke: var(--accent); }
+  .tasbih .bead { fill:#D8D2C4; stroke:#C7C1B1; stroke-width:.8; transition: fill .2s ease, stroke .2s ease; }
+  .tasbih .bead.on { fill: var(--accent); stroke: var(--accent); filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.22)); }
+  :root[data-theme="dark"] .tasbih .bead { fill:#37342B; stroke:#423E34; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme]) .tasbih .bead { fill:#37342B; stroke:#423E34; } }
+  @keyframes beadBreathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.13)} }
+  .tasbih .bead.next { animation: beadBreathe 2.4s ease-in-out infinite; }
   .tasbih .knot { fill: var(--line); }
   .tasbih .tassel { stroke: var(--line); stroke-width:1.6; fill:none; stroke-linecap:round; }
   .tasbih .cx { position:absolute; inset:0; text-align:center; pointer-events:none; }
-  .tasbih .cx .big { position:absolute; left:0; right:0; top:43px; font-size:27px; font-weight:800; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums; }
-  .tasbih .cx .big small { font-size:15px; color:var(--ink-faint); font-weight:700; }
+  .tasbih .cx .big { position:absolute; left:0; right:0; top:38px; font-size:38px; font-weight:300; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .tasbih .cx .big small { font-size:15px; color:var(--ink-faint); font-weight:500; letter-spacing:0; }
   .zikr.done .tasbih .bead.on { fill: var(--good); stroke: var(--good); }
   .zikr.done .tasbih .cx .big { color: var(--good); }
 
   /* SETTINGS */
   .settings { padding:4px 16px 26px; }
   .set-group { margin-top:15px; }
-  .set-group > .lbl { font-size:11px; letter-spacing:.9px; text-transform:uppercase; color: var(--accent-deep); font-weight:700; margin:0 6px 6px; }
+  .set-group > .lbl { font-size:11px; letter-spacing:.07em; text-transform:uppercase; color: var(--ink-faint); font-weight:700; margin:0 6px 8px; }
   .card-set { border-radius:18px; overflow:hidden; }
   .card-set.glass { border-radius:18px; }
 
@@ -309,21 +335,21 @@
   .set-row:last-child { border-bottom:none; }
   .set-row.stack { flex-direction:column; align-items:stretch; gap:10px; }
   .set-row .head { display:flex; align-items:center; gap:10px; }
-  .set-row .ic { width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
-    background: var(--accent-soft); color: var(--accent-deep); flex-shrink:0; }
+  .set-row .ic { width:24px; height:24px; display:grid; place-items:center;
+    background:none; color: var(--ink-soft); flex-shrink:0; }
   .set-row .txt { flex:1; }
   .set-row .txt .t { font-size:15px; font-weight:600; }
   .set-row .txt .d { font-size:12.5px; color: var(--ink-soft); margin-top:1px; line-height:1.35; }
-  .set-row .val { font-size:15px; color: var(--accent-deep); font-weight:600; font-variant-numeric:tabular-nums; }
+  .set-row .val { font-size:15px; color: var(--ink-soft); font-weight:600; font-variant-numeric:tabular-nums; }
 
   .seg { display:flex; gap:4px; background: var(--surface-2); border-radius:12px; padding:4px; }
   .seg button { flex:1; border:none; background:none; padding:8px 4px; border-radius:9px; font-size:13px; font-weight:600;
     color: var(--ink-soft); cursor:pointer; font-family:var(--sans); transition: all .18s; }
-  .seg button.on { background: var(--surface); color: var(--accent-deep); box-shadow: var(--shadow-card); }
+  .seg button.on { background: var(--accent-soft); color: var(--ink); box-shadow: var(--shadow-card); }
   #fontSeg { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
   #fontSeg button { display:flex; align-items:center; justify-content:center; gap:8px; min-height:54px; padding:8px 6px; }
   #fontSeg .fprev { font-size:21px; line-height:1.35; direction:rtl; color:var(--ink); display:block; min-width:42px; }
-  #fontSeg button.on .fprev { color:var(--accent-deep); }
+  #fontSeg button.on .fprev { color:var(--ink); }
   #fontSeg .flbl { font-size:12px; font-weight:700; line-height:1.15; }
   .ar-preview { border:1px solid var(--line); border-radius:14px; background:var(--surface-2); padding:12px 14px;
     font-family:var(--ar-font), var(--ar); font-size:var(--ar-size); line-height:1.8; direction:rtl; text-align:center; color:var(--ink); }
@@ -334,6 +360,9 @@
     background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
   .switch.on { background: var(--accent); border-color: var(--accent); }
   .switch.on:after { transform: translateX(18px); }
+  /* тёмная тема: акцент светлый → ручка вкл-тумблера тёмная, иначе белая на светлом пропадёт */
+  :root[data-theme="dark"] .switch.on:after { background:var(--bg); }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme]) .switch.on:after { background:var(--bg); } }
 
   .slider { -webkit-appearance:none; appearance:none; width:100%; height:5px; border-radius:99px;
     background: var(--surface-2); outline:none; margin-top:2px; }
@@ -410,12 +439,6 @@
           <img id="brandIcon" src="assets/icon.png" alt="">
         </span>
       </div>
-      <div class="head-prayer" id="nextPrayerLine" style="display:none">
-        <span class="nextp">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg>
-          <span id="nextPrayerText"></span>
-        </span>
-      </div>
       <div class="head-actions">
         <span class="streak-badge" id="streakBadge" hidden title="Дней подряд"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C7 9 9 8 9 8s-.5 2 .5 3c0 0 1-1 1-3s1.5-6 1.5-6z"/></svg><span id="streakText">0</span></span>
         <button class="iconbtn" id="themeBtn" title="Тема" aria-label="Сменить тему">
@@ -427,11 +450,20 @@
       </div>
     </div>
 
+    <div class="prayer-line" id="nextPrayerLine" style="display:none">
+      <span class="pl-glyph"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg></span>
+      <span class="pl-name" id="nextPrayerName"></span>
+      <span class="pl-rest" id="nextPrayerText"></span>
+    </div>
+
     <div class="sessions">
       <div class="session" data-session="morning" onclick="openReading('morning')">
         <div class="art" data-img="morning"></div>
         <div class="body">
-          <div class="titles"><div class="t">Утренние поминания</div><div class="sub">Утро · до восхода солнца</div></div>
+          <div class="lead">
+            <span class="s-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 2v7"/><path d="m4.9 10.9 1.4 1.4"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.1 10.9-1.4 1.4"/><path d="M22 22H2"/><path d="m8.5 5.5 3.5-3.5 3.5 3.5"/></svg></span>
+            <div class="titles"><div class="t">Утренние поминания</div><div class="sub">Утро · до восхода солнца</div></div>
+          </div>
           <div class="prog"><small id="pMorning">0/22</small><span class="pbar"><i></i></span></div>
         </div>
       </div>
@@ -439,7 +471,10 @@
       <div class="session" data-session="evening" onclick="openReading('evening')">
         <div class="art" data-img="evening"></div>
         <div class="body">
-          <div class="titles"><div class="t">Вечерние поминания</div><div class="sub">Вечер · после ʿасра до заката</div></div>
+          <div class="lead">
+            <span class="s-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 9V2"/><path d="m4.9 10.9 1.4 1.4"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.1 10.9-1.4 1.4"/><path d="M22 22H2"/><path d="m8.5 5.5 3.5 3.5 3.5-3.5"/></svg></span>
+            <div class="titles"><div class="t">Вечерние поминания</div><div class="sub">Вечер · после ʿасра до заката</div></div>
+          </div>
           <div class="prog"><small id="pEvening">0/20</small><span class="pbar"><i></i></span></div>
         </div>
       </div>
@@ -447,7 +482,10 @@
       <div class="session" data-session="after" onclick="openReading('after')">
         <div class="art" data-img="after"></div>
         <div class="body">
-          <div class="titles"><div class="t">После намаза</div><div class="sub">После обязательной молитвы</div></div>
+          <div class="lead">
+            <span class="s-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V11a6 6 0 0 1 12 0v10"/><path d="M4 21h16"/><path d="M12 11v4"/></svg></span>
+            <div class="titles"><div class="t">После намаза</div><div class="sub">После обязательной молитвы</div></div>
+          </div>
           <div class="prog"><small id="pAfter">0/15</small><span class="pbar"><i></i></span></div>
         </div>
       </div>
@@ -455,13 +493,23 @@
       <div class="session" data-session="sleep" onclick="openReading('sleep')">
         <div class="art" data-img="sleep"></div>
         <div class="body">
-          <div class="titles"><div class="t">Перед сном</div><div class="sub">Когда ложишься</div></div>
+          <div class="lead">
+            <span class="s-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A7.5 7.5 0 1 1 10.5 4a5.8 5.8 0 0 0 9.5 9.5z"/><path d="M18 4.2l.5 1.3 1.3.5-1.3.5L18 7.8l-.5-1.3L16.2 6l1.3-.5z"/></svg></span>
+            <div class="titles"><div class="t">Перед сном</div><div class="sub">Когда ложишься</div></div>
+          </div>
           <div class="prog"><small id="pSleep">0/9</small><span class="pbar"><i></i></span></div>
         </div>
       </div>
     </div>
 
-    <div style="height:8px"></div>
+    <div class="home-today" id="homeToday">
+      <div class="ht-top">
+        <span class="ht-label">Сегодня</span>
+        <span class="ht-count"><b id="htDone">0</b> / 4</span>
+      </div>
+      <div class="ht-dots" id="htDots"><i></i><i></i><i></i><i></i></div>
+      <div class="ht-all" id="htAll" hidden>все поминания на сегодня</div>
+    </div>
   </section>
 
   <!-- READING -->
@@ -578,7 +626,7 @@
           </div>
         </div>
       </div>
-      <div class="home-foot" style="padding-top:20px"><a href="https://aiengineer.nurtech.dev" target="_blank" rel="noopener" class="foot-link" id="caseLink"><b>Кейс курса AI Product Engineer</b></a></div>
+      <div class="home-foot" style="padding-top:26px; font-size:11.5px; opacity:.7"><a href="https://aiengineer.nurtech.dev" target="_blank" rel="noopener" class="foot-link" id="caseLink" style="color:var(--ink-faint); font-weight:500; text-decoration:none">Учебный проект · как это сделано</a></div>
     </div>
   </section>
 
@@ -643,20 +691,19 @@
   }
 
   const STAR = '<svg viewBox="0 0 34 34" fill="none"><path d="M17 2l3.6 3.6 5-.9-.9 5L28 17l-3.3 3.3.9 5-5-.9L17 28l-3.6-3.6-5 .9.9-5L6 17l3.3-3.3-.9-5 5 .9L17 2z" stroke="currentColor" stroke-width="1.1"/></svg>';
-  const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>';
 
   /* Тексты — из книги шейха Мухаммада ибн Саида Расляна «أذكار الصباح والمساء من صحيح السنة المطهرة».
      Раздел «после намаза» — из достоверной Сунны (Сахих Муслим и др.). */
   const AZKAR = {
     morning: { title:"Утренние поминания", kicker:"Утро · أذكار الصباح", items:[
       { n:1, target:1, ar:"أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ",
-        tl:"Асбахна ва асбаха-ль-мульку лиллях, валь-хамду лиллях, ля иляха илля-Ллаху вахдаху ля шарика лях, ляху-ль-мульку ва ляху-ль-хамд, ва хува ‘аля кулли шайъин кадир…",
+        tl:"Асбахна ва асбаха-ль-мульку лиллях, валь-хамду лиллях, ля иляха илля-Ллаху вахдаху ля шарика лях, ляху-ль-мульку ва ляху-ль-хамд, ва хува ‘аля кулли шайъин кадир. Рабби асъалюкя хайра ма фи хаза-ль-йауми ва хайра ма ба‘даху, ва а‘узу бикя мин шарри ма фи хаза-ль-йауми ва шарри ма ба‘даху",
         tr:"Мы встретили утро, и встретило утро всё, что подвластно Аллаху. Хвала Аллаху. Нет божества, кроме Аллаха Единого, у Которого нет сотоварища. Ему принадлежит власть и хвала, и Он всё может. Господь мой, прошу Тебя о благе этого дня и о благе после него, и прибегаю к Тебе от зла этого дня и зла после него.", src:"Муслим 2723" },
       { n:2, target:1, ar:"اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ",
         tl:"Аллахумма бикя асбахна, ва бикя амсайна, ва бикя нахъя, ва бикя намуту, ва иляйкя-н-нушур",
         tr:"О Аллах, с Тобой мы встретили утро и с Тобой встретили вечер, с Тобой живём и с Тобой умираем, и к Тебе — воскрешение.", src:"Тирмизи 3391 · сахих" },
       { n:3, target:1, ar:"اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي، فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
-        tl:"Аллахумма анта Рабби, ля иляха илля анта, халякътани ва ана ‘абдук, ва ана ‘аля ‘ахдикя ва ва‘дикя ма-стата‘т…",
+        tl:"Аллахумма анта Рабби, ля иляха илля анта, халякътани ва ана ‘абдук, ва ана ‘аля ‘ахдикя ва ва‘дикя ма-стата‘т, а‘узу бикя мин шарри ма сана‘т, абу’у лякя би-ни‘матикя ‘аляйя, ва абу’у би-занби, фагфир ли, фа-иннаху ля ягфиру-з-зунуба илля ант",
         tr:"Господин прошений о прощении. О Аллах, Ты — мой Господь, нет божества, кроме Тебя. Ты создал меня, и я — раб Твой. Прибегаю к Тебе от зла того, что совершил. Признаю милость Твою ко мне и признаю грех свой — прости же меня, ведь грехи прощает только Ты.", src:"Аль-Бухари 6306 · сахих" },
       { n:4, target:3, ar:"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
         tl:"Субханаллахи ва бихамдих",
@@ -674,28 +721,28 @@
         tl:"Ля иляха илля-Ллаху вахдаху ля шарика лях, ляху-ль-мульку ва ляху-ль-хамд, юхйи ва юмит, ва хува ‘аля кулли шайъин кадир",
         tr:"Нет божества, кроме Аллаха Единого, у Которого нет сотоварища. Ему принадлежит власть и хвала, Он оживляет и умерщвляет, и Он всё может.", src:"Ахмад, Ат-Табарани · сахих" },
       { n:9, target:1, ar:"اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ، لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ، لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ، مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ، يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ، وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ، وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ، وَلَا يَئُودُهُ حِفْظُهُمَا، وَهُوَ الْعَلِيُّ الْعَظِيمُ",
-        tl:"Аллаху ля иляха илля хува-ль-Хаййю-ль-Каййум… (Аят аль-Курси)",
+        tl:"Аллаху ля иляха илля хува-ль-Хаййю-ль-Каййум, ля та’хузуху синатун ва ля наум, ляху ма фи-с-самавати ва ма фи-ль-ард, ман за-ллязи яшфа‘у ‘индаху илля би-изнихи, я‘ляму ма байна айдихим ва ма хальфахум, ва ля юхитуна би шайъин мин ‘ильмихи илля бима ша’, васи‘а курсийюху-с-самавати ва-ль-ард, ва ля яудуху хифзухума, ва хува-ль-‘Алийю-ль-‘Азым",
         tr:"Аят аль-Курси. Кто прочтёт его утром — будет под защитой до вечера. «Аллах — нет божества, кроме Него, Живого, Вседержителя…» (аль-Бакара, 255).", src:"Ан-Насаи, аль-Хаким · сахих" },
       { n:10, target:3, ar:"قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
-        tl:"Куль хува-Ллаху ахад…",
+        tl:"Куль хува-Ллаху ахад, Аллаху-с-самад, лям ялид ва лям юляд, ва лям якул-ляху куфуван ахад",
         tr:"Сура «Аль-Ихлас» (112). Три раза утром и вечером — защита от всего.", src:"Абу Дауд 5082, Тирмизи 3575 · сахих" },
       { n:11, target:3, ar:"قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِنْ شَرِّ مَا خَلَقَ ۝ وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
-        tl:"Куль а‘узу би-Рабби-ль-фаляк…",
+        tl:"Куль а‘узу би-Рабби-ль-фаляк, мин шарри ма халяк, ва мин шарри гасикын иза вакаб, ва мин шарри-н-наффасати фи-ль-‘укад, ва мин шарри хасидин иза хасад",
         tr:"Сура «Аль-Фаляк» (113). Три раза утром и вечером.", src:"Абу Дауд 5082, Тирмизи 3575 · сахих" },
       { n:12, target:3, ar:"قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَهِ النَّاسِ ۝ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ",
-        tl:"Куль а‘узу би-Рабби-н-нас…",
+        tl:"Куль а‘узу би-Рабби-н-нас, Малики-н-нас, Иляхи-н-нас, мин шарри-ль-васваси-ль-ханнас, аллязи ювасвису фи судури-н-нас, мина-ль-джиннати ва-н-нас",
         tr:"Сура «Ан-Нас» (114). Три раза утром и вечером.", src:"Абу Дауд 5082, Тирмизи 3575 · сахих" },
       { n:13, target:1, ar:"اللَّهُمَّ فَاطِرَ السَّمَوَاتِ وَالْأَرْضِ، عَالِمَ الْغَيْبِ وَالشَّهَادَةِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي وَشَرِّ الشَّيْطَانِ وَشِرْكِهِ، وَأَنْ أَقْتَرِفَ عَلَى نَفْسِي سُوءًا أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ",
-        tl:"Аллахумма Фатыра-с-самавати ва-ль-арды, ‘Алима-ль-гайби ва-ш-шахада…",
+        tl:"Аллахумма Фатыра-с-самавати ва-ль-арды, ‘Алима-ль-гайби ва-ш-шахада, Рабба кулли шайъин ва Маликах, ашхаду ан ля иляха илля анта, а‘узу бикя мин шарри нафси ва шарри-ш-шайтани ва ширкихи, ва ан актарифа ‘аля нафси суан ау аджурраху иля муслим",
         tr:"О Аллах, Творец небес и земли, Знающий сокровенное и явное, Господь и Владыка всякой вещи! Свидетельствую, что нет божества, кроме Тебя. Прибегаю к Тебе от зла моей души, от зла шайтана и его многобожия, и от того, чтобы совершить зло себе или причинить его мусульманину.", src:"Тирмизи 3392, Абу Дауд 5067 · сахих" },
       { n:14, target:4, ar:"اللَّهُمَّ إِنِّي أَصْبَحْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ",
-        tl:"Аллахумма инни асбахту ушхидукя, ва ушхиду хамалята ‘аршик, ва малáикатак, ва джами‘а халькик…",
+        tl:"Аллахумма инни асбахту ушхидукя, ва ушхиду хамалята ‘аршик, ва маляикатак, ва джами‘а халькик, аннакя анта-Ллаху ля иляха илля анта вахдака ля шарика ляк, ва анна Мухаммадан ‘абдукя ва расулюк",
         tr:"О Аллах, вот я встретил утро и призываю в свидетели Тебя, носителей Твоего Трона, Твоих ангелов и все Твои творения, что Ты — Аллах, нет божества, кроме Тебя Одного, нет у Тебя сотоварища, и что Мухаммад — Твой раб и посланник.", src:"Абу Дауд 5069 · хасан", targetHint:"четыре раза" },
       { n:15, target:7, ar:"حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
         tl:"Хасбия-Ллаху ля иляха илля хува, ‘аляйхи таваккальту, ва хува Раббу-ль-‘арши-ль-‘азым",
         tr:"Достаточно мне Аллаха, нет божества, кроме Него. На Него я уповаю, и Он — Господь великого Трона. (Кто скажет 7 раз — Аллах избавит его от забот.)", src:"Абу Дауд 5081 · хасан", targetHint:"семь раз" },
       { n:16, target:1, ar:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي وَآمِنْ رَوْعَاتِي، اللَّهُمَّ احْفَظْنِي مِنْ بَيْنِ يَدَيَّ وَمِنْ خَلْفِي وَعَنْ يَمِينِي وَعَنْ شِمَالِي وَمِنْ فَوْقِي، وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي",
-        tl:"Аллахумма инни асъалукя-ль-‘афва ва-ль-‘афия фи-д-дунья ва-ль-ахира…",
+        tl:"Аллахумма инни асъалюкя-ль-‘афва ва-ль-‘афия фи-д-дунья ва-ль-ахира, Аллахумма инни асъалюкя-ль-‘афва ва-ль-‘афия фи дини ва дуньяя ва ахли ва мали, Аллахумма-стур ‘аурати ва амин рау‘ати, Аллахумма-хфазни мин байни йадайя ва мин хальфи ва ‘ан ямини ва ‘ан шимали ва мин фауки, ва а‘узу би-‘азаматикя ан угталя мин тахти",
         tr:"О Аллах, прошу у Тебя прощения и благополучия в этом мире и в вечном. О Аллах, прошу прощения и благополучия в моей религии, в мирских делах, в семье и имуществе. О Аллах, прикрой мои изъяны и огради от страхов. О Аллах, храни меня спереди и сзади, справа и слева, и сверху; и прибегаю к величию Твоему от того, чтобы быть погубленным снизу.", src:"Абу Дауд 5074, Ибн Маджа 3871 · сахих" },
       { n:17, target:1, ar:"اللَّهُمَّ مَا أَصْبَحَ بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لَا شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ",
         tl:"Аллахумма ма асбаха би мин ни‘матин ау би ахадин мин халькик, фа минкя вахдакя ля шарика лякъ, фа лякя-ль-хамду ва лякя-ш-шукр",
@@ -718,13 +765,13 @@
     ]},
     evening: { title:"Вечерние поминания", kicker:"Вечер · أذكار المساء", items:[
       { n:1, target:1, ar:"أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا",
-        tl:"Амсайна ва амса-ль-мульку лиллях, валь-хамду лиллях, ля иляха илля-Ллаху вахдаху ля шарика лях…",
+        tl:"Амсайна ва амса-ль-мульку лиллях, валь-хамду лиллях, ля иляха илля-Ллаху вахдаху ля шарика лях, ляху-ль-мульку ва ляху-ль-хамд, ва хува ‘аля кулли шайъин кадир. Рабби асъалюкя хайра ма фи хазихи-ль-лейляти ва хайра ма ба‘даха, ва а‘узу бикя мин шарри ма фи хазихи-ль-лейляти ва шарри ма ба‘даха",
         tr:"Мы встретили вечер, и встретило вечер всё, что подвластно Аллаху. Хвала Аллаху… Господь мой, прошу Тебя о благе этой ночи и о благе после неё, и прибегаю к Тебе от зла этой ночи и зла после неё.", src:"Муслим 2723" },
       { n:2, target:1, ar:"اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ",
         tl:"Аллахумма бикя амсайна, ва бикя асбахна, ва бикя нахъя, ва бикя намуту, ва иляйкя-ль-масыр",
         tr:"О Аллах, с Тобой мы встретили вечер и с Тобой встретили утро, с Тобой живём и с Тобой умираем, и к Тебе — возвращение.", src:"Тирмизи 3391 · сахих" },
       { n:3, target:1, ar:"اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي، فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
-        tl:"Аллахумма анта Рабби, ля иляха илля анта, халякътани ва ана ‘абдук…",
+        tl:"Аллахумма анта Рабби, ля иляха илля анта, халякътани ва ана ‘абдук, ва ана ‘аля ‘ахдикя ва ва‘дикя ма-стата‘т, а‘узу бикя мин шарри ма сана‘т, абу’у лякя би-ни‘матикя ‘аляйя, ва абу’у би-занби, фагфир ли, фа-иннаху ля ягфиру-з-зунуба илля ант",
         tr:"Господин прошений о прощении. О Аллах, Ты — мой Господь, нет божества, кроме Тебя. Признаю милость Твою ко мне и признаю грех свой — прости же меня, ведь грехи прощает только Ты.", src:"Аль-Бухари 6306 · сахих" },
       { n:4, target:3, ar:"أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
         tl:"А‘узу би калимати-Лляхи-т-таммати мин шарри ма халякъ",
@@ -733,31 +780,31 @@
         tl:"Бисмилляхи-ллязи ля ядурру ма‘а-смихи шайъун фи-ль-арды ва ля фи-с-самаъи ва хува-с-Сами‘у-ль-‘Алим",
         tr:"С именем Аллаха, с именем Которого ничто не причинит вреда ни на земле, ни на небе. Он — Слышащий, Знающий.", src:"Абу Дауд 5088, Тирмизи 3388 · сахих" },
       { n:6, target:1, ar:"اللَّهُمَّ فَاطِرَ السَّمَوَاتِ وَالْأَرْضِ، عَالِمَ الْغَيْبِ وَالشَّهَادَةِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي وَشَرِّ الشَّيْطَانِ وَشِرْكِهِ",
-        tl:"Аллахумма Фатыра-с-самавати ва-ль-арды, ‘Алима-ль-гайби ва-ш-шахада, Рабба кулли шайъин ва Малйкях…",
+        tl:"Аллахумма Фатыра-с-самавати ва-ль-арды, ‘Алима-ль-гайби ва-ш-шахада, Рабба кулли шайъин ва Маликах, ашхаду ан ля иляха илля анта, а‘узу бикя мин шарри нафси ва шарри-ш-шайтани ва ширкихи",
         tr:"О Аллах, Творец небес и земли, Знающий сокровенное и явное, Господь и Владыка всякой вещи! Свидетельствую, что нет божества, кроме Тебя. Прибегаю к Тебе от зла моей души и от зла шайтана и его многобожия.", src:"Тирмизи 3392 · сахих" },
       { n:7, target:3, ar:"يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ أَبَدًا",
-        tl:"Йа Хаййу йа Каййум, би рахматикя астагис, аслих ли шаъни куллях…",
+        tl:"Йа Хаййу йа Каййум, би рахматикя астагис, аслих ли шаъни куллях, ва ля такильни иля нафси тарфата ‘айнин абада",
         tr:"О Живой, о Поддерживающий существование! Милостью Твоей взываю о помощи. Исправь все мои дела и не оставляй меня самому себе даже на миг ока.", src:"Аль-Хаким · хасан" },
       { n:8, target:1, ar:"اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ، لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ، لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ، مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ، يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ، وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ، وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ، وَلَا يَئُودُهُ حِفْظُهُمَا، وَهُوَ الْعَلِيُّ الْعَظِيمُ",
-        tl:"Аллаху ля иляха илля хува-ль-Хаййю-ль-Каййум… (Аят аль-Курси)",
+        tl:"Аллаху ля иляха илля хува-ль-Хаййю-ль-Каййум, ля та’хузуху синатун ва ля наум, ляху ма фи-с-самавати ва ма фи-ль-ард, ман за-ллязи яшфа‘у ‘индаху илля би-изнихи, я‘ляму ма байна айдихим ва ма хальфахум, ва ля юхитуна би шайъин мин ‘ильмихи илля бима ша’, васи‘а курсийюху-с-самавати ва-ль-ард, ва ля яудуху хифзухума, ва хува-ль-‘Алийю-ль-‘Азым",
         tr:"Аят аль-Курси. Кто прочтёт его вечером — будет под защитой до утра. (аль-Бакара, 255).", src:"Ан-Насаи, аль-Хаким · сахих" },
       { n:9, target:3, ar:"قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
-        tl:"Куль хува-Ллаху ахад…",
+        tl:"Куль хува-Ллаху ахад, Аллаху-с-самад, лям ялид ва лям юляд, ва лям якул-ляху куфуван ахад",
         tr:"Сура «Аль-Ихлас» (112). Три раза.", src:"Абу Дауд 5082, Тирмизи 3575 · сахих" },
       { n:10, target:3, ar:"قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِنْ شَرِّ مَا خَلَقَ ۝ وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
-        tl:"Куль а‘узу би-Рабби-ль-фаляк…",
+        tl:"Куль а‘узу би-Рабби-ль-фаляк, мин шарри ма халяк, ва мин шарри гасикын иза вакаб, ва мин шарри-н-наффасати фи-ль-‘укад, ва мин шарри хасидин иза хасад",
         tr:"Сура «Аль-Фаляк» (113). Три раза.", src:"Абу Дауд 5082, Тирмизи 3575 · сахих" },
       { n:11, target:3, ar:"قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَهِ النَّاسِ ۝ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ",
-        tl:"Куль а‘узу би-Рабби-н-нас…",
+        tl:"Куль а‘узу би-Рабби-н-нас, Малики-н-нас, Иляхи-н-нас, мин шарри-ль-васваси-ль-ханнас, аллязи ювасвису фи судури-н-нас, мина-ль-джиннати ва-н-нас",
         tr:"Сура «Ан-Нас» (114). Три раза.", src:"Абу Дауд 5082, Тирмизи 3575 · сахих" },
       { n:12, target:4, ar:"اللَّهُمَّ إِنِّي أَمْسَيْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ",
-        tl:"Аллахумма инни амсайту ушхидукя, ва ушхиду хамалята ‘аршик…",
+        tl:"Аллахумма инни амсайту ушхидукя, ва ушхиду хамалята ‘аршик, ва маляикатак, ва джами‘а халькик, аннакя анта-Ллаху ля иляха илля анта вахдака ля шарика ляк, ва анна Мухаммадан ‘абдукя ва расулюк",
         tr:"О Аллах, вот я встретил вечер и призываю в свидетели Тебя, носителей Твоего Трона, ангелов и все творения, что Ты — Аллах, нет божества, кроме Тебя Одного, и что Мухаммад — Твой раб и посланник.", src:"Абу Дауд 5069 · хасан", targetHint:"четыре раза" },
       { n:13, target:7, ar:"حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
         tl:"Хасбия-Ллаху ля иляха илля хува, ‘аляйхи таваккальту, ва хува Раббу-ль-‘арши-ль-‘азым",
         tr:"Достаточно мне Аллаха, нет божества, кроме Него. На Него уповаю, и Он — Господь великого Трона. (7 раз — Аллах избавит от забот.)", src:"Абу Дауд 5081 · хасан", targetHint:"семь раз" },
       { n:14, target:1, ar:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي وَآمِنْ رَوْعَاتِي، اللَّهُمَّ احْفَظْنِي مِنْ بَيْنِ يَدَيَّ وَمِنْ خَلْفِي وَعَنْ يَمِينِي وَعَنْ شِمَالِي وَمِنْ فَوْقِي، وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي",
-        tl:"Аллахумма инни асъалукя-ль-‘афва ва-ль-‘афия фи-д-дунья ва-ль-ахира…",
+        tl:"Аллахумма инни асъалюкя-ль-‘афва ва-ль-‘афия фи-д-дунья ва-ль-ахира, Аллахумма инни асъалюкя-ль-‘афва ва-ль-‘афия фи дини ва дуньяя ва ахли ва мали, Аллахумма-стур ‘аурати ва амин рау‘ати, Аллахумма-хфазни мин байни йадайя ва мин хальфи ва ‘ан ямини ва ‘ан шимали ва мин фауки, ва а‘узу би-‘азаматикя ан угталя мин тахти",
         tr:"О Аллах, прошу у Тебя прощения и благополучия в этом мире и в вечном — в религии, мирских делах, семье и имуществе. О Аллах, прикрой мои изъяны, огради от страхов и храни меня со всех сторон.", src:"Абу Дауд 5074, Ибн Маджа 3871 · сахих" },
       { n:15, target:1, ar:"اللَّهُمَّ مَا أَمْسَى بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لَا شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ",
         tl:"Аллахумма ма амса би мин ни‘матин ау би ахадин мин халькик, фа минкя вахдакя ля шарика лякъ, фа лякя-ль-хамду ва лякя-ш-шукр",
@@ -775,7 +822,7 @@
         tl:"Астагфируллаха ва атубу иляйх",
         tr:"Прошу прощения у Аллаха и приношу Ему покаяние.", src:"Аль-Бухари 6307, Муслим 2702" },
       { n:20, target:10, ar:"اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ",
-        tl:"Аллахумма солли ‘аля Мухаммад ва ‘аля али Мухаммад, кяма солляйта ‘аля Ибрахим…",
+        tl:"Аллахумма солли ‘аля Мухаммад ва ‘аля али Мухаммад, кяма солляйта ‘аля Ибрахим ва ‘аля али Ибрахим, иннакя Хамидун Маджид",
         tr:"О Аллах, восхвали Мухаммада и род Мухаммада, как Ты восхвалил Ибрахима. Поистине, Ты — Хвалимый, Славный. (10 раз утром и вечером — заступничество Пророка ﷺ.)", src:"Аль-Бухари, Муслим · сахих" },
     ]},
     after: { title:"После намаза", kicker:"После намаза · أذكار بعد الصلاة", items:[
@@ -807,16 +854,16 @@
         tl:"Ля иляха илля-Ллаху вахдаху ля шарика лях, ляху-ль-мульку ва ляху-ль-хамд, ва хува ‘аля кулли шайъин кадир",
         tr:"Нет божества, кроме Аллаха Единого, нет у Него сотоварища. Ему власть и хвала, и Он всё может. (Завершение до ста — прощаются грехи, даже если их как пена морская.)", src:"Муслим 597" },
       { n:10, target:1, ar:"اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ، لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ، لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ، مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ، يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ، وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ، وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ، وَلَا يَئُودُهُ حِفْظُهُمَا، وَهُوَ الْعَلِيُّ الْعَظِيمُ",
-        tl:"Аллаху ля иляха илля хува-ль-Хаййю-ль-Каййум… (Аят аль-Курси)",
+        tl:"Аллаху ля иляха илля хува-ль-Хаййю-ль-Каййум, ля та’хузуху синатун ва ля наум, ляху ма фи-с-самавати ва ма фи-ль-ард, ман за-ллязи яшфа‘у ‘индаху илля би-изнихи, я‘ляму ма байна айдихим ва ма хальфахум, ва ля юхитуна би шайъин мин ‘ильмихи илля бима ша’, васи‘а курсийюху-с-самавати ва-ль-ард, ва ля яудуху хифзухума, ва хува-ль-‘Алийю-ль-‘Азым",
         tr:"Аят аль-Курси. «Аллах — нет божества, кроме Него, Живого, Вседержителя. Им не овладевают ни дремота, ни сон…» (аль-Бакара, 255). Кто прочтёт его после каждой обязательной молитвы — ничто не помешает ему войти в Рай, кроме смерти.", src:"Ан-Насаи · сахих" },
       { n:11, target:1, ar:"قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
-        tl:"Куль хува-Ллаху ахад…",
+        tl:"Куль хува-Ллаху ахад, Аллаху-с-самад, лям ялид ва лям юляд, ва лям якул-ляху куфуван ахад",
         tr:"Сура «Аль-Ихлас» (112). Читается один раз (после фаджра и магриба — трижды).", src:"Абу Дауд, Тирмизи · сахих" },
       { n:12, target:1, ar:"قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِنْ شَرِّ مَا خَلَقَ ۝ وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
-        tl:"Куль а‘узу би-Рабби-ль-фаляк…",
+        tl:"Куль а‘узу би-Рабби-ль-фаляк, мин шарри ма халяк, ва мин шарри гасикын иза вакаб, ва мин шарри-н-наффасати фи-ль-‘укад, ва мин шарри хасидин иза хасад",
         tr:"Сура «Аль-Фаляк» (113). Читается один раз (после фаджра и магриба — трижды).", src:"Абу Дауд, Тирмизи · сахих" },
       { n:13, target:1, ar:"قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَهِ النَّاسِ ۝ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ",
-        tl:"Куль а‘узу би-Рабби-н-нас…",
+        tl:"Куль а‘узу би-Рабби-н-нас, Малики-н-нас, Иляхи-н-нас, мин шарри-ль-васваси-ль-ханнас, аллязи ювасвису фи судури-н-нас, мина-ль-джиннати ва-н-нас",
         tr:"Сура «Ан-Нас» (114). Читается один раз (после фаджра и магриба — трижды).", src:"Абу Дауд, Тирмизи · сахих" },
       { n:14, target:10, ar:"لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، يُحْيِي وَيُمِيتُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
         tl:"Ля иляха илля-Ллаху вахдаху ля шарика лях, ляху-ль-мульку ва ляху-ль-хамд, юхйи ва юмит, ва хува ‘аля кулли шайъин кадир",
@@ -827,31 +874,31 @@
     ]},
     sleep: { title:"Перед сном", kicker:"Перед сном · أذكار النوم", items:[
       { n:1, target:1, ar:"اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ، لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ، لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ، مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ، يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ، وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ، وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ، وَلَا يَئُودُهُ حِفْظُهُمَا، وَهُوَ الْعَلِيُّ الْعَظِيمُ",
-        tl:"Аллаху ля иляха илля хува-ль-Хаййю-ль-Каййум… (Аят аль-Курси)",
+        tl:"Аллаху ля иляха илля хува-ль-Хаййю-ль-Каййум, ля та’хузуху синатун ва ля наум, ляху ма фи-с-самавати ва ма фи-ль-ард, ман за-ллязи яшфа‘у ‘индаху илля би-изнихи, я‘ляму ма байна айдихим ва ма хальфахум, ва ля юхитуна би шайъин мин ‘ильмихи илля бима ша’, васи‘а курсийюху-с-самавати ва-ль-ард, ва ля яудуху хифзухума, ва хува-ль-‘Алийю-ль-‘Азым",
         tr:"Аят аль-Курси. Читается перед сном; в хадисе сообщается о защите Аллаха до утра.", src:"Аль-Бухари 2311 · сахих" },
       { n:2, target:3, ar:"قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
-        tl:"Куль хува-Ллаху ахад…",
+        tl:"Куль хува-Ллаху ахад, Аллаху-с-самад, лям ялид ва лям юляд, ва лям якул-ляху куфуван ахад",
         tr:"Сура «Аль-Ихлас». Перед сном Пророк ﷺ читал три последние суры, дул в ладони и протирал ими тело.", src:"Аль-Бухари 5017 · сахих", targetHint:"три раза" },
       { n:3, target:3, ar:"قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِنْ شَرِّ مَا خَلَقَ ۝ وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
-        tl:"Куль а‘узу би-Рабби-ль-фаляк…",
+        tl:"Куль а‘узу би-Рабби-ль-фаляк, мин шарри ма халяк, ва мин шарри гасикын иза вакаб, ва мин шарри-н-наффасати фи-ль-‘укад, ва мин шарри хасидин иза хасад",
         tr:"Сура «Аль-Фаляк». Читается вместе с «Аль-Ихлас» и «Ан-Нас» перед сном.", src:"Аль-Бухари 5017 · сахих", targetHint:"три раза" },
       { n:4, target:3, ar:"قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَهِ النَّاسِ ۝ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ",
-        tl:"Куль а‘узу би-Рабби-н-нас…",
+        tl:"Куль а‘узу би-Рабби-н-нас, Малики-н-нас, Иляхи-н-нас, мин шарри-ль-васваси-ль-ханнас, аллязи ювасвису фи судури-н-нас, мина-ль-джиннати ва-н-нас",
         tr:"Сура «Ан-Нас». Читается вместе с «Аль-Ихлас» и «Аль-Фаляк» перед сном.", src:"Аль-Бухари 5017 · сахих", targetHint:"три раза" },
       { n:5, target:1, ar:"آمَنَ الرَّسُولُ بِمَا أُنْزِلَ إِلَيْهِ مِنْ رَبِّهِ وَالْمُؤْمِنُونَ ۚ كُلٌّ آمَنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لَا نُفَرِّقُ بَيْنَ أَحَدٍ مِنْ رُسُلِهِ ۚ وَقَالُوا سَمِعْنَا وَأَطَعْنَا ۖ غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ ۝ لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا ۚ لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ ۗ رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِنْ قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ ۖ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا ۚ أَنْتَ مَوْلَانَا فَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",
-        tl:"Аманар-расулу бима унзиля иляйхи мир-Раббихи валь-муъминун…",
+        tl:"Аманар-расулу бима унзиля иляйхи мир-Раббихи валь-муъминун, куллун амана би-Лляхи ва маляикятихи ва кутубихи ва русулих, ля нуфаррику байна ахадин мир-русулих, ва калю сами‘на ва ата‘на, гуфранака Раббана ва иляйка-ль-масыр. Ля юкаллифу-Ллаху нафсан илля вус‘аха, ляха ма кясабат ва ‘аляйха ма-ктасабат, Раббана ля туахизна ин насина ау ахта’на, Раббана ва ля тахмиль ‘аляйна исран кяма хамальтаху ‘аля-ллязина мин каблина, Раббана ва ля тухаммильна ма ля таката ляна бих, ва‘фу ‘анна, вагфир ляна, вархамна, анта мауляна фансурна ‘аля-ль-кауми-ль-кяфирин",
         tr:"Последние два аята суры «Аль-Бакара» (2:285-286). Кто прочтёт их ночью — ему будет достаточно.", src:"Аль-Бухари 5009, Муслим 808 · сахих" },
       { n:6, target:1, ar:"بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا",
         tl:"Бисмикя-Ллахумма амуту ва ахъя",
         tr:"С именем Твоим, о Аллах, я умираю и оживаю.", src:"Аль-Бухари 6324 · сахих" },
       { n:7, target:1, ar:"بِاسْمِكَ رَبِّي وَضَعْتُ جَنْبِي، وَبِكَ أَرْفَعُهُ، إِنْ أَمْسَكْتَ نَفْسِي فَارْحَمْهَا، وَإِنْ أَرْسَلْتَهَا فَاحْفَظْهَا بِمَا تَحْفَظُ بِهِ عِبَادَكَ الصَّالِحِينَ",
-        tl:"Бисмикя Рабби вада‘ту джанби, ва бикя арфа‘ух…",
+        tl:"Бисмикя Рабби вада‘ту джанби, ва бикя арфа‘ух, ин амсакта нафси фархамха, ва ин арсальтаха фахфазха бима тахфазу бихи ‘ибадака-с-салихин",
         tr:"С именем Твоим, Господь мой, я положил свой бок, и с Тобой подниму его. Если Ты удержишь мою душу — помилуй её; если отпустишь — защити её тем, чем защищаешь праведных рабов.", src:"Аль-Бухари 6320, Муслим 2714 · сахих" },
       { n:8, target:3, ar:"اللَّهُمَّ قِنِي عَذَابَكَ يَوْمَ تَبْعَثُ عِبَادَكَ",
         tl:"Аллахумма кыни ‘азабакя йаума таб‘асу ‘ибадак",
         tr:"О Аллах, защити меня от Твоего наказания в День, когда Ты воскресишь Своих рабов.", src:"Абу Дауд 5045, Тирмизи 3398 · хасан" },
       { n:9, target:1, ar:"الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا، وَكَفَانَا وَآوَانَا، فَكَمْ مِمَّنْ لَا كَافِيَ لَهُ وَلَا مُؤْوِيَ",
-        tl:"Аль-хамду ли-Лляхи-ллязи ат‘амана ва сакана, ва кафана ва авана…",
+        tl:"Аль-хамду ли-Лляхи-ллязи ат‘амана ва сакана, ва кафана ва авана, факам мимман ля кафия ляху ва ля му’вия",
         tr:"Хвала Аллаху, Который накормил нас, напоил, избавил от нужды и дал нам приют. Сколько же тех, у кого нет избавляющего от нужды и дающего приют.", src:"Муслим 2715 · сахих" },
     ]},
   };
@@ -1025,7 +1072,7 @@
               <circle class="knot" cx="60" cy="105" r="3"/>
               <path class="tassel" d="M60 108 L55 119 M60 108 L60 121 M60 108 L65 119"/>
             </svg>
-            <div class="cx"><div class="chk">✓</div><div class="big"><b class="js-cur">0</b><small>/${z.target}</small></div></div>
+            <div class="cx"><div class="big"><b class="js-cur">0</b><small>/${z.target}</small></div></div>
           </button>`;
       card.innerHTML = `
         <div class="top">
@@ -1236,7 +1283,7 @@
     const cards = document.querySelectorAll('#zikrList .zikr');
     const total = cards.length, done = document.querySelectorAll('#zikrList .zikr.done').length;
     document.getElementById('rBarFill').style.width = total ? (done/total*100)+'%' : '0';
-    document.getElementById('rProg').textContent = `Прочитано ${done} из ${total}`;
+    document.getElementById('rProg').textContent = `${done} / ${total}`;
     if(total && done===total) bumpStreak();
     updateHomeProgress();
   }
@@ -1387,6 +1434,10 @@
     });
     const stT=document.getElementById('statToday'); if(stT) stT.textContent = sessionsDone+'/'+SESSION_KEYS.length;
     const stA=document.getElementById('statAzkar'); if(stA) stA.textContent = azkarToday;
+    // низ главной: «Сегодня N/4» + точки-сегменты
+    const htDone=document.getElementById('htDone'); if(htDone) htDone.textContent = sessionsDone;
+    document.querySelectorAll('#htDots i').forEach((d,i)=> d.classList.toggle('on', i<sessionsDone));
+    const htAll=document.getElementById('htAll'); if(htAll) htAll.hidden = sessionsDone < SESSION_KEYS.length;
   }
 
   function savedBool(key, fallback = true){
@@ -1478,12 +1529,13 @@
   function updateNextPrayer(t){
     const now = Date.now();
     let next = PRAYERS.map(([k,n])=>({n, ts:new Date(t[k]).getTime()})).find(p=>p.ts>now);
-    const line = document.getElementById('nextPrayerLine'), txt = document.getElementById('nextPrayerText');
+    const line = document.getElementById('nextPrayerLine'), nameEl = document.getElementById('nextPrayerName'), txt = document.getElementById('nextPrayerText');
     if(!next && t.fajr) next = { n:'Фаджр', ts:new Date(t.fajr).getTime()+86400000 };
     if(!next) return;
     const mins = Math.max(0, Math.ceil((next.ts-now)/60000));
     const h = Math.floor(mins/60), m = mins%60;
-    txt.textContent = `${next.n} через ${h ? h+' ч ' : ''}${m ? m+' мин' : (h ? '' : 'меньше минуты')}`.trim();
+    if(nameEl) nameEl.textContent = next.n;
+    txt.textContent = `через ${h ? h+' ч ' : ''}${m ? m+' мин' : (h ? '' : 'меньше минуты')}`.trim();
     line.style.display = '';
   }
   function updateSessionTimeHints(t){
@@ -1524,7 +1576,7 @@
   }
 
   function setLocStatus(s){ const el=document.getElementById('locStatus'); if(el) el.textContent=s; }
-  function locDone(){ const b=document.getElementById('locBtn'); b.classList.add('done'); b.textContent='✓ Местоположение определено'; }
+  function locDone(){ const b=document.getElementById('locBtn'); b.classList.add('done'); b.textContent='Местоположение определено'; }
 
   function postLocation(){
     if(TG && TG.initData && loc){
@@ -1563,7 +1615,7 @@
     const group=document.getElementById('addHomeGroup');
     const btn=document.getElementById('addHomeBtn'), desc=document.getElementById('addHomeDesc');
     const show=()=>{ group.style.display=''; };
-    const markAdded=()=>{ btn.textContent='✓ Уже на главном экране'; btn.disabled=true; btn.classList.add('done'); };
+    const markAdded=()=>{ btn.textContent='Уже на главном экране'; btn.disabled=true; btn.classList.add('done'); };
     // 1) Telegram Mini App (Bot API 8.0)
     if(TG && typeof TG.addToHomeScreen==='function'){
       show();
