@@ -102,11 +102,14 @@
   .screen { display:none; flex-direction:column; flex:1; width:100%; }
   .screen.active { display:flex; animation: fade .3s ease; }
   .screen.nav-under, .screen.nav-drag {
-    display:flex; position:absolute; inset:0; min-height:100%; background:var(--bg);
+    display:flex; min-height:100%; background:var(--bg);
     will-change:transform; animation:none; overflow:hidden;
   }
-  .screen.nav-under { z-index:1; pointer-events:none; }
-  .screen.nav-drag { z-index:2; box-shadow:-18px 0 36px rgba(0,0,0,.16); }
+  /* оба экрана перехода — fixed к вьюпорту (иначе absolute выпадает из потока, .phone схлопывается,
+     и на глубокой прокрутке экран уносит за вьюпорт → чернота). Уходящему ставим top:-scrollY инлайном,
+     чтобы он показывал твою прокрутку, а не прыгал к началу. */
+  .screen.nav-drag { position:fixed; left:0; right:0; top:0; z-index:2; box-shadow:-18px 0 36px rgba(0,0,0,.16); }
+  .screen.nav-under { position:fixed; inset:0; z-index:1; pointer-events:none; }
   #home.nav-under, #home.nav-drag { background:radial-gradient(120% 70% at 50% -12%, var(--home-bg-2), var(--home-bg) 70%); }
   #home { background: radial-gradient(120% 70% at 50% -12%, var(--home-bg-2), var(--home-bg) 70%); }
   @keyframes fade { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
@@ -261,17 +264,38 @@
   .src-row .src-txt { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }
   .src-row .src-chev { width:16px; height:16px; flex-shrink:0; color:var(--ink-faint); opacity:.7; }
   .rmeta .rhint { color:var(--ink-faint); transition:opacity .3s; }
-  .reorder-toggle { display:block; margin:4px auto 30px; padding:9px 16px; border-radius:999px; border:1px solid var(--line);
+  .reorder-bar { display:flex; flex-direction:column; align-items:center; gap:10px; margin:6px auto 30px; }
+  .reorder-toggle { display:block; padding:9px 18px; border-radius:999px; border:1px solid var(--line);
     background:var(--surface); color:var(--ink-soft); font:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:transform .15s; }
   .reorder-toggle:active { transform:scale(.97); }
   .reorder-toggle.active { background:var(--accent-soft); color:var(--accent-deep); border-color:color-mix(in srgb, var(--accent) 28%, transparent); }
+  .reorder-reset { border:none; background:none; color:var(--ink-faint); font:inherit; font-size:13px; font-weight:500;
+    cursor:pointer; text-decoration:underline; text-underline-offset:3px; padding:4px; }
+  .reorder-reset[hidden] { display:none; }
   .zikr .drag-grip { display:none; }
-  .list.reordering .zikr .drag-grip { display:grid; }
-  .list.reordering { touch-action:none; }
-  .list.reordering .zikr { padding:12px 14px; cursor:grab; }
+  .zikr .ro-name, .zikr .ro-move { display:none; }
+  .list.reordering { touch-action:pan-y; }   /* список скроллится пальцем; драг — только за ручку (touch-action:none на .drag-grip) */
+  .list.reordering .zikr { padding:9px 12px; cursor:default; }
   .list.reordering .zikr > .arabic, .list.reordering .zikr > .translit, .list.reordering .zikr > .divider,
   .list.reordering .zikr > .translate, .list.reordering .zikr > .src-row, .list.reordering .zikr > .cnote,
   .list.reordering .zikr > .counter-row { display:none; }
+  .list.reordering .zikr .top { margin-bottom:0; gap:9px; }
+  .list.reordering .zikr .drag-grip { display:grid; cursor:grab; color:var(--ink-faint); }
+  .list.reordering .zikr .drag-grip:active { cursor:grabbing; }
+  .list.reordering .zikr .pill, .list.reordering .zikr .sp { display:none; }
+  .list.reordering .zikr .badge { width:26px; height:26px; }
+  .list.reordering .zikr .badge b { font-size:12px; }
+  .list.reordering .zikr .ro-name { display:flex; align-items:center; gap:6px; flex:1; min-width:0;
+    font-size:14px; font-weight:600; color:var(--ink); cursor:pointer; }
+  .ro-name .ro-name-txt { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .zikr .ro-peek { width:15px; height:15px; flex-shrink:0; color:var(--ink-faint); opacity:.6; }
+  .list.reordering .zikr .ro-name:active .ro-name-txt { color:var(--accent-deep); }
+  .list.reordering .zikr .ro-move { display:flex; gap:5px; flex-shrink:0; }
+  .ro-btn { width:34px; height:34px; border-radius:9px; display:grid; place-items:center; cursor:pointer; padding:0;
+    background:var(--surface-2); border:1px solid var(--line); color:var(--ink-soft); font:inherit;
+    transition:transform .12s, background .15s, color .15s; -webkit-tap-highlight-color:transparent; }
+  .ro-btn:active { transform:scale(.9); background:var(--accent-soft); color:var(--accent-deep); }
+  .ro-btn:disabled { opacity:.32; pointer-events:none; }
   .cnote { text-align:center; font-size:12px; color:var(--ink-faint); margin-top:12px; font-style:italic; }
   .counter-row { display:flex; align-items:center; justify-content:flex-end; gap:18px; margin-top:10px; padding:12px 0 0 0; border-top:1px solid var(--line); }
   .cbtn { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; cursor:pointer; flex-shrink:0;
@@ -385,7 +409,7 @@
   .modal.open { display:block; }
   .modal .scrim { position:absolute; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(2px); }
   .modal .sheet { position:absolute; left:0; right:0; bottom:0; max-width:440px; margin-inline:auto; max-height:88%; overflow-y:auto;
-    overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain; overscroll-behavior-y:none; -webkit-overflow-scrolling:touch;
     background:var(--surface); border-radius:20px 20px 0 0; border-top:1px solid var(--line);
     box-shadow:0 -8px 40px rgba(0,0,0,.25); padding:8px 20px calc(24px + var(--tg-safe-bottom));
     animation:sheetUp .28s cubic-bezier(.2,.8,.2,1); }
@@ -393,6 +417,7 @@
   .modal .grip { width:40px; height:4px; border-radius:99px; background:var(--line); margin:8px auto 14px;
     touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none; }
   .modal .grip:active { cursor:grabbing; }
+  .modal .m-head { touch-action:none; }
   .modal .m-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
   .modal .m-badge { width:30px; height:30px; border-radius:50%; background:var(--accent-soft); color:var(--accent-deep);
     display:grid; place-items:center; font-weight:800; font-size:14px; flex-shrink:0; }
@@ -515,7 +540,10 @@
       <div class="rmeta"><span id="rProg"></span><span id="rHint" class="rhint"></span></div>
     </div>
     <div class="list" id="zikrList"></div>
-    <button type="button" class="reorder-toggle" id="reorderToggle">Изменить порядок</button>
+    <div class="reorder-bar">
+      <button type="button" class="reorder-reset" id="reorderReset" hidden>Вернуть исходный порядок</button>
+      <button type="button" class="reorder-toggle" id="reorderToggle">Изменить порядок</button>
+    </div>
   </section>
 
   <!-- SETTINGS -->
@@ -1469,7 +1497,7 @@
     const keepScroll = !!opts.keepScroll;
     document.querySelectorAll('.screen').forEach(s=>{
       s.classList.remove('active','nav-under','nav-drag');
-      s.style.transform=''; s.style.opacity=''; s.style.transition='';
+      s.style.transform=''; s.style.opacity=''; s.style.transition=''; s.style.top='';
     });
     document.getElementById(id).classList.add('active');
     if(keepScroll) requestAnimationFrame(()=> window.scrollTo(0, scrollStore[id] || 0));
@@ -1511,6 +1539,7 @@
         lockNavScroll();
         prev.classList.add('nav-under');
         cur.classList.add('nav-drag');
+        cur.style.top = (-navLockY) + 'px';   // уходящий fixed-экран показывает твою прокрутку
         prev.style.transform = 'translateX(-28px)';
         prev.style.opacity = '.92';
         finishBackVisual(cur, prev, true);
@@ -1556,6 +1585,28 @@
   function saveOrder(key){
     const ids = Array.from(document.querySelectorAll('#zikrList .zikr[data-id]')).map(el=>el.dataset.id);
     try{ localStorage.setItem(orderKey(key), JSON.stringify(ids)); }catch(e){}
+  }
+  // короткое имя азкара для режима реордера (чтобы видеть, что двигаешь)
+  function shortLabel(z){
+    const s = String(z.tl || z.tr || z.ar || '').replace(/\s+/g,' ').trim();
+    return s.length > 40 ? s.slice(0,39).trim() + '…' : s;
+  }
+  // сохранить текущий порядок из DOM и пересобрать CURRENT_ITEMS (общее для драга и стрелок)
+  function syncOrderFromDom(){
+    if(!CURRENT_KEY) return;
+    const list = document.getElementById('zikrList'); if(!list) return;
+    saveOrder(CURRENT_KEY);
+    const byId = new Map(orderedItems(CURRENT_KEY).map(z=>[z._id, z]));
+    CURRENT_ITEMS = Array.from(list.querySelectorAll('.zikr[data-id]')).map((c,i)=>{ c.dataset.i = i; return byId.get(c.dataset.id); }).filter(Boolean);
+  }
+  // ↑/↓ доступность: первую нельзя выше, последнюю ниже
+  function updateRoArrows(){
+    const cards = Array.from(document.querySelectorAll('#zikrList .zikr'));
+    cards.forEach((c,i)=>{
+      const up=c.querySelector('.ro-up'), dn=c.querySelector('.ro-down');
+      if(up) up.disabled = (i===0);
+      if(dn) dn.disabled = (i===cards.length-1);
+    });
   }
   function savedCount(key, z){
     const bucket = PROG[key] || {};
@@ -1616,6 +1667,7 @@
     REORDER = false;
     const zl = document.getElementById('zikrList'); if(zl) zl.classList.remove('reordering');
     const rt = document.getElementById('reorderToggle'); if(rt){ rt.textContent='Изменить порядок'; rt.classList.remove('active'); }
+    const rr = document.getElementById('reorderReset'); if(rr) rr.hidden = true;
   }
   function openReading(key){
     CURRENT_KEY = key;
@@ -1637,10 +1689,15 @@
         </button>`;
       card.innerHTML = `
         <div class="top">
+          <button class="mini drag-grip js-drag" title="Перетащить" aria-label="Перетащить зикр"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.6"/><circle cx="16" cy="6" r="1.6"/><circle cx="8" cy="12" r="1.6"/><circle cx="16" cy="12" r="1.6"/><circle cx="8" cy="18" r="1.6"/><circle cx="16" cy="18" r="1.6"/></svg></button>
           <div class="badge"><b>${z.n}</b></div>
           <div class="pill">×${target}</div>
+          <span class="ro-name"><span class="ro-name-txt">${shortLabel(z)}</span><svg class="ro-peek" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
           <div class="sp"></div>
-          <button class="mini drag-grip js-drag" title="Перетащить" aria-label="Перетащить зикр"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.6"/><circle cx="16" cy="6" r="1.6"/><circle cx="8" cy="12" r="1.6"/><circle cx="16" cy="12" r="1.6"/><circle cx="8" cy="18" r="1.6"/><circle cx="16" cy="18" r="1.6"/></svg></button>
+          <div class="ro-move">
+            <button type="button" class="ro-btn ro-up" aria-label="Переместить выше"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14l6-6 6 6"/></svg></button>
+            <button type="button" class="ro-btn ro-down" aria-label="Переместить ниже"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10l6 6 6-6"/></svg></button>
+          </div>
         </div>
         <div class="arabic">${z.ar}</div>
         <div class="translit js-translit">${z.tl}</div>
@@ -1765,23 +1822,46 @@
       tgHaptic('light');
       if(navigator.vibrate) navigator.vibrate(12);
     }
-    function move(e){
+    let rafId = null;
+    function place(clientX, clientY){
       if(!drag) return;
-      e.preventDefault();
       const { card, placeholder, dx, dy } = drag;
-      card.style.left = (e.clientX - dx) + 'px';
-      card.style.top = (e.clientY - dy) + 'px';
+      card.style.left = (clientX - dx) + 'px';
+      card.style.top = (clientY - dy) + 'px';
       const siblings = Array.from(list.querySelectorAll('.zikr:not(.dragging)'));
       let before = null;
       for(const el of siblings){
         const r = el.getBoundingClientRect();
-        if(e.clientY < r.top + r.height/2){ before = el; break; }
+        if(clientY < r.top + r.height/2){ before = el; break; }
       }
       if(before) list.insertBefore(placeholder, before);
       else list.appendChild(placeholder);
     }
+    function edgeAutoScroll(){
+      if(!drag){ rafId=null; return; }
+      const vh = window.innerHeight, EDGE = 110, MAX = 16;
+      const y = drag.lastY;
+      let v = 0;
+      if(y < EDGE) v = -MAX * (1 - y/EDGE);
+      else if(y > vh - EDGE) v = MAX * (1 - (vh - y)/EDGE);
+      if(v){
+        const se = document.scrollingElement || document.documentElement;
+        const prev = se.scrollTop;
+        se.scrollTop += v;
+        if(se.scrollTop !== prev) place(drag.lastX, drag.lastY);
+        rafId = requestAnimationFrame(edgeAutoScroll);
+      } else { rafId = null; }
+    }
+    function move(e){
+      if(!drag) return;
+      e.preventDefault();
+      drag.lastX = e.clientX; drag.lastY = e.clientY;
+      place(e.clientX, e.clientY);
+      if(rafId == null) edgeAutoScroll();
+    }
     function end(){
       clearTimer();
+      if(rafId != null){ cancelAnimationFrame(rafId); rafId = null; }
       if(!drag) return;
       const { card, placeholder } = drag;
       placeholder.replaceWith(card);
@@ -1796,13 +1876,13 @@
     }
     function onPointerDown(e){
       if(!list.classList.contains('reordering')) return;   // drag только в режиме «Изменить порядок»
+      if(e.target.closest('.ro-btn, .src-row, .tasbih, a')) return;   // стрелки/ссылки — не драг
+      if(!e.target.closest('.js-drag')) return;            // тащим ТОЛЬКО за ручку; всё остальное = обычный скролл
       const card = e.target.closest('.zikr');
       if(!card || !list.contains(card)) return;
       if(e.button != null && e.button !== 0) return;
-      if(e.target.closest('.tasbih, .src-row, a')) return;
-      const immediate = !!e.target.closest('.js-drag');
       clearTimer();
-      timer = setTimeout(()=>start(card,e), immediate ? 60 : 200);
+      timer = setTimeout(()=>start(card,e), 60);
     }
     function onScroll(){ if(!drag) clearTimer(); }
     list.addEventListener('pointerdown', onPointerDown);
@@ -1822,14 +1902,42 @@
 
   (function(){
     const rt = document.getElementById('reorderToggle');
-    if(!rt) return;
-    rt.addEventListener('click', ()=>{
-      const l = document.getElementById('zikrList');
-      REORDER = !l.classList.contains('reordering');
-      l.classList.toggle('reordering', REORDER);
-      rt.textContent = REORDER ? 'Готово' : 'Изменить порядок';
-      rt.classList.toggle('active', REORDER);
-      tgHaptic('light');
+    const rr = document.getElementById('reorderReset');
+    const l = document.getElementById('zikrList');
+    if(!rt || !l) return;
+    function setMode(on){
+      REORDER = on;
+      l.classList.toggle('reordering', on);
+      rt.textContent = on ? 'Готово' : 'Изменить порядок';
+      rt.classList.toggle('active', on);
+      if(rr) rr.hidden = !on;
+      if(on) updateRoArrows();
+    }
+    rt.addEventListener('click', ()=>{ setMode(!l.classList.contains('reordering')); tgHaptic('light'); });
+    if(rr) rr.addEventListener('click', ()=>{
+      if(!CURRENT_KEY) return;
+      try{ localStorage.removeItem(orderKey(CURRENT_KEY)); }catch(e){}
+      openReading(CURRENT_KEY);   // перерисует в исходном порядке (resetReorder внутри выключит режим)
+      setMode(true);              // и снова войти в режим правки
+      tgHaptic('medium');
+    });
+    // стрелки ↑/↓ — точный сдвиг азкара на один шаг
+    l.addEventListener('click', e=>{
+      if(!l.classList.contains('reordering')) return;
+      const up = e.target.closest('.ro-up'), dn = e.target.closest('.ro-down');
+      if(up || dn){
+        e.stopPropagation();
+        const card = e.target.closest('.zikr'); if(!card) return;
+        if(up){ const prev=card.previousElementSibling; if(prev && prev.classList.contains('zikr')) l.insertBefore(card, prev); }
+        else  { const next=card.nextElementSibling;     if(next && next.classList.contains('zikr')) l.insertBefore(next, card); }
+        syncOrderFromDom(); updateRoArrows(); tgHaptic('light');
+        return;
+      }
+      // тап по строке (не стрелки/ручка) — показать полный текст азкара
+      if(e.target.closest('.drag-grip')) return;
+      const card = e.target.closest('.zikr'); if(!card) return;
+      const z = CURRENT_ITEMS.find(x=>x._id===card.dataset.id);
+      if(z){ openInfo(z); tgHaptic('light'); }
     });
   })();
 
@@ -1916,22 +2024,29 @@
   /* ---- iOS-style drag шторки: страница сзади не скроллится ---- */
   (function(){
     const modal=document.getElementById('infoModal'), sheet=modal.querySelector('.sheet'), grip=sheet.querySelector('.grip');
-    let startY=0, dy=0, dragging=false, armed=false;
+    let startY=0, dy=0, dragging=false, armed=false, handleDrag=false;
+    function isHandleZone(e){
+      if(grip && grip.contains(e.target)) return true;
+      if(e.target.closest('.m-head')) return true;
+      const r=sheet.getBoundingClientRect();
+      return e.clientY - r.top < 124;
+    }
     function begin(e){
       dragging=true; sheet.style.animation='none'; sheet.style.transition='none';
+      if(handleDrag) sheet.scrollTop = 0;
       try{ sheet.setPointerCapture(e.pointerId); }catch(_e){}
     }
     sheet.addEventListener('pointerdown', e=>{
       if(e.pointerType === 'mouse' && e.button !== 0) return;
       if(e.target.closest('button,a,input,textarea,select')){ armed=false; return; }
-      startY=e.clientY; dy=0; armed=true; dragging=false;
-      if(grip && grip.contains(e.target)) begin(e);
+      startY=e.clientY; dy=0; armed=true; dragging=false; handleDrag=isHandleZone(e);
+      if(handleDrag){ e.preventDefault(); begin(e); }
     });
     sheet.addEventListener('pointermove', e=>{
       if(!armed) return;
       const d=e.clientY-startY;
       if(!dragging){
-        if(d>6 && sheet.scrollTop<=0) begin(e);
+        if(d>6 && (handleDrag || sheet.scrollTop<=1)) begin(e);
         else if(d<-2){ armed=false; return; }
         else return;
       }
@@ -1941,7 +2056,7 @@
       sheet.style.transform=`translateY(${Math.max(v,0)}px)`;
     }, {passive:false});
     function end(){
-      armed=false;
+      armed=false; handleDrag=false;
       if(!dragging) return;
       dragging=false;
       if(dy>110) closeInfo();
@@ -2250,6 +2365,7 @@
         dragging=true;
         prev.classList.add('nav-under');
         cur.classList.add('nav-drag');
+        cur.style.top = (-navLockY) + 'px';   // уходящий fixed-экран показывает твою прокрутку
         prev.style.transition='none'; cur.style.transition='none';
         prev.style.transform='translateX(-28px)'; prev.style.opacity='.92';
       }

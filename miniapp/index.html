@@ -409,7 +409,7 @@
   .modal.open { display:block; }
   .modal .scrim { position:absolute; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(2px); }
   .modal .sheet { position:absolute; left:0; right:0; bottom:0; max-width:440px; margin-inline:auto; max-height:88%; overflow-y:auto;
-    overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain; overscroll-behavior-y:none; -webkit-overflow-scrolling:touch;
     background:var(--surface); border-radius:20px 20px 0 0; border-top:1px solid var(--line);
     box-shadow:0 -8px 40px rgba(0,0,0,.25); padding:8px 20px calc(24px + var(--tg-safe-bottom));
     animation:sheetUp .28s cubic-bezier(.2,.8,.2,1); }
@@ -417,6 +417,7 @@
   .modal .grip { width:40px; height:4px; border-radius:99px; background:var(--line); margin:8px auto 14px;
     touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none; }
   .modal .grip:active { cursor:grabbing; }
+  .modal .m-head { touch-action:none; }
   .modal .m-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
   .modal .m-badge { width:30px; height:30px; border-radius:50%; background:var(--accent-soft); color:var(--accent-deep);
     display:grid; place-items:center; font-weight:800; font-size:14px; flex-shrink:0; }
@@ -2023,22 +2024,29 @@
   /* ---- iOS-style drag шторки: страница сзади не скроллится ---- */
   (function(){
     const modal=document.getElementById('infoModal'), sheet=modal.querySelector('.sheet'), grip=sheet.querySelector('.grip');
-    let startY=0, dy=0, dragging=false, armed=false;
+    let startY=0, dy=0, dragging=false, armed=false, handleDrag=false;
+    function isHandleZone(e){
+      if(grip && grip.contains(e.target)) return true;
+      if(e.target.closest('.m-head')) return true;
+      const r=sheet.getBoundingClientRect();
+      return e.clientY - r.top < 124;
+    }
     function begin(e){
       dragging=true; sheet.style.animation='none'; sheet.style.transition='none';
+      if(handleDrag) sheet.scrollTop = 0;
       try{ sheet.setPointerCapture(e.pointerId); }catch(_e){}
     }
     sheet.addEventListener('pointerdown', e=>{
       if(e.pointerType === 'mouse' && e.button !== 0) return;
       if(e.target.closest('button,a,input,textarea,select')){ armed=false; return; }
-      startY=e.clientY; dy=0; armed=true; dragging=false;
-      if(grip && grip.contains(e.target)) begin(e);
+      startY=e.clientY; dy=0; armed=true; dragging=false; handleDrag=isHandleZone(e);
+      if(handleDrag){ e.preventDefault(); begin(e); }
     });
     sheet.addEventListener('pointermove', e=>{
       if(!armed) return;
       const d=e.clientY-startY;
       if(!dragging){
-        if(d>6 && sheet.scrollTop<=0) begin(e);
+        if(d>6 && (handleDrag || sheet.scrollTop<=1)) begin(e);
         else if(d<-2){ armed=false; return; }
         else return;
       }
@@ -2048,7 +2056,7 @@
       sheet.style.transform=`translateY(${Math.max(v,0)}px)`;
     }, {passive:false});
     function end(){
-      armed=false;
+      armed=false; handleDrag=false;
       if(!dragging) return;
       dragging=false;
       if(dy>110) closeInfo();
