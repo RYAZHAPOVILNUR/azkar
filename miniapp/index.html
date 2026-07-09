@@ -242,7 +242,8 @@
   .zikr.dragging { z-index:20; opacity:.96; cursor:grabbing; box-shadow:0 18px 48px rgba(0,0,0,.22); transition:none; }
   .zikr.drag-shadow { opacity:.46; }
   .zikr-placeholder { border:1.5px dashed color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius:24px;
-    background:color-mix(in srgb, var(--accent-soft) 60%, transparent); min-height:110px; flex-shrink:0; }
+    background:color-mix(in srgb, var(--accent-soft) 60%, transparent); min-height:110px; flex-shrink:0;
+    transition: transform .2s cubic-bezier(.2,.8,.2,1), opacity .18s ease, height .18s ease; }
   .zikr.done { border-color: color-mix(in srgb, var(--good) 42%, var(--line)); background: color-mix(in srgb, var(--good) 7%, var(--surface)); }
   .zikr .top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
   .badge { width:32px; height:32px; flex-shrink:0; display:grid; place-items:center; border-radius:50%;
@@ -577,7 +578,6 @@
       <div class="ht-all" id="htAll" hidden>все поминания на сегодня</div>
       <div class="home-insight" id="homeInsight">
         <span id="weekInsight">За неделю пока нет истории</span>
-        <span class="muted" id="favInsight">Избранное пусто</span>
       </div>
     </div>
   </section>
@@ -1972,6 +1972,23 @@
       if(navigator.vibrate) navigator.vibrate(12);
     }
     let rafId = null;
+    function animateReorder(mutator){
+      const moving = Array.from(list.querySelectorAll('.zikr:not(.dragging), .zikr-placeholder'));
+      const beforeTops = new Map(moving.map(el=>[el, el.getBoundingClientRect().top]));
+      mutator();
+      Array.from(list.querySelectorAll('.zikr:not(.dragging), .zikr-placeholder')).forEach(el=>{
+        const beforeTop = beforeTops.get(el);
+        if(beforeTop == null) return;
+        const dy = beforeTop - el.getBoundingClientRect().top;
+        if(Math.abs(dy) < 1) return;
+        el.style.transition = 'none';
+        el.style.transform = `translateY(${dy}px)`;
+        void el.offsetWidth;
+        el.style.transition = 'transform .2s cubic-bezier(.2,.8,.2,1)';
+        el.style.transform = '';
+        window.setTimeout(()=>{ el.style.transition = ''; }, 230);
+      });
+    }
     function place(clientX, clientY){
       if(!drag) return;
       const { card, placeholder, dx, dy } = drag;
@@ -1983,8 +2000,12 @@
         const r = el.getBoundingClientRect();
         if(clientY < r.top + r.height/2){ before = el; break; }
       }
-      if(before) list.insertBefore(placeholder, before);
-      else list.appendChild(placeholder);
+      if(before && placeholder.nextElementSibling === before) return;
+      if(!before && placeholder === list.lastElementChild) return;
+      animateReorder(()=>{
+        if(before) list.insertBefore(placeholder, before);
+        else list.appendChild(placeholder);
+      });
     }
     function edgeAutoScroll(){
       if(!drag){ rafId=null; return; }
@@ -2324,11 +2345,6 @@
       weekEl.innerHTML = activeDays
         ? `За неделю: <b>${activeDays}</b> ${plural(activeDays,'день','дня','дней')} с азкарами${top && top[1] ? `. Чаще всего: <b>${SESSION_TITLES[top[0]].toLowerCase()}</b>` : ''}.`
         : 'За неделю пока нет истории';
-    }
-    const favEl = document.getElementById('favInsight');
-    if(favEl){
-      const n = favoriteItems().length;
-      favEl.textContent = n ? `В избранном: ${n} ${plural(n,'зикр','зикра','зикров')}` : 'Избранное пусто';
     }
   }
 
