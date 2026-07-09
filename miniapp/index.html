@@ -1602,6 +1602,19 @@
     const byId = new Map(orderedItems(CURRENT_KEY).map(z=>[z._id, z]));
     CURRENT_ITEMS = Array.from(list.querySelectorAll('.zikr[data-id]')).map((c,i)=>{ c.dataset.i = i; return byId.get(c.dataset.id); }).filter(Boolean);
   }
+  // плавный доезд строки из старой позиции в новую (FLIP)
+  function flipSlide(el, firstTop){
+    const dy = firstTop - el.getBoundingClientRect().top;
+    if(!dy) return;
+    el.style.transition = 'none';
+    el.style.transform = 'translateY(' + dy + 'px)';
+    void el.offsetWidth;                         // зафиксировать стартовую позицию
+    requestAnimationFrame(function(){
+      el.style.transition = 'transform .3s cubic-bezier(.2,.8,.2,1)';
+      el.style.transform = '';
+    });
+    setTimeout(function(){ el.style.transition=''; el.style.transform=''; }, 340);
+  }
   // ↑/↓ доступность: первую нельзя выше, последнюю ниже
   function updateRoArrows(){
     const cards = Array.from(document.querySelectorAll('#zikrList .zikr'));
@@ -1918,6 +1931,10 @@
       rt.classList.toggle('active', on);
       if(rr) rr.hidden = !on;
       if(on) updateRoArrows();
+      // мягкий кросс-фейд — маскирует резкую перекомпоновку карточек при входе/выходе
+      l.style.transition='none'; l.style.opacity='.4'; void l.offsetWidth;
+      requestAnimationFrame(function(){ l.style.transition='opacity .22s ease'; l.style.opacity='1'; });
+      setTimeout(function(){ l.style.transition=''; }, 260);
       // выходим из режима и накопилось отложенное фоновое обновление — применить сейчас
       if(!on && reorderPendingRefresh){ reorderPendingRefresh = false; if(CURRENT_KEY) openReading(CURRENT_KEY); }
     }
@@ -1936,14 +1953,14 @@
       if(up || dn){
         e.stopPropagation();
         const card = e.target.closest('.zikr'); if(!card) return;
-        let moved = false;
-        if(up){ const prev=card.previousElementSibling; if(prev && prev.classList.contains('zikr')){ l.insertBefore(card, prev); moved=true; } }
-        else  { const next=card.nextElementSibling;     if(next && next.classList.contains('zikr')){ l.insertBefore(next, card); moved=true; } }
-        if(moved){
-          card.classList.remove('ro-flash'); void card.offsetWidth; card.classList.add('ro-flash');  // мгновенная отдача
-          card.scrollIntoView({block:'nearest'});
-          syncOrderFromDom(); updateRoArrows(); tgHaptic('light');
-        }
+        const neighbor = up ? card.previousElementSibling : card.nextElementSibling;
+        if(!neighbor || !neighbor.classList.contains('zikr')) return;  // край — двигать некуда
+        const cardTop = card.getBoundingClientRect().top;      // FLIP: запомнить старые позиции
+        const nbTop = neighbor.getBoundingClientRect().top;
+        if(up) l.insertBefore(card, neighbor); else l.insertBefore(neighbor, card);
+        flipSlide(card, cardTop); flipSlide(neighbor, nbTop);  // плавно доехать до новых мест
+        try{ card.scrollIntoView({ block:'nearest', behavior:'smooth' }); }catch(_e){ card.scrollIntoView(); }
+        syncOrderFromDom(); updateRoArrows(); tgHaptic('light');
         return;
       }
       // тап по строке (не стрелки/ручка) — показать полный текст азкара
