@@ -205,9 +205,9 @@
     backdrop-filter: blur(22px) saturate(180%); -webkit-backdrop-filter: blur(22px) saturate(180%);
     box-shadow: inset 0 1px 0 var(--glass-hi), var(--shadow-card); }
 
-  .rhead { position: sticky; top:0; z-index:5;
-    background: var(--glass-2);
-    backdrop-filter: blur(22px) saturate(180%); -webkit-backdrop-filter: blur(22px) saturate(180%);
+  .rhead { position: sticky; top:0; z-index:20;
+    background: color-mix(in srgb, var(--bg) 94%, var(--surface));
+    backdrop-filter: blur(10px) saturate(130%); -webkit-backdrop-filter: blur(10px) saturate(130%);
     border-bottom:1px solid var(--glass-brd); padding: calc(8px + var(--tg-safe-top)) 14px 10px;
     box-shadow: inset 0 1px 0 var(--glass-hi); }
   .rhead .row { display:flex; align-items:center; gap:8px; }
@@ -282,28 +282,27 @@
   .cbtn.done:hover { color: var(--good); }
   .zikr.done .cbtn.done { background: color-mix(in srgb, var(--good) 22%, var(--surface-2)); border-color: color-mix(in srgb, var(--good) 45%, var(--line)); color:var(--ink); }
 
-  .tasbih { width:min(168px, 52vw); min-height:78px; flex-shrink:0; position:relative; overflow:hidden; cursor:pointer;
-    display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:7px; padding:13px 16px 12px;
+  .tasbih { width:min(150px, 46vw); min-height:62px; flex-shrink:0; position:relative; overflow:hidden; cursor:pointer;
+    display:flex; align-items:center; justify-content:flex-start; padding:10px 15px 16px;
     background:linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 92%, white), var(--surface-2));
-    border:1px solid color-mix(in srgb, var(--line) 82%, var(--ink-faint)); border-radius:20px; color:var(--ink);
-    box-shadow:0 10px 26px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,.42);
+    border:1px solid color-mix(in srgb, var(--line) 82%, var(--ink-faint)); border-radius:18px; color:var(--ink);
+    box-shadow:0 6px 18px rgba(15,23,42,.07), inset 0 1px 0 rgba(255,255,255,.35);
     -webkit-tap-highlight-color:transparent; transition:transform .18s cubic-bezier(.2,.8,.2,1), border-color .18s, background .18s, box-shadow .18s; touch-action:none; }
   .tasbih:active { transform:scale(.97); }
   .tasbih.pulling { transform:translateY(var(--pull,0px)) scale(.985); transition:none; }
   .tasbih.armed { border-color:color-mix(in srgb, var(--accent) 42%, var(--line)); box-shadow:0 12px 30px rgba(15,23,42,.1), 0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent); }
-  .tasbih::before { content:""; position:absolute; inset:auto 10px 10px 10px; height:6px; border-radius:999px; background:color-mix(in srgb, var(--ink-faint) 14%, transparent); }
-  .tasbih .fill { position:absolute; left:10px; bottom:10px; height:6px; width:var(--progress,0%); border-radius:999px;
+  .tasbih::before { content:""; position:absolute; inset:auto 12px 10px 12px; height:5px; border-radius:999px; background:color-mix(in srgb, var(--ink-faint) 14%, transparent); }
+  .tasbih .fill { position:absolute; left:12px; bottom:10px; height:5px; width:var(--progress,0%); max-width:calc(100% - 24px); border-radius:999px;
     background:linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 70%, white)); transition:width .22s cubic-bezier(.2,.8,.2,1), background .18s; }
   .tasbih .count { position:relative; z-index:1; display:flex; align-items:baseline; gap:3px; font-variant-numeric:tabular-nums; }
-  .tasbih .count b { font-size:30px; line-height:1; font-weight:700; color:var(--ink); letter-spacing:0; }
+  .tasbih .count b { font-size:28px; line-height:1; font-weight:700; color:var(--ink); letter-spacing:0; }
   .tasbih .count small { font-size:15px; line-height:1; font-weight:600; color:var(--ink-faint); letter-spacing:0; }
-  .tasbih .lbl { position:relative; z-index:1; font-size:11px; line-height:1.1; color:var(--ink-faint); font-weight:700; letter-spacing:0; }
   .tasbih.pulse .count b { animation:countPulse .24s cubic-bezier(.34,1.56,.64,1); }
   @keyframes countPulse { 0%{transform:scale(1)} 50%{transform:scale(1.14)} 100%{transform:scale(1)} }
   .zikr.done .tasbih { border-color:color-mix(in srgb, var(--good) 38%, var(--line)); background:color-mix(in srgb, var(--good) 10%, var(--surface-2)); }
   .zikr.done .tasbih .fill { width:100%; background:linear-gradient(90deg, var(--good), color-mix(in srgb, var(--good) 72%, white)); }
   .zikr.done .tasbih .count b { color:var(--good); }
-  .zikr.done .tasbih .count small, .zikr.done .tasbih .lbl { color:color-mix(in srgb, var(--good) 62%, var(--ink-soft)); }
+  .zikr.done .tasbih .count small { color:color-mix(in srgb, var(--good) 62%, var(--ink-soft)); }
 
   /* SETTINGS */
   .settings { padding:4px 16px 26px; }
@@ -1026,10 +1025,6 @@
     }
     return z.target;
   }
-  function countLabel(target){
-    if(target === 1) return 'отметить';
-    return 'повторений';
-  }
   function routineDayFromTimes(t){
     const now = new Date();
     const day = new Date(now);
@@ -1089,7 +1084,6 @@
       const card = document.createElement('div'); card.className = 'zikr'; card.dataset.i = idx; card.dataset.id = z._id;
       const counter = `<button class="tasbih${target===1 ? ' single' : ''}" data-target="${target}" data-cur="${Math.min(saved, target)}" aria-label="Счётчик повторений">
           <span class="count"><b class="js-cur">0</b><small>/${target}</small></span>
-          <span class="lbl js-count-label">${countLabel(target)}</span>
           <span class="fill js-fill"></span>
         </button>`;
       card.innerHTML = `
@@ -1120,17 +1114,11 @@
       const single = btn.classList.contains('single');
       const curEl = card.querySelector('.js-cur');
       const fillEl = card.querySelector('.js-fill');
-      const labelEl = card.querySelector('.js-count-label');
       function render(cur, animate){
         cur = Math.max(0, Math.min(cur, target));
         btn.dataset.cur = cur;
         if(curEl) curEl.textContent = cur;
         if(fillEl) btn.style.setProperty('--progress', (target ? Math.min(100, cur/target*100) : 0)+'%');
-        if(labelEl){
-          labelEl.textContent = cur >= target
-            ? 'готово'
-            : (single ? 'отметить' : countLabel(target));
-        }
         if(animate){
           btn.classList.remove('pulse');
           void btn.offsetWidth;
