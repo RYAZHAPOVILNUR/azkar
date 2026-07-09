@@ -380,7 +380,7 @@
   .back:active { transform: scale(.9); }
 
   /* модалка «инфо по зикру» */
-  body.info-open { overflow:hidden; position:fixed; width:100%; left:0; right:0; }
+  body.info-open, body.nav-scroll-lock { overflow:hidden; position:fixed; width:100%; left:0; right:0; }
   .modal { position:fixed; inset:0; z-index:40; display:none; }
   .modal.open { display:block; }
   .modal .scrim { position:absolute; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(2px); }
@@ -915,10 +915,26 @@
   let navAnimating = false;
   const scroller = () => document.scrollingElement || document.documentElement;
   const scrollStore = {};
+  let navLockY = null;
   function activeScreen(){ return document.querySelector('.screen.active'); }
   function rememberScroll(){
     const a = activeScreen();
     if(a) scrollStore[a.id] = scroller().scrollTop || window.scrollY || 0;
+  }
+  function lockNavScroll(){
+    if(navLockY != null) return navLockY;
+    navLockY = scroller().scrollTop || window.scrollY || 0;
+    document.body.style.top = `-${navLockY}px`;
+    document.body.classList.add('nav-scroll-lock');
+    return navLockY;
+  }
+  function unlockNavScroll(toY = navLockY){
+    if(navLockY == null) return;
+    const y = toY == null ? navLockY : toY;
+    navLockY = null;
+    document.body.classList.remove('nav-scroll-lock');
+    document.body.style.top = '';
+    window.scrollTo(0, y);
   }
   function showScreen(id, opts = {}){
     const keepScroll = !!opts.keepScroll;
@@ -948,8 +964,11 @@
     });
     setTimeout(()=>{
       navAnimating = false;
+      const targetId = commit && navStack.length > 1 ? navStack[navStack.length-2] : (navStack[navStack.length-1] || 'home');
+      const targetY = commit ? (scrollStore[targetId] || 0) : navLockY;
       if(commit && navStack.length > 1) navStack.pop();
       showScreen(navStack[navStack.length-1] || 'home', { keepScroll: true });
+      unlockNavScroll(targetY);
     }, 255);
   }
   function back(opts = {}){
@@ -960,6 +979,7 @@
       const cur = activeScreen();
       const prev = document.getElementById(navStack[navStack.length-2] || 'home');
       if(cur && prev && cur !== prev){
+        lockNavScroll();
         prev.classList.add('nav-under');
         cur.classList.add('nav-drag');
         prev.style.transform = 'translateX(-28px)';
@@ -1654,7 +1674,7 @@
     let sx=0, sy=0, tracking=false, dragging=false, cur=null, prev=null, dx=0;
     const EDGE=34, START=12, THRESH=82;
     function cleanup(commit){
-      if(!cur || !prev){ tracking=false; dragging=false; return; }
+      if(!cur || !prev){ unlockNavScroll(); tracking=false; dragging=false; return; }
       const c=cur, p=prev;
       c.style.transition='transform .24s cubic-bezier(.22,.8,.2,1)';
       p.style.transition='transform .24s cubic-bezier(.22,.8,.2,1), opacity .24s ease';
@@ -1664,8 +1684,11 @@
         p.style.opacity = commit ? '1' : '.92';
       });
       setTimeout(()=>{
+        const targetId = commit && navStack.length>1 ? navStack[navStack.length-2] : (navStack[navStack.length-1] || 'home');
+        const targetY = commit ? (scrollStore[targetId] || 0) : navLockY;
         if(commit && navStack.length>1) navStack.pop();
         showScreen(navStack[navStack.length-1] || 'home', { keepScroll:true });
+        unlockNavScroll(targetY);
         cur=null; prev=null; tracking=false; dragging=false; dx=0;
       }, 255);
     }
@@ -1687,6 +1710,7 @@
         cur = activeScreen();
         prev = document.getElementById(navStack[navStack.length-2] || 'home');
         if(!cur || !prev || cur===prev){ tracking=false; return; }
+        lockNavScroll();
         dragging=true;
         prev.classList.add('nav-under');
         cur.classList.add('nav-drag');
