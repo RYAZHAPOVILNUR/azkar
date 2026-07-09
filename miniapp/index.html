@@ -285,8 +285,11 @@
   .list.reordering .zikr .pill, .list.reordering .zikr .sp { display:none; }
   .list.reordering .zikr .badge { width:26px; height:26px; }
   .list.reordering .zikr .badge b { font-size:12px; }
-  .list.reordering .zikr .ro-name { display:block; flex:1; min-width:0; font-size:14px; font-weight:600; color:var(--ink);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .list.reordering .zikr .ro-name { display:flex; align-items:center; gap:6px; flex:1; min-width:0;
+    font-size:14px; font-weight:600; color:var(--ink); cursor:pointer; }
+  .ro-name .ro-name-txt { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .zikr .ro-peek { width:15px; height:15px; flex-shrink:0; color:var(--ink-faint); opacity:.6; }
+  .list.reordering .zikr .ro-name:active .ro-name-txt { color:var(--accent-deep); }
   .list.reordering .zikr .ro-move { display:flex; gap:5px; flex-shrink:0; }
   .ro-btn { width:34px; height:34px; border-radius:9px; display:grid; place-items:center; cursor:pointer; padding:0;
     background:var(--surface-2); border:1px solid var(--line); color:var(--ink-soft); font:inherit;
@@ -1159,7 +1162,7 @@
           <button class="mini drag-grip js-drag" title="Перетащить" aria-label="Перетащить зикр"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.6"/><circle cx="16" cy="6" r="1.6"/><circle cx="8" cy="12" r="1.6"/><circle cx="16" cy="12" r="1.6"/><circle cx="8" cy="18" r="1.6"/><circle cx="16" cy="18" r="1.6"/></svg></button>
           <div class="badge"><b>${z.n}</b></div>
           <div class="pill">×${target}</div>
-          <span class="ro-name">${shortLabel(z)}</span>
+          <span class="ro-name"><span class="ro-name-txt">${shortLabel(z)}</span><svg class="ro-peek" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
           <div class="sp"></div>
           <div class="ro-move">
             <button type="button" class="ro-btn ro-up" aria-label="Переместить выше"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14l6-6 6 6"/></svg></button>
@@ -1392,12 +1395,19 @@
     l.addEventListener('click', e=>{
       if(!l.classList.contains('reordering')) return;
       const up = e.target.closest('.ro-up'), dn = e.target.closest('.ro-down');
-      if(!up && !dn) return;
-      e.stopPropagation();
+      if(up || dn){
+        e.stopPropagation();
+        const card = e.target.closest('.zikr'); if(!card) return;
+        if(up){ const prev=card.previousElementSibling; if(prev && prev.classList.contains('zikr')) l.insertBefore(card, prev); }
+        else  { const next=card.nextElementSibling;     if(next && next.classList.contains('zikr')) l.insertBefore(next, card); }
+        syncOrderFromDom(); updateRoArrows(); tgHaptic('light');
+        return;
+      }
+      // тап по строке (не стрелки/ручка) — показать полный текст азкара
+      if(e.target.closest('.drag-grip')) return;
       const card = e.target.closest('.zikr'); if(!card) return;
-      if(up){ const prev=card.previousElementSibling; if(prev && prev.classList.contains('zikr')) l.insertBefore(card, prev); }
-      else  { const next=card.nextElementSibling;     if(next && next.classList.contains('zikr')) l.insertBefore(next, card); }
-      syncOrderFromDom(); updateRoArrows(); tgHaptic('light');
+      const z = CURRENT_ITEMS.find(x=>x._id===card.dataset.id);
+      if(z){ openInfo(z); tgHaptic('light'); }
     });
   })();
 
