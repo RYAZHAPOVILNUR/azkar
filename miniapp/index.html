@@ -296,6 +296,8 @@
     transition:transform .12s, background .15s, color .15s; -webkit-tap-highlight-color:transparent; }
   .ro-btn:active { transform:scale(.9); background:var(--accent-soft); color:var(--accent-deep); }
   .ro-btn:disabled { opacity:.32; pointer-events:none; }
+  @keyframes roFlash { 0%{ background: color-mix(in srgb, var(--accent) 20%, var(--surface)); } 100%{ background: var(--surface); } }
+  .zikr.ro-flash { animation: roFlash .55s ease; }
   .cnote { text-align:center; font-size:12px; color:var(--ink-faint); margin-top:12px; font-style:italic; }
   .counter-row { display:flex; align-items:center; justify-content:flex-end; gap:18px; margin-top:10px; padding:12px 0 0 0; border-top:1px solid var(--line); }
   .cbtn { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; cursor:pointer; flex-shrink:0;
@@ -1039,6 +1041,7 @@
   let CURRENT_KEY = null;
   let CURRENT_ITEMS = [];
   let REORDER = false;
+  let reorderPendingRefresh = false;   // фоновое обновление отложено, пока идёт перестановка
   function saveProgress(){ try{ localStorage.setItem('azkar_progress', JSON.stringify(PROG)); }catch(e){} }
   function itemId(key, z){ return z.id || `${key}-${z.n}`; }
   function orderKey(key){ return `azkar_order_${key}`; }
@@ -1117,7 +1120,8 @@
     if(!PROG || PROG.date !== day){
       PROG = blankProgress(day);
       saveProgress();
-      if(CURRENT_KEY) openReading(CURRENT_KEY);
+      if(REORDER){ reorderPendingRefresh = true; }          // не рушить активную перестановку
+      else if(CURRENT_KEY) openReading(CURRENT_KEY);
       else updateHomeProgress();
     }
   }
@@ -1127,7 +1131,8 @@
       PROG.after = {};
       PROG.afterSlot = slot;
       saveProgress();
-      if(CURRENT_KEY === 'after') openReading('after');
+      if(REORDER){ reorderPendingRefresh = true; }          // не рушить активную перестановку
+      else if(CURRENT_KEY === 'after') openReading('after');
       else updateHomeProgress();
     }
   }
@@ -1339,6 +1344,7 @@
       list.classList.remove('sorting');
       card.style.position=''; card.style.left=''; card.style.top=''; card.style.width='';
       card.style.zIndex=''; card.style.transform=''; card.style.pointerEvents='';
+      card.classList.remove('ro-flash'); void card.offsetWidth; card.classList.add('ro-flash');  // мгновенная отдача о применении
       syncCurrentOrder();
       tgHaptic('medium');
       setTimeout(()=>{ card.dataset.dragLock='0'; }, 180);
@@ -1382,6 +1388,8 @@
       rt.classList.toggle('active', on);
       if(rr) rr.hidden = !on;
       if(on) updateRoArrows();
+      // выходим из режима и накопилось отложенное фоновое обновление — применить сейчас
+      if(!on && reorderPendingRefresh){ reorderPendingRefresh = false; if(CURRENT_KEY) openReading(CURRENT_KEY); }
     }
     rt.addEventListener('click', ()=>{ setMode(!l.classList.contains('reordering')); tgHaptic('light'); });
     if(rr) rr.addEventListener('click', ()=>{
@@ -1398,9 +1406,14 @@
       if(up || dn){
         e.stopPropagation();
         const card = e.target.closest('.zikr'); if(!card) return;
-        if(up){ const prev=card.previousElementSibling; if(prev && prev.classList.contains('zikr')) l.insertBefore(card, prev); }
-        else  { const next=card.nextElementSibling;     if(next && next.classList.contains('zikr')) l.insertBefore(next, card); }
-        syncOrderFromDom(); updateRoArrows(); tgHaptic('light');
+        let moved = false;
+        if(up){ const prev=card.previousElementSibling; if(prev && prev.classList.contains('zikr')){ l.insertBefore(card, prev); moved=true; } }
+        else  { const next=card.nextElementSibling;     if(next && next.classList.contains('zikr')){ l.insertBefore(next, card); moved=true; } }
+        if(moved){
+          card.classList.remove('ro-flash'); void card.offsetWidth; card.classList.add('ro-flash');  // мгновенная отдача
+          card.scrollIntoView({block:'nearest'});
+          syncOrderFromDom(); updateRoArrows(); tgHaptic('light');
+        }
         return;
       }
       // тап по строке (не стрелки/ручка) — показать полный текст азкара
