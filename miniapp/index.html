@@ -102,11 +102,14 @@
   .screen { display:none; flex-direction:column; flex:1; width:100%; }
   .screen.active { display:flex; animation: fade .3s ease; }
   .screen.nav-under, .screen.nav-drag {
-    display:flex; position:absolute; inset:0; min-height:100%; background:var(--bg);
+    display:flex; min-height:100%; background:var(--bg);
     will-change:transform; animation:none; overflow:hidden;
   }
-  .screen.nav-under { z-index:1; pointer-events:none; }
-  .screen.nav-drag { z-index:2; box-shadow:-18px 0 36px rgba(0,0,0,.16); }
+  /* оба экрана перехода — fixed к вьюпорту (иначе absolute выпадает из потока, .phone схлопывается,
+     и на глубокой прокрутке экран уносит за вьюпорт → чернота). Уходящему ставим top:-scrollY инлайном,
+     чтобы он показывал твою прокрутку, а не прыгал к началу. */
+  .screen.nav-drag { position:fixed; left:0; right:0; top:0; z-index:2; box-shadow:-18px 0 36px rgba(0,0,0,.16); }
+  .screen.nav-under { position:fixed; inset:0; z-index:1; pointer-events:none; }
   #home.nav-under, #home.nav-drag { background:radial-gradient(120% 70% at 50% -12%, var(--home-bg-2), var(--home-bg) 70%); }
   #home { background: radial-gradient(120% 70% at 50% -12%, var(--home-bg-2), var(--home-bg) 70%); }
   @keyframes fade { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
@@ -961,7 +964,7 @@
     const keepScroll = !!opts.keepScroll;
     document.querySelectorAll('.screen').forEach(s=>{
       s.classList.remove('active','nav-under','nav-drag');
-      s.style.transform=''; s.style.opacity=''; s.style.transition='';
+      s.style.transform=''; s.style.opacity=''; s.style.transition=''; s.style.top='';
     });
     document.getElementById(id).classList.add('active');
     if(keepScroll) requestAnimationFrame(()=> window.scrollTo(0, scrollStore[id] || 0));
@@ -1003,6 +1006,7 @@
         lockNavScroll();
         prev.classList.add('nav-under');
         cur.classList.add('nav-drag');
+        cur.style.top = (-navLockY) + 'px';   // уходящий fixed-экран показывает твою прокрутку
         prev.style.transform = 'translateX(-28px)';
         prev.style.opacity = '.92';
         finishBackVisual(cur, prev, true);
@@ -1807,6 +1811,7 @@
         dragging=true;
         prev.classList.add('nav-under');
         cur.classList.add('nav-drag');
+        cur.style.top = (-navLockY) + 'px';   // уходящий fixed-экран показывает твою прокрутку
         prev.style.transition='none'; cur.style.transition='none';
         prev.style.transform='translateX(-28px)'; prev.style.opacity='.92';
       }
