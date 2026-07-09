@@ -230,6 +230,7 @@
   .learn-seg button { flex:1; min-width:0; border:0; border-radius:10px; padding:8px 4px; background:none; color:var(--ink-soft);
     font:inherit; font-size:12.5px; font-weight:700; cursor:pointer; }
   .learn-seg button.on { background:var(--surface); color:var(--ink); box-shadow:var(--shadow-card); }
+  .learn-hint { margin-top:7px; text-align:center; color:var(--ink-faint); font-size:12px; line-height:1.35; }
 
   .list { padding:16px 14px 30px; display:flex; flex-direction:column; gap:18px; }
   .empty-state { margin:8px 4px; padding:26px 20px; border:1px dashed var(--line); border-radius:22px;
@@ -592,10 +593,11 @@
       <div class="rbar"><span id="rBarFill"></span></div>
       <div class="rmeta"><span id="rProg"></span><span id="rHint" class="rhint"></span></div>
       <div class="learn-seg" id="learnSeg">
-        <button type="button" data-learn="full">Читать</button>
-        <button type="button" data-learn="check">Проверить</button>
-        <button type="button" data-learn="memory">Без подсказки</button>
+        <button type="button" data-learn="full">Полный текст</button>
+        <button type="button" data-learn="check">Без перевода</button>
+        <button type="button" data-learn="memory">На память</button>
       </div>
+      <div class="learn-hint" id="learnHint">Арабский, транскрипция и перевод видны полностью</div>
     </div>
     <div class="list" id="zikrList"></div>
     <div class="reorder-bar">
@@ -2139,6 +2141,14 @@
     const list = document.getElementById('zikrList');
     if(list) list.dataset.learn = LEARN_MODE;
     document.querySelectorAll('#learnSeg button').forEach(b=> b.classList.toggle('on', b.dataset.learn === LEARN_MODE));
+    const hint = document.getElementById('learnHint');
+    if(hint){
+      hint.textContent = LEARN_MODE === 'full'
+        ? 'Арабский, транскрипция и перевод видны полностью'
+        : LEARN_MODE === 'check'
+          ? 'Перевод скрыт: попробуй понять зикр по арабскому и транскрипции'
+          : 'Транскрипция и перевод скрыты, арабский закрыт до нажатия';
+    }
   }
   document.querySelectorAll('#learnSeg button').forEach(b=> b.addEventListener('click', ()=>{
     LEARN_MODE = b.dataset.learn || 'full';
