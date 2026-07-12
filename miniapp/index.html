@@ -681,6 +681,14 @@
   .q-taf-sub { font-size:12px; letter-spacing:.4px; text-transform:uppercase; color:var(--accent-deep); font-weight:700; margin-bottom:10px; }
   .q-taf-text { font-size:15.5px; line-height:1.75; color:var(--ink); white-space:pre-line; }
   .q-taf-loading { padding:18px 2px; color:var(--ink-faint); font-size:14px; text-align:center; }
+  .q-taf-ayah { font-size:14.5px; line-height:1.6; color:var(--ink); padding:11px 14px; border-radius:12px; background:var(--surface-2);
+    margin-bottom:14px; border-left:3px solid color-mix(in srgb, var(--accent) 45%, var(--line)); }
+  .q-taf-full { display:inline-flex; align-items:center; gap:7px; margin-top:16px; padding:9px 14px; border-radius:12px;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); font:inherit; font-size:13px; font-weight:600;
+    cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s, transform .12s; }
+  .q-taf-full:active { transform:scale(.98); background:var(--surface-2); }
+  .q-taf-full svg { flex:0 0 auto; color:var(--accent-deep); }
+  .q-taf-group-note { font-size:12.5px; color:var(--ink-faint); font-style:italic; margin:0 0 12px; }
 
   @media (prefers-reduced-motion: reduce) { *, *:before, *:after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 </style>
@@ -3816,7 +3824,8 @@ https://azkar.nurtech.dev/app`);
     });
   }
   function qPlural(n,a,b,c){ n=Math.abs(n); const d=n%100, e=n%10; if(d>10&&d<20) return c; if(e>1&&e<5) return b; if(e===1) return a; return c; }
-  function qFetchJSON(url){ return fetch(url, { cache:'force-cache' }).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); }); }
+  const Q_ASSET_V='2';   // версия данных Корана/тафсира — бамп при изменении JSON (сброс кэша браузера)
+  function qFetchJSON(url){ const u=url+(url.indexOf('?')>=0?'&':'?')+'v='+Q_ASSET_V; return fetch(u, { cache:'default' }).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); }); }
   function qLoadIndex(){ if(QURAN.index) return Promise.resolve(QURAN.index); return qFetchJSON('assets/quran/index.json').then(function(d){ QURAN.index=d; return d; }); }
   function qLoadSura(n){ if(QURAN.cache[n]) return Promise.resolve(QURAN.cache[n]); return qFetchJSON('assets/quran/'+n+'.json').then(function(d){ QURAN.cache[n]=d; return d; }); }
 
@@ -3986,6 +3995,7 @@ https://azkar.nurtech.dev/app`);
   const QTAF = { cache:{} };
   function qLoadTafsir(s){ if(QTAF.cache[s]) return Promise.resolve(QTAF.cache[s]); return qFetchJSON('assets/quran/tafsir/'+s+'.json').then(function(d){ QTAF.cache[s]=d; return d; }); }
   function tafsirRangeFor(list, a){ if(!Array.isArray(list)) return null; for(let i=0;i<list.length;i++){ if(a>=list[i].f && a<=list[i].t) return list[i]; } return null; }
+  const QTAF_ATTR='<div class="m-note">Тафсир ас-Саади (‘Абд ар-Рахман ибн Насир ас-Саади), русский перевод.</div>';
   function openTafsir(s, a){
     s=parseInt(s,10); a=parseInt(a,10);
     document.getElementById('qSheetTitle').textContent='Тафсир ас-Саади';
@@ -3993,17 +4003,32 @@ https://azkar.nurtech.dev/app`);
     openQSheet();
     qLoadTafsir(s).then(function(list){
       const r=tafsirRangeFor(list, a);
-      const body=document.getElementById('qSheetBody');
-      if(!r || !r.x){ body.innerHTML='<div class="m-note">Для этого аята тафсир ас-Саади пока недоступен.</div>'; return; }
-      const su=QURAN.index ? QURAN.index.find(function(x){ return x.n===s; }) : null;
-      const nm=su ? su.nr : ('Сура '+s);
-      const rangeLabel = r.f===r.t ? ('аят '+r.f) : ('аяты '+r.f+'–'+r.t);
-      const txt = String(r.x).replace(/^\s*-(\d+)\s*/, '($1) ');
-      body.innerHTML =
-        '<div class="q-taf-sub">'+escHtml(nm)+' · '+rangeLabel+'</div>'
-        +'<div class="q-taf-text">'+escHtml(txt)+'</div>'
-        +'<div class="m-note">Тафсир ас-Саади (‘Абд ар-Рахман ибн Насир ас-Саади), русский перевод. Толкование даётся к пассажу целиком — как в печатном издании.</div>';
+      if(!r || !r.x){ document.getElementById('qSheetBody').innerHTML='<div class="m-note">Для этого аята тафсир ас-Саади пока недоступен.</div>'; return; }
+      QTAF.cur={ s:s, a:a, r:r }; QTAF.full=false;
+      renderTafsir();
     }).catch(function(){ document.getElementById('qSheetBody').innerHTML='<div class="m-note">Не удалось загрузить тафсир. Проверьте соединение и попробуйте снова.</div>'; });
+  }
+  function qTafToggleFull(){ QTAF.full=!QTAF.full; renderTafsir(); const b=document.getElementById('qSheetBody'); if(b) b.scrollTop=0; const sh=document.querySelector('#qSheet .sheet'); if(sh) sh.scrollTop=0; }
+  function renderTafsir(){
+    const cur=QTAF.cur; if(!cur) return; const s=cur.s, a=cur.a, r=cur.r;
+    const su=QURAN.index ? QURAN.index.find(function(x){ return x.n===s; }) : null;
+    const nm=su ? su.nr : ('Сура '+s);
+    const perAyah = !QTAF.full && r.seg && r.seg[String(a)];
+    let html='';
+    if(perAyah){
+      const ayahTr=(QURAN.cur && QURAN.cur.n===s && QURAN.cur.a[a-1]) ? QURAN.cur.a[a-1].ru : '';
+      html += '<div class="q-taf-sub">'+escHtml(nm)+' · аят '+a+'</div>';
+      if(ayahTr) html += '<div class="q-taf-ayah">'+escHtml(ayahTr)+'</div>';
+      html += '<div class="q-taf-text">'+escHtml(r.seg[String(a)])+'</div>';
+      if(r.t>r.f) html += '<button type="button" class="q-taf-full" onclick="qTafToggleFull()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Толкование всего пассажа (аяты '+r.f+'–'+r.t+')</button>';
+    } else {
+      const rangeLabel = r.f===r.t ? ('аят '+r.f) : ('аяты '+r.f+'–'+r.t);
+      html += '<div class="q-taf-sub">'+escHtml(nm)+' · '+rangeLabel+'</div>';
+      if(r.f!==r.t && !r.seg) html += '<div class="q-taf-group-note">Ас-Саади толкует эти аяты вместе.</div>';
+      html += '<div class="q-taf-text">'+escHtml(String(r.x))+'</div>';
+      if(r.seg && r.seg[String(a)]) html += '<button type="button" class="q-taf-full" onclick="qTafToggleFull()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>Показать только аят '+a+'</button>';
+    }
+    document.getElementById('qSheetBody').innerHTML = html + QTAF_ATTR;
   }
 
   (function(){
