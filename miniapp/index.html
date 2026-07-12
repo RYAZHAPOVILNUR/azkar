@@ -3962,7 +3962,7 @@ https://azkar.nurtech.dev/app`);
     n=parseInt(n,10); if(!(n>=1&&n<=114)) return;
     if(QPREFS.mode==='page'){ QURAN.curN=n; qLoadPagesMeta().then(function(){ qOpenPage(pageSuraStartPage(n)); }).catch(function(){ qOpenPage(1); }); return; }
     QURAN._lastA = 0;
-    const jobs=[ qLoadIndex().catch(function(){ return null; }), qLoadSura(n), isKfgqpc()?qLoadKfgqpc(n).catch(function(){ return null; }):Promise.resolve(null) ];
+    const jobs=[ qLoadIndex().catch(function(){ return null; }), qLoadSura(n), (isKfgqpc()&&!QPREFS.tj)?qLoadKfgqpc(n).catch(function(){ return null; }):Promise.resolve(null) ];
     Promise.all(jobs).then(function(res){
       const su=res[1];
       QURAN.curK = res[2];
@@ -3979,8 +3979,10 @@ https://azkar.nurtech.dev/app`);
   function ayahMarker(n){ return '<span class="q-end">۝'+toArabicDigits(n)+'</span>'; }
   function renderReader(su, ayah){
     QURAN.cur=su; QURAN.curN=su.n;
-    const useK = isKfgqpc() && QURAN.curK && QURAN.curK.length===su.a.length;
+    const kfgqpcClean = isKfgqpc() && !QPREFS.tj;            // точный KFGQPC — только без таджвида
+    const useK = kfgqpcClean && QURAN.curK && QURAN.curK.length===su.a.length;
     const kmap = useK ? QURAN.curK : null;
+    const renderFont = (isKfgqpc() && QPREFS.tj) ? 'AzkarMushaf' : QPREFS.font;  // таджвид рисуется насх-мусхафом (Amiri Quran)
     document.getElementById('qrTitle').textContent = su.n+'. '+su.nr;
     document.getElementById('qrSub').textContent = su.c+' '+qPlural(su.c,'аят','аята','аятов')+' · '+su.t;
     document.getElementById('qrBism').hidden = !su.bism;
@@ -4009,8 +4011,8 @@ https://azkar.nurtech.dev/app`);
     wrap.innerHTML=html;
     wrap.className = 'q-ayahs' + (QPREFS.mode==='mushaf' ? ' q-mushaf' : '');
     wrap.style.setProperty('--q-ar-size', QPREFS.fs+'px');
-    wrap.style.setProperty('--q-font', "'"+QPREFS.font+"'");
-    document.getElementById('qrBism').style.fontFamily = "'"+QPREFS.font+"', var(--ar)";
+    wrap.style.setProperty('--q-font', "'"+renderFont+"'");
+    document.getElementById('qrBism').style.fontFamily = "'"+renderFont+"', var(--ar)";
     qUpdateNav(su.n);
   }
   function qUpdateNav(n){
@@ -4042,8 +4044,8 @@ https://azkar.nurtech.dev/app`);
   }
   function qRerender(){ if(!QURAN.cur) return; const a=qCurrentAyah();
     const after=function(){ renderReader(QURAN.cur, null); requestAnimationFrame(function(){ qScrollToAyah(a,false); qSetupObserver(); }); };
-    if(isKfgqpc() && (!QURAN.curK || QURAN.curK.length!==QURAN.cur.a.length)){ qLoadKfgqpc(QURAN.curN).then(function(d){ QURAN.curK=d; after(); }).catch(after); }
-    else { if(!isKfgqpc()) QURAN.curK=null; after(); } }
+    if(isKfgqpc() && !QPREFS.tj && (!QURAN.curK || QURAN.curK.length!==QURAN.cur.a.length)){ qLoadKfgqpc(QURAN.curN).then(function(d){ QURAN.curK=d; after(); }).catch(after); }
+    else { if(!isKfgqpc() || QPREFS.tj) QURAN.curK=null; after(); } }
   function qNav(dir){ if(QPREFS.mode==='page'){ const p=QURAN.curPage+dir; if(p<1||p>604) return; qClockStop(); qOpenPage(p); return; }
     const n=QURAN.curN+dir; if(n<1||n>114) return; qClockStop(); if(QURAN.io){ QURAN.io.disconnect(); QURAN.io=null; } qOpenSura(n); }
   function qBackToList(){ qClockStop(); if(QURAN.io){ QURAN.io.disconnect(); QURAN.io=null; } back({visual:true}); }
@@ -4181,8 +4183,8 @@ https://azkar.nurtech.dev/app`);
       html += '<div class="rs-lbl">Шрифт</div><div class="rs-fonts">'+Q_FONTS.map(font).join('')+'</div>';
       html += '<div class="rs-lbl">Размер</div><div class="rs-size"><button type="button" onclick="setReaderFontSize(-1)" aria-label="Меньше">A−</button><span class="rs-size-val" id="rsSizeVal">'+QPREFS.fs+'</span><button type="button" onclick="setReaderFontSize(1)" aria-label="Больше">A+</button></div>';
       html += '<div class="rs-lbl">Оформление</div>';
-      if(!isKfgqpc()) html += '<button type="button" class="rs-row" onclick="qToggleTj()"><span>Таджвид — цвета правил</span>'+sw(QPREFS.tj)+'</button>';
-      else html += '<div class="rs-note-k">Мединский мусхаф — точный текст и каллиграфия издания Медины. Цвета таджвида доступны в других шрифтах.</div>';
+      html += '<button type="button" class="rs-row" onclick="qToggleTj()"><span>Таджвид — цвета правил</span>'+sw(QPREFS.tj)+'</button>';
+      if(isKfgqpc()) html += '<div class="rs-note-k">'+(QPREFS.tj?'С таджвидом мусхаф показан насх-шрифтом (цвета правил). Выключите таджвид — вернётся точная каллиграфия Медины.':'Точная каллиграфия мусхафа Медины. Включите таджвид — добавятся цвета правил (насх-шрифт).')+'</div>';
       if(QPREFS.mode==='reading') html += '<button type="button" class="rs-row" onclick="qToggleTr()"><span>Перевод под каждым аятом</span>'+sw(QPREFS.tr)+'</button>';
     }
     html += '<div class="rs-links"><button type="button" onclick="openTajweedLegend()">Правила таджвида</button><button type="button" onclick="openQuranStats()">Статистика чтения</button></div>';
