@@ -582,6 +582,36 @@
   .q-continue .qk-b { flex:1 1 auto; min-width:0; }
   .q-continue .qk-t { font-size:14px; font-weight:700; color:var(--accent-deep); }
   .q-continue .qk-s { font-size:12px; color:var(--ink-soft); margin-top:1px; }
+  /* карточка прогресса + карта Корана */
+  .q-progress-card { display:block; width:100%; text-align:left; margin:0 0 12px; padding:13px 15px; border-radius:15px; border:1px solid var(--line);
+    background:var(--surface); color:inherit; font:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .13s; }
+  .q-progress-card:active { transform:scale(.99); }
+  .qpc-top { display:flex; align-items:baseline; justify-content:space-between; }
+  .qpc-t { font-size:14px; font-weight:700; color:var(--ink); }
+  .qpc-pct { font-size:15px; font-weight:800; color:var(--accent-deep); font-variant-numeric:tabular-nums; }
+  .qpc-bar { display:block; height:8px; border-radius:99px; background:var(--surface-2); overflow:hidden; margin:9px 0 7px; }
+  .qpc-bar i { display:block; height:100%; width:0; border-radius:99px; background:var(--accent); transition:width .5s cubic-bezier(.22,.8,.2,1); }
+  .qpc-sub { font-size:12px; color:var(--ink-faint); }
+  .qm-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin:2px 0 14px; }
+  .qm-stat { padding:13px 10px; border-radius:14px; background:var(--surface-2); text-align:center; }
+  .qm-stat b { display:block; font-size:20px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .qm-stat span { font-size:11px; color:var(--ink-faint); }
+  .qm-legend { display:flex; gap:14px; justify-content:center; margin:0 0 12px; font-size:11.5px; color:var(--ink-faint); }
+  .qm-legend span { display:inline-flex; align-items:center; gap:5px; }
+  .qm-legend i { width:12px; height:12px; border-radius:4px; }
+  .qm-legend .l0 { background:var(--surface-2); border:1px solid var(--line); }
+  .qm-legend .l1 { background:color-mix(in srgb, var(--accent) 45%, var(--surface-2)); }
+  .qm-legend .l2 { background:var(--accent); }
+  .qm-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:7px; padding-bottom:20px; }
+  .qm-cell { position:relative; aspect-ratio:1/1; border-radius:11px; border:1px solid var(--line); background:var(--surface-2); cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; overflow:hidden; -webkit-tap-highlight-color:transparent; transition:transform .12s; }
+  .qm-cell:active { transform:scale(.94); }
+  .qm-cell .qm-fill { position:absolute; left:0; right:0; bottom:0; background:color-mix(in srgb, var(--accent) 78%, transparent); z-index:0; transition:height .4s; }
+  .qm-cell.full { background:var(--accent); border-color:var(--accent); }
+  .qm-cell .qm-n { position:relative; z-index:1; font-size:13px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .qm-cell.full .qm-n, .qm-cell.full .qm-nm { color:#fff; }
+  .qm-cell .qm-nm { position:relative; z-index:1; font-size:8.5px; color:var(--ink-faint); max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 3px; }
+  .qm-cell.part .qm-n { color:var(--accent-deep); }
 
   .q-search { position:relative; margin:0 0 12px; }
   .q-search input { width:100%; box-sizing:border-box; padding:11px 14px 11px 40px; border-radius:13px; border:1px solid var(--line);
@@ -1129,6 +1159,11 @@
         <span class="qk-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"/></svg></span>
         <span class="qk-b"><span class="qk-t" id="qContTitle">Продолжить чтение</span><span class="qk-s" id="qContSub"></span></span>
       </button>
+      <button type="button" class="q-progress-card" id="qProgressCard" onclick="openQuranMap()">
+        <div class="qpc-top"><span class="qpc-t">Мой прогресс</span><span class="qpc-pct" id="qpcPct">0%</span></div>
+        <span class="qpc-bar"><i id="qpcBar"></i></span>
+        <div class="qpc-sub" id="qpcSub">прочитано 0 из 6236 аятов · карта →</div>
+      </button>
       <div class="q-search">
         <span class="qs-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></span>
         <input type="text" id="qSearch" inputmode="search" placeholder="Найти суру — название или номер" autocomplete="off">
@@ -1153,6 +1188,22 @@
         <button type="button" id="qrPrev" onclick="qNav(-1)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg><span id="qrPrevL">Пред.</span></button>
         <button type="button" id="qrNext" onclick="qNav(1)"><span id="qrNextL">След.</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
       </div>
+    </div>
+  </section>
+
+  <!-- QURAN: карта прогресса -->
+  <section class="screen" id="quranMap">
+    <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
+      <div class="row">
+        <button class="back" onclick="back({visual:true})" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px">Прогресс чтения</div></div>
+        <button class="iconbtn" title="Статистика" aria-label="Статистика" onclick="openQuranStats()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></button>
+      </div>
+    </div>
+    <div class="qwrap" style="padding:0 16px">
+      <div class="qm-stats" id="qmStats"></div>
+      <div class="qm-legend"><span><i class="l0"></i>не читал</span><span><i class="l1"></i>частично</span><span><i class="l2"></i>прочитано</span></div>
+      <div class="qm-grid" id="qmGrid"></div>
     </div>
   </section>
 
@@ -3954,8 +4005,38 @@ https://azkar.nurtech.dev/app`);
   function qAddSec(sec){ sec=Math.round(sec); if(sec<=0) return; const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].sec+=sec; s.totSec=(s.totSec||0)+sec; qStatsSave(s); }
   function qIsPageBased(){ return QPREFS.mode==='page'; }
   function qUsesPageFonts(){ return QPREFS.mode==='page' || QPREFS.mode==='reading'; }  // цветной пофайловый мединский
-  function qMarkAyah(){ if(qIsPageBased()) return; const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].ay+=1; s.totAy=(s.totAy||0)+1; qStatsSave(s); }
+  function qMarkAyah(){ const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].ay+=1; s.totAy=(s.totAy||0)+1; qStatsSave(s); }
   function qFmtMin(sec){ const m=Math.round((sec||0)/60); if(m<1) return sec>0?'меньше мин':'0 мин'; if(m<60) return m+' мин'; const h=Math.floor(m/60), mm=m%60; return h+' ч'+(mm?' '+mm+' м':''); }
+
+  // ---- прогресс чтения: битовая карта прочитанных аятов + хатмы (синк через CloudStorage) ----
+  const QREAD_KEY='azkar_quran_read', Q_TOTAL_AYAHS=6236, Q_BYTES=780;
+  let QREAD=null;
+  function qReadLoad(){ if(QREAD) return QREAD; let khatm=0, bits=new Uint8Array(Q_BYTES);
+    try{ const raw=JSON.parse(localStorage.getItem(QREAD_KEY)||'null'); if(raw){ khatm=raw.k||0; if(raw.b){ const bin=atob(raw.b); for(let i=0;i<bin.length&&i<Q_BYTES;i++) bits[i]=bin.charCodeAt(i)&255; } } }catch(e){}
+    QREAD={ bits:bits, khatm:khatm }; return QREAD; }
+  function qReadSave(){ if(!QREAD) return; let bin=''; for(let i=0;i<QREAD.bits.length;i++) bin+=String.fromCharCode(QREAD.bits[i]); try{ localStorage.setItem(QREAD_KEY, JSON.stringify({ v:1, k:QREAD.khatm, b:btoa(bin) })); }catch(e){} }
+  function qBuildOffsets(){ if(QURAN.offsets||!QURAN.index) return; const off={}; let c=0; const s=QURAN.index.slice().sort(function(a,b){ return a.n-b.n; }); for(let i=0;i<s.length;i++){ off[s[i].n]=c; c+=s[i].c; } QURAN.offsets=off; }
+  function qBitIndex(s,a){ qBuildOffsets(); const o=QURAN.offsets; if(!o||!(s in o)) return -1; return o[s]+(a-1); }
+  function qIsRead(s,a){ const st=qReadLoad(); const bi=qBitIndex(s,a); if(bi<0) return false; return !!(st.bits[bi>>3] & (1<<(bi&7))); }
+  function qTotalRead(){ const st=qReadLoad(); let c=0; for(let i=0;i<st.bits.length;i++){ let b=st.bits[i]; while(b){ c+=b&1; b>>=1; } } return c; }
+  function qSuraReadCount(s){ const su=(QURAN.index||[]).find(function(x){ return x.n===s; }); if(!su) return 0; qBuildOffsets(); const o=(QURAN.offsets||{})[s]; if(o==null) return 0; const st=qReadLoad(); let c=0; for(let a=0;a<su.c;a++){ const bi=o+a; if(st.bits[bi>>3]&(1<<(bi&7))) c++; } return c; }
+  function qMarkRead(s,a){ const bi=qBitIndex(s,a); if(bi<0) return false; const st=qReadLoad(); const by=bi>>3, m=1<<(bi&7); if(st.bits[by]&m) return false; st.bits[by]|=m;
+    if(qTotalRead()>=Q_TOTAL_AYAHS){ st.khatm++; st.bits=new Uint8Array(Q_BYTES); } qReadSave(); return true; }
+
+  // ---- честный учёт: аят засчитан только после ≥3с на экране (не при листании) ----
+  function qOnNewRead(){ const st=qReadLoad(); if(QURAN._lastKhatm==null) QURAN._lastKhatm=st.khatm;
+    if(st.khatm>QURAN._lastKhatm){ QURAN._lastKhatm=st.khatm; tgHaptic('medium'); try{ TG&&TG.HapticFeedback&&TG.HapticFeedback.notificationOccurred&&TG.HapticFeedback.notificationOccurred('success'); }catch(e){} } }
+  function qRegisterRead(s,a){ if(qMarkRead(s,a)){ qOnNewRead(); } }
+  function qStartDwell(){ if(!QURAN.dwell) QURAN.dwell={}; if(!QURAN.visible) QURAN.visible=new Set(); if(QURAN.dwellTimer) return; QURAN.dwellTimer=setInterval(function(){
+    if(document.hidden) return; const a=activeScreen(); if(!(a&&a.id==='quranReader')) return;
+    if(QPREFS.mode==='page'){ qPageDwellTick(); return; }
+    if(!QURAN.visible) return;
+    QURAN.visible.forEach(function(n){ QURAN.dwell[n]=(QURAN.dwell[n]||0)+1;
+      if(QURAN.dwell[n]>=3 && QURAN.seen && !QURAN.seen.has(n)){ QURAN.seen.add(n); qMarkAyah(); qRegisterRead(QURAN.curN, n); } });
+  }, 1000); }
+  function qStopDwell(){ if(QURAN.dwellTimer){ clearInterval(QURAN.dwellTimer); QURAN.dwellTimer=null; } }
+  function qPageDwellTick(){ QURAN._pdwell=(QURAN._pdwell||0)+1; if(QURAN._pdwell===4 && QURAN.pageData){ const seen={};
+    (QURAN.pageData.lines||[]).forEach(function(l){ l.w.forEach(function(w){ if(seen[w.k]) return; seen[w.k]=1; const p=w.k.split(':'); qMarkAyah(); qRegisterRead(parseInt(p[0],10), parseInt(p[1],10)); }); }); } }
 
   // ---- часы чтения ----
   let QCLK = { on:false, t0:0, iv:null };
@@ -3979,7 +4060,7 @@ https://azkar.nurtech.dev/app`);
   function renderSuraList(idx){ renderSuraRows(idx); }
 
   function openQuran(){
-    qLoadIndex().then(function(idx){ renderSuraList(idx); renderQContinue(); renderQuranHome(); })
+    qLoadIndex().then(function(idx){ renderSuraList(idx); renderQContinue(); renderQuranHome(); renderQProgressCard(); })
       .catch(function(){ const el=document.getElementById('suraList'); if(el) el.innerHTML='<div style="padding:24px 4px;color:var(--ink-faint);font-size:14px">Не удалось загрузить Коран. Проверьте соединение и попробуйте снова.</div>'; });
     const inp=document.getElementById('qSearch'); if(inp) inp.value='';
     renderQContinue();
@@ -4075,11 +4156,13 @@ https://azkar.nurtech.dev/app`);
   }
   function qSetupObserver(){
     if(QURAN.io){ QURAN.io.disconnect(); }
+    QURAN.visible = new Set(); QURAN.dwell = {};
     QURAN.io = new IntersectionObserver(function(entries){
-      for(let i=0;i<entries.length;i++){ if(entries[i].isIntersecting){ const a=parseInt(entries[i].target.dataset.a,10);
-        if(QURAN.seen && !QURAN.seen.has(a)){ QURAN.seen.add(a); qMarkAyah(); } } }
-    }, { root:null, rootMargin:'-90px 0px -55% 0px', threshold:0 });
+      for(let i=0;i<entries.length;i++){ const a=parseInt(entries[i].target.dataset.a,10);
+        if(entries[i].isIntersecting) QURAN.visible.add(a); else QURAN.visible.delete(a); }
+    }, { root:null, rootMargin:'-70px 0px -45% 0px', threshold:0 });
     document.querySelectorAll('#qrAyahs .q-ayah[data-a], #qrAyahs .qcf-ayah[data-a]').forEach(function(el){ QURAN.io.observe(el); });
+    qStartDwell();
   }
   function qRerender(){ if(!QURAN.cur) return; const a=qCurrentAyah();
     const after=function(){ renderReader(QURAN.cur, null); requestAnimationFrame(function(){ qScrollToAyah(a,false); qSetupObserver(); }); };
@@ -4087,7 +4170,7 @@ https://azkar.nurtech.dev/app`);
     else { if(!isKfgqpc()) QURAN.curK=null; after(); } }
   function qNav(dir){ if(qIsPageBased()){ const p=QURAN.curPage+dir; if(p<1||p>604) return; qClockStop(); qOpenPage(p); return; }
     const n=QURAN.curN+dir; if(n<1||n>114) return; qClockStop(); if(QURAN.io){ QURAN.io.disconnect(); QURAN.io=null; } qOpenSura(n); }
-  function qBackToList(){ qClockStop(); if(QURAN.io){ QURAN.io.disconnect(); QURAN.io=null; } back({visual:true}); }
+  function qBackToList(){ qClockStop(); qStopDwell(); if(QURAN.io){ QURAN.io.disconnect(); QURAN.io=null; } back({visual:true}); }
 
   // ---- режим Страница: точная раскладка мусхафа (пофайловые шрифты QCF) ----
   const QCF_CDN='https://static.qurancdn.com/fonts/quran/hafs/v2/woff2/';           // обычный мединский пофайловый
@@ -4170,7 +4253,7 @@ https://azkar.nurtech.dev/app`);
         renderPageView(res[1], r.fam);
         if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
         try{ localStorage.setItem('azkar_quran_page', String(n)); }catch(e){}
-        requestAnimationFrame(function(){ qUpdatePageLock(); window.scrollTo(0,0); qpFit(); qClockStart(); });
+        requestAnimationFrame(function(){ qUpdatePageLock(); window.scrollTo(0,0); qpFit(); qClockStart(); QURAN._pdwell=0; qStartDwell(); });
         tgHaptic('light');
       });
     }).catch(function(e){
@@ -4350,6 +4433,32 @@ https://azkar.nurtech.dev/app`);
     const set=function(nr){ sub.textContent='Продолжить: '+nr+' · аят '+(pos.a||1); };
     if(QURAN.index){ const su=QURAN.index.find(function(x){ return x.n===pos.s; }); set(su?su.nr:('Сура '+pos.s)); }
     else qLoadIndex().then(function(idx){ const su=idx.find(function(x){ return x.n===pos.s; }); set(su?su.nr:('Сура '+pos.s)); }).catch(function(){ set('Сура '+pos.s); });
+  }
+
+  // ---- карта прогресса чтения ----
+  function renderQProgressCard(){ const card=document.getElementById('qProgressCard'); if(!card||!QURAN.index) return;
+    const read=qTotalRead(); const pct=Math.round(read/Q_TOTAL_AYAHS*100); const kh=qReadLoad().khatm;
+    const bar=document.getElementById('qpcBar'); if(bar) bar.style.width=Math.max(pct, read>0?2:0)+'%';
+    const p=document.getElementById('qpcPct'); if(p) p.textContent=pct+'%';
+    const sub=document.getElementById('qpcSub'); if(sub) sub.textContent='прочитано '+read+' из '+Q_TOTAL_AYAHS+' аятов'+(kh?' · хатмов '+kh:'')+' · карта →';
+  }
+  function openQuranMap(){ qLoadIndex().then(function(idx){ renderQuranMap(idx); go('quranMap'); }).catch(function(){}); }
+  function renderQuranMap(idx){
+    const read=qTotalRead(), pct=Math.round(read/Q_TOTAL_AYAHS*100), st=qReadLoad();
+    let full=0; for(let i=0;i<idx.length;i++){ if(qSuraReadCount(idx[i].n)>=idx[i].c) full++; }
+    const sEl=document.getElementById('qmStats'); if(sEl) sEl.innerHTML =
+      '<div class="qm-stat"><b>'+pct+'%</b><span>Корана прочитано</span></div>'
+      +'<div class="qm-stat"><b>'+full+'</b><span>сур целиком</span></div>'
+      +'<div class="qm-stat"><b>'+st.khatm+'</b><span>хатмов</span></div>';
+    let g='';
+    for(let i=0;i<idx.length;i++){ const su=idx[i]; const rc=qSuraReadCount(su.n); const frac=su.c?rc/su.c:0;
+      const cls = frac>=1?'full':(frac>0?'part':'');
+      const fillH = (frac>0&&frac<1) ? Math.round(frac*100) : 0;
+      g += '<div class="qm-cell '+cls+'" onclick="qOpenSura('+su.n+')">'
+        + (fillH? '<span class="qm-fill" style="height:'+fillH+'%"></span>':'')
+        + '<span class="qm-n">'+su.n+'</span><span class="qm-nm">'+escHtml(su.nr)+'</span></div>';
+    }
+    const gEl=document.getElementById('qmGrid'); if(gEl) gEl.innerHTML=g;
   }
 
   // ---- тафсир ас-Саади по клику на аят ----
