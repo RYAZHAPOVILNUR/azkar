@@ -498,6 +498,21 @@
   .modal .m-actions .secondary { background:var(--surface-2); color:var(--ink-soft); }
   :root[data-theme="dark"] .modal .m-actions .primary { color:var(--bg); }
   @media (prefers-color-scheme: dark){ :root:not([data-theme]) .modal .m-actions .primary { color:var(--bg); } }
+  .share-preview { margin-top:12px; border-radius:22px; overflow:hidden; border:1px solid var(--line); background:var(--surface-2); box-shadow:var(--shadow-card); display:flex; justify-content:center; align-items:center; }
+  .share-preview canvas { width:auto; max-width:100%; height:min(56vh, 620px); display:block; aspect-ratio:9/16; }
+  .share-tools { margin-top:14px; display:flex; flex-direction:column; gap:10px; }
+  .share-bg-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .share-bg { height:42px; border-radius:14px; border:1px solid var(--line); cursor:pointer; position:relative; overflow:hidden; }
+  .share-bg.on { outline:2px solid color-mix(in srgb, var(--accent) 72%, transparent); outline-offset:2px; }
+  .share-bg[data-share-bg="paper"] { background:linear-gradient(135deg,#f7f2e8,#d8c8a2); }
+  .share-bg[data-share-bg="dawn"] { background:linear-gradient(135deg,#f5ead8,#9bb9a7 58%,#4f7568); }
+  .share-bg[data-share-bg="night"] { background:linear-gradient(135deg,#162025,#33443f 58%,#c2a76b); }
+  .share-bg[data-share-bg="rose"] { background:linear-gradient(135deg,#f4e9e4,#a9b5a4 56%,#7e6677); }
+  .share-toggles { display:flex; gap:8px; }
+  .share-toggle { flex:1; min-height:38px; border-radius:12px; border:1px solid var(--line); background:var(--surface-2);
+    color:var(--ink-soft); font:700 13px/1 var(--sans); cursor:pointer; }
+  .share-toggle.on { background:var(--accent-soft); color:var(--accent-deep); border-color:color-mix(in srgb,var(--accent) 35%,var(--line)); }
+  .share-status { min-height:18px; color:var(--ink-faint); font-size:12.5px; line-height:1.35; text-align:center; }
 
   .complete-wrap { padding:18px 18px 30px; }
   .complete-card { border:1px solid var(--line); border-radius:24px; background:var(--surface); box-shadow:var(--shadow-card);
@@ -899,6 +914,40 @@
       <div class="m-actions">
         <button type="button" class="secondary" id="locPromptLater">Позже</button>
         <button type="button" class="primary" id="locPromptAllow">Определить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="shareModal">
+    <div class="scrim" id="shareScrim"></div>
+    <div class="sheet">
+      <div class="grip"></div>
+      <div class="m-head">
+        <div class="m-badge"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg></div>
+        <div class="m-title">Открытка зикра</div>
+        <button class="m-close" id="shareClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="share-preview"><canvas id="shareCanvas" width="1080" height="1920"></canvas></div>
+      <div class="share-tools">
+        <div class="share-bg-row">
+          <button type="button" class="share-bg" data-share-bg="paper" aria-label="Фон бумага"></button>
+          <button type="button" class="share-bg" data-share-bg="dawn" aria-label="Фон утро"></button>
+          <button type="button" class="share-bg" data-share-bg="night" aria-label="Фон ночь"></button>
+          <button type="button" class="share-bg" data-share-bg="rose" aria-label="Фон мягкий"></button>
+        </div>
+        <div class="share-toggles">
+          <button type="button" class="share-toggle on" id="shareGradient">Градиент</button>
+          <button type="button" class="share-toggle on" id="shareBlur">Мягкость</button>
+        </div>
+        <div class="share-toggles">
+          <button type="button" class="share-toggle on" id="shareTranslit">Транскрипция</button>
+          <button type="button" class="share-toggle on" id="shareTranslation">Перевод</button>
+        </div>
+        <div class="m-actions">
+          <button type="button" class="secondary" id="shareDownload">Скачать</button>
+          <button type="button" class="primary" id="shareImage">Поделиться фото</button>
+        </div>
+        <div class="share-status" id="shareStatus"></div>
       </div>
     </div>
   </div>
@@ -1852,6 +1901,7 @@
     }, 255);
   }
   function back(opts = {}){
+    if(typeof shareOpen !== 'undefined' && shareOpen){ closeShareEditor(); return; }
     if(typeof locPromptOpen !== 'undefined' && locPromptOpen){ closeLocPrompt(); return; }
     if(typeof modalOpen !== 'undefined' && modalOpen){ closeInfo(); return; }
     if(navStack.length <= 1){ showScreen('home'); return; }
@@ -2001,20 +2051,255 @@ ${z.tr || ''}
 Азкар — поминания на каждый день
 https://azkar.nurtech.dev/app`);
   }
-  async function shareZikr(z){
-    if(!z) return;
-    const text = shareTextFor(z);
-    try{
-      if(navigator.share){
-        await navigator.share({ title:'Азкар', text, url:'https://azkar.nurtech.dev/app' });
-      } else {
-        const url = 'https://t.me/share/url?url=' + encodeURIComponent('https://azkar.nurtech.dev/app') + '&text=' + encodeURIComponent(text);
-        if(TG && TG.openTelegramLink) TG.openTelegramLink(url);
-        else window.open(url, '_blank', 'noopener');
-      }
-      tgHaptic('light');
-    }catch(e){}
+  const SHARE_THEMES = {
+    paper: { bg:['#F7F2E8','#E1D2AD'], ink:'#19352E', soft:'#5D6A62', accent:'#B8944E' },
+    dawn: { bg:['#F8E9D3','#A9C0AA','#426C61'], ink:'#15352E', soft:'#50685F', accent:'#C7A364' },
+    night: { bg:['#11191D','#283935','#B89A58'], ink:'#F5F3EC', soft:'#D8D0BE', accent:'#C8A96B' },
+    rose: { bg:['#F5E9E2','#ADB9A8','#7D6677'], ink:'#1F322E', soft:'#5F6660', accent:'#A9856B' },
+  };
+  let shareZ = null, shareOpen = false, shareScrollY = 0;
+  const shareStyle = (()=>{ try{ return JSON.parse(localStorage.getItem('azkar_share_style') || 'null') || {}; }catch(e){ return {}; } })();
+  shareStyle.bg = shareStyle.bg || 'dawn';
+  shareStyle.gradient = shareStyle.gradient !== false;
+  shareStyle.blur = shareStyle.blur !== false;
+  shareStyle.translit = shareStyle.translit !== false;
+  shareStyle.translation = shareStyle.translation !== false;
+  function saveShareStyle(){ try{ localStorage.setItem('azkar_share_style', JSON.stringify(shareStyle)); }catch(e){} }
+  function shareSetStatus(s){ const el=document.getElementById('shareStatus'); if(el) el.textContent=s || ''; }
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
   }
+  function fitLines(ctx, text, maxWidth, maxLines){
+    const words = String(text || '').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
+    const lines = []; let line = '';
+    words.forEach(word=>{
+      const next = line ? line + ' ' + word : word;
+      if(ctx.measureText(next).width <= maxWidth || !line) line = next;
+      else { lines.push(line); line = word; }
+    });
+    if(line) lines.push(line);
+    if(maxLines && lines.length > maxLines){
+      const cut = lines.slice(0, maxLines);
+      let last = cut[cut.length-1];
+      while(last.length > 1 && ctx.measureText(last + '…').width > maxWidth) last = last.slice(0,-1).trim();
+      cut[cut.length-1] = last + '…';
+      return cut;
+    }
+    return lines;
+  }
+  function drawWrapped(ctx, text, x, y, maxWidth, lineHeight, opts = {}){
+    const lines = opts.lines || fitLines(ctx, text, maxWidth, opts.maxLines || 0);
+    lines.forEach((line,i)=> ctx.fillText(line, x, y + i*lineHeight));
+    return y + lines.length*lineHeight;
+  }
+  function setShareFont(ctx, weight, size, family){
+    ctx.font = `${weight} ${size}px ${family}`;
+  }
+  function shareLinesForFont(ctx, text, maxWidth, maxLines, weight, size, family){
+    setShareFont(ctx, weight, size, family);
+    return fitLines(ctx, text, maxWidth, maxLines);
+  }
+  function shareLayout(ctx, maxW, availableH){
+    const sans = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    const serif = 'Georgia, "Times New Roman", serif';
+    const arFamily = '"Times New Roman", "Arial", serif';
+    const raw = {
+      ar: shareZ.ar || '',
+      tl: shareStyle.translit ? (shareZ.tl || '') : '',
+      tr: shareStyle.translation ? (shareZ.tr || '') : '',
+      src: shareZ.src || 'Достоверная Сунна',
+    };
+    let best = null;
+    for(let scale = 1; scale >= .18; scale -= .025){
+      const cfg = {
+        arSize: Math.round(58 * scale),
+        arLine: Math.round(78 * scale),
+        tlSize: Math.round(26 * scale),
+        tlLine: Math.round(36 * scale),
+        trSize: Math.round(30 * scale),
+        trLine: Math.round(43 * scale),
+        srcSize: Math.round(22 * scale),
+        srcLine: Math.round(31 * scale),
+        gap1: Math.round(26 * scale),
+        gap2: Math.round(24 * scale),
+        gap3: Math.round(26 * scale),
+      };
+      cfg.arSize = Math.max(16, cfg.arSize); cfg.arLine = Math.max(23, cfg.arLine);
+      cfg.tlSize = Math.max(10, cfg.tlSize); cfg.tlLine = Math.max(15, cfg.tlLine);
+      cfg.trSize = Math.max(11, cfg.trSize); cfg.trLine = Math.max(17, cfg.trLine);
+      cfg.srcSize = Math.max(10, cfg.srcSize); cfg.srcLine = Math.max(15, cfg.srcLine);
+      cfg.gap1 = Math.max(8, cfg.gap1); cfg.gap2 = Math.max(7, cfg.gap2); cfg.gap3 = Math.max(8, cfg.gap3);
+      const lines = {
+        ar: shareLinesForFont(ctx, raw.ar, maxW, 0, 600, cfg.arSize, arFamily),
+        tl: raw.tl ? shareLinesForFont(ctx, raw.tl, maxW, 0, 500, cfg.tlSize, sans) : [],
+        tr: raw.tr ? shareLinesForFont(ctx, raw.tr, maxW, 0, 500, cfg.trSize, serif) : [],
+        src: shareLinesForFont(ctx, raw.src, maxW, 0, 700, cfg.srcSize, sans),
+      };
+      const h = lines.ar.length*cfg.arLine
+        + (lines.tl.length ? cfg.gap1 + lines.tl.length*cfg.tlLine : 0)
+        + (lines.tr.length ? cfg.gap2 + lines.tr.length*cfg.trLine : 0)
+        + cfg.gap3 + lines.src.length*cfg.srcLine;
+      best = { ...cfg, ...lines, sans, serif, arFamily, height:h };
+      if(h <= availableH) return best;
+    }
+    return best;
+  }
+  function drawShareCanvas(){
+    const canvas = document.getElementById('shareCanvas');
+    if(!canvas || !shareZ) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const theme = SHARE_THEMES[shareStyle.bg] || SHARE_THEMES.dawn;
+    const bg = shareStyle.gradient ? ctx.createLinearGradient(0,0,W,H) : null;
+    if(bg){ bg.addColorStop(0, theme.bg[0]); bg.addColorStop(.58, theme.bg[1]); bg.addColorStop(1, theme.bg[2] || theme.bg[1]); ctx.fillStyle = bg; }
+    else ctx.fillStyle = theme.bg[0];
+    ctx.fillRect(0,0,W,H);
+    if(shareStyle.blur){
+      ctx.save();
+      ctx.globalAlpha = .34; ctx.filter = 'blur(42px)';
+      ctx.fillStyle = theme.accent; ctx.beginPath(); ctx.arc(W*.82,H*.20,150,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = theme.bg[1]; ctx.beginPath(); ctx.arc(W*.18,H*.80,210,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+    ctx.save();
+    ctx.globalAlpha = .12; ctx.strokeStyle = theme.accent; ctx.lineWidth = 8;
+    for(let i=0;i<3;i++){ roundRect(ctx, 118+i*18, 112+i*18, W-236-i*36, H-224-i*36, 54); ctx.stroke(); }
+    ctx.restore();
+    const cardX=78, cardY=110, cardW=W-156, cardH=H-220;
+    ctx.save();
+    ctx.globalAlpha = shareStyle.bg === 'night' ? .20 : .72;
+    ctx.fillStyle = shareStyle.bg === 'night' ? '#0D1417' : '#FFFDF7';
+    roundRect(ctx, cardX, cardY, cardW, cardH, 58); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = theme.ink;
+    ctx.textBaseline = 'top';
+    ctx.font = '700 34px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillText('Азкар', cardX+58, cardY+54);
+    ctx.fillStyle = theme.soft;
+    ctx.font = '500 25px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillText('поминание на каждый день', cardX+58, cardY+95);
+    ctx.save();
+    ctx.fillStyle = theme.accent; ctx.globalAlpha = .95;
+    ctx.beginPath(); ctx.arc(cardX+cardW-72, cardY+78, 28, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    const maxW = cardW - 116;
+    const left = cardX + 58;
+    const right = cardX + cardW - 58;
+    const contentTop = cardY + 178;
+    const footerY = cardY + cardH - 82;
+    const availableH = footerY - contentTop - 46;
+    const layout = shareLayout(ctx, maxW, availableH);
+    let y = contentTop + Math.max(0, Math.floor((availableH - layout.height) / 2));
+    ctx.direction = 'rtl';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = theme.ink;
+    setShareFont(ctx, 600, layout.arSize, layout.arFamily);
+    y = drawWrapped(ctx, shareZ.ar || '', right, y, maxW, layout.arLine, { lines:layout.ar }) + layout.gap1;
+    ctx.direction = 'ltr';
+    ctx.textAlign = 'left';
+    if(layout.tl.length){
+      ctx.fillStyle = theme.soft;
+      setShareFont(ctx, 500, layout.tlSize, layout.sans);
+      y = drawWrapped(ctx, '', left, y, maxW, layout.tlLine, { lines:layout.tl }) + layout.gap2;
+    }
+    if(layout.tr.length){
+      ctx.fillStyle = theme.ink;
+      setShareFont(ctx, 500, layout.trSize, layout.serif);
+      y = drawWrapped(ctx, '', left, y, maxW, layout.trLine, { lines:layout.tr }) + layout.gap3;
+    }
+    ctx.save();
+    ctx.globalAlpha = shareStyle.bg === 'night' ? .34 : .18;
+    ctx.strokeStyle = theme.soft;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(left, y - Math.round(layout.gap3 * .55));
+    ctx.lineTo(right, y - Math.round(layout.gap3 * .55));
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = theme.soft;
+    setShareFont(ctx, 700, layout.srcSize, layout.sans);
+    drawWrapped(ctx, shareZ.src || 'Достоверная Сунна', left, y, maxW, layout.srcLine, { lines:layout.src });
+    ctx.fillStyle = theme.accent;
+    setShareFont(ctx, 700, 25, '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
+    ctx.fillText('azkar.nurtech.dev', left, footerY);
+  }
+  function updateShareControls(){
+    document.querySelectorAll('[data-share-bg]').forEach(b=>b.classList.toggle('on', b.dataset.shareBg === shareStyle.bg));
+    const grad=document.getElementById('shareGradient'), blur=document.getElementById('shareBlur');
+    const translit=document.getElementById('shareTranslit'), translation=document.getElementById('shareTranslation');
+    if(grad) grad.classList.toggle('on', !!shareStyle.gradient);
+    if(blur) blur.classList.toggle('on', !!shareStyle.blur);
+    if(translit) translit.classList.toggle('on', !!shareStyle.translit);
+    if(translation) translation.classList.toggle('on', !!shareStyle.translation);
+  }
+  function lockShareScroll(){
+    shareScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.top = `-${shareScrollY}px`;
+    document.body.classList.add('info-open');
+  }
+  function unlockShareScroll(){
+    document.body.classList.remove('info-open');
+    document.body.style.top = '';
+    window.scrollTo(0, shareScrollY || 0);
+  }
+  function openShareEditor(z){
+    if(!z) return;
+    if(typeof modalOpen !== 'undefined' && modalOpen) closeInfo(true);
+    shareZ = z; shareOpen = true; shareSetStatus('');
+    const modal=document.getElementById('shareModal'), sheet=modal.querySelector('.sheet');
+    if(sheet){ sheet.style.animation=''; sheet.style.transition=''; sheet.style.transform=''; sheet.scrollTop=0; }
+    modal.classList.add('open');
+    updateShareControls();
+    lockShareScroll();
+    requestAnimationFrame(drawShareCanvas);
+    tgBack(true, back);
+    tgHaptic('light');
+  }
+  function closeShareEditor(){
+    const modal=document.getElementById('shareModal');
+    if(!modal || !modal.classList.contains('open')){ shareOpen=false; return; }
+    shareOpen=false; modal.classList.remove('open'); unlockShareScroll(); tgBack(navStack.length>1, back);
+  }
+  function shareCanvasBlob(){
+    const canvas=document.getElementById('shareCanvas');
+    return new Promise(resolve=>canvas.toBlob(resolve, 'image/png', .95));
+  }
+  async function shareImageCard(){
+    if(!shareZ) return;
+    drawShareCanvas();
+    const blob = await shareCanvasBlob();
+    if(!blob){ shareSetStatus('Не удалось собрать изображение'); return; }
+    try{
+      if(typeof File !== 'undefined'){
+        const file = new File([blob], 'azkar.png', { type:'image/png' });
+        if(navigator.canShare && navigator.canShare({ files:[file] })){
+          await navigator.share({ files:[file], title:'Азкар', text:'Зикр из приложения Азкар' });
+          shareSetStatus('Готово');
+          tgHaptic('medium');
+          return;
+        }
+      }
+      downloadShareImage(blob);
+      shareSetStatus('Фото скачано. Его можно отправить в Telegram.');
+    }catch(e){
+      downloadShareImage(blob);
+      shareSetStatus('Фото скачано. Его можно отправить в Telegram.');
+    }
+  }
+  function downloadShareImage(blob){
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='azkar.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  }
+  async function downloadShareCard(){
+    drawShareCanvas();
+    const blob = await shareCanvasBlob();
+    if(blob){ downloadShareImage(blob); shareSetStatus('Фото скачано'); tgHaptic('light'); }
+  }
+  async function shareZikr(z){ openShareEditor(z); }
   function routineDayFromTimes(t){
     const now = new Date();
     const day = new Date(now);
@@ -2684,6 +2969,25 @@ https://azkar.nurtech.dev/app`);
     renderModalSharh();
     tgHaptic('light');
   }));
+  document.getElementById('shareClose').addEventListener('click', closeShareEditor);
+  document.getElementById('shareScrim').addEventListener('click', closeShareEditor);
+  document.querySelectorAll('[data-share-bg]').forEach(b=> b.addEventListener('click', ()=>{
+    shareStyle.bg = b.dataset.shareBg || 'dawn'; saveShareStyle(); updateShareControls(); drawShareCanvas(); tgHaptic('light');
+  }));
+  document.getElementById('shareGradient').addEventListener('click', e=>{
+    shareStyle.gradient = !shareStyle.gradient; saveShareStyle(); updateShareControls(); drawShareCanvas(); tgHaptic('light');
+  });
+  document.getElementById('shareBlur').addEventListener('click', e=>{
+    shareStyle.blur = !shareStyle.blur; saveShareStyle(); updateShareControls(); drawShareCanvas(); tgHaptic('light');
+  });
+  document.getElementById('shareTranslit').addEventListener('click', e=>{
+    shareStyle.translit = !shareStyle.translit; saveShareStyle(); updateShareControls(); drawShareCanvas(); tgHaptic('light');
+  });
+  document.getElementById('shareTranslation').addEventListener('click', e=>{
+    shareStyle.translation = !shareStyle.translation; saveShareStyle(); updateShareControls(); drawShareCanvas(); tgHaptic('light');
+  });
+  document.getElementById('shareImage').addEventListener('click', shareImageCard);
+  document.getElementById('shareDownload').addEventListener('click', downloadShareCard);
 
   /* ---- iOS-style drag шторки: страница сзади не скроллится ---- */
   (function(){
