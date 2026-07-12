@@ -3952,8 +3952,8 @@ https://azkar.nurtech.dev/app`);
 
   // ---- шторка: легенда / статистика ----
   let qSheetOpen=false;
-  function openQSheet(){ document.getElementById('qSheet').classList.add('open'); qSheetOpen=true; tgBack(true, back); }
-  function closeQSheet(){ document.getElementById('qSheet').classList.remove('open'); qSheetOpen=false; const a=activeScreen(); tgBack((a&&a.id==='quranReader')||navStack.length>1, back); }
+  function openQSheet(){ if(qSheetOpen) return; document.getElementById('qSheet').classList.add('open'); qSheetOpen=true; lockInfoScroll(); tgBack(true, back); }
+  function closeQSheet(){ if(!qSheetOpen) return; document.getElementById('qSheet').classList.remove('open'); qSheetOpen=false; unlockInfoScroll(); const a=activeScreen(); tgBack((a&&a.id==='quranReader')||navStack.length>1, back); }
   function openTajweedLegend(){
     document.getElementById('qSheetTitle').textContent='Правила таджвида';
     const rows = TJ_LEGEND.map(function(l){ return '<div class="q-leg"><span class="dot '+l.cls+'" style="background:currentColor"></span><div><div class="lt">'+l.t+'</div><div class="ls">'+l.s+'</div></div></div>'; }).join('');
