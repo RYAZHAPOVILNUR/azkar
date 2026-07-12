@@ -484,6 +484,38 @@
     background:var(--surface-2); color:var(--ink); }
   .complete-actions .primary { background:var(--accent-soft); color:var(--accent-deep); border-color:color-mix(in srgb,var(--accent) 30%,var(--line)); }
 
+  /* СВОБОДНЫЙ ТАСБИХ */
+  .ft { padding: 10px 20px 34px; display:flex; flex-direction:column; align-items:center; gap:18px; }
+  .ft-targets { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  .ft-chip { padding:8px 16px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+    font:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:transform .12s, background .15s, color .15s; -webkit-tap-highlight-color:transparent; font-variant-numeric:tabular-nums; }
+  .ft-chip:active { transform:scale(.94); }
+  .ft-chip.on { background:var(--accent-soft); color:var(--accent-deep); border-color:color-mix(in srgb, var(--accent) 30%, transparent); }
+  .ft-custom-row { display:flex; gap:8px; }
+  .ft-custom-row[hidden] { display:none; }
+  .ft-custom-row input { width:150px; padding:9px 13px; border-radius:11px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); font:inherit; font-size:15px; }
+  .ft-custom-row button { padding:9px 18px; border-radius:11px; border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent-deep); font:inherit; font-weight:700; cursor:pointer; }
+  .ft-counter { position:relative; width:min(300px, 82vw); aspect-ratio:1; border:none; background:none; padding:0; cursor:pointer;
+    -webkit-tap-highlight-color:transparent; touch-action:manipulation; transition:transform .1s cubic-bezier(.34,1.56,.64,1); }
+  .ft-counter:active { transform:scale(.985); }
+  .ft-ring { width:100%; height:100%; transform:rotate(-90deg); display:block; }
+  .ft-track { fill:none; stroke:var(--surface-2); stroke-width:10; }
+  .ft-prog { fill:none; stroke:var(--accent); stroke-width:10; stroke-linecap:round; stroke-dasharray:603.2; stroke-dashoffset:603.2; transition:stroke-dashoffset .28s cubic-bezier(.2,.8,.2,1), stroke .25s; }
+  .ft-counter.done .ft-prog { stroke:var(--good); }
+  .ft-mid { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; pointer-events:none; padding:0 20px; }
+  .ft-ar { font-family:var(--ar-font),var(--ar); direction:rtl; font-size:26px; color:var(--ink-soft); line-height:1.25; min-height:32px; text-align:center; }
+  .ft-num { font-size:64px; font-weight:300; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .ft-counter.done .ft-num { color:var(--good); }
+  .ft-counter.pulse .ft-num { animation:ftPulse .38s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes ftPulse { 0%{ transform:scale(1); } 42%{ transform:scale(1.13); } 100%{ transform:scale(1); } }
+  .ft-sub { font-size:13px; color:var(--ink-faint); font-weight:500; font-variant-numeric:tabular-nums; }
+  .ft-dhikr { display:flex; gap:7px; flex-wrap:wrap; justify-content:center; }
+  .ft-d { padding:7px 13px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+    font:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:transform .12s, background .15s, color .15s; -webkit-tap-highlight-color:transparent; }
+  .ft-d:active { transform:scale(.94); }
+  .ft-d.on { background:var(--accent-soft); color:var(--accent-deep); border-color:color-mix(in srgb, var(--accent) 30%, transparent); }
+  .ft-hint { font-size:12px; color:var(--ink-faint); text-align:center; max-width:280px; line-height:1.4; }
+
   @media (prefers-reduced-motion: reduce) { *, *:before, *:after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 </style>
 
@@ -498,6 +530,9 @@
       </div>
       <div class="head-actions">
         <span class="streak-badge" id="streakBadge" hidden title="Дней подряд"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C7 9 9 8 9 8s-.5 2 .5 3c0 0 1-1 1-3s1.5-6 1.5-6z"/></svg><span id="streakText">0</span></span>
+        <button class="iconbtn" onclick="openFreeTasbih()" title="Тасбих" aria-label="Свободный тасбих">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="4.5" r="2"/><circle cx="6" cy="7.5" r="1.7"/><circle cx="18" cy="7.5" r="1.7"/><circle cx="4.3" cy="13" r="1.7"/><circle cx="19.7" cy="13" r="1.7"/><circle cx="7.3" cy="17.6" r="1.7"/><circle cx="16.7" cy="17.6" r="1.7"/><circle cx="12" cy="19.5" r="1.7"/></svg>
+        </button>
         <button class="iconbtn" id="themeBtn" title="Тема" aria-label="Сменить тему">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path id="themeIcon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         </button>
@@ -729,6 +764,49 @@
         </div>
       </div>
       <div class="home-foot" style="padding-top:26px; font-size:11.5px; opacity:.7"><a href="https://aiengineer.nurtech.dev" target="_blank" rel="noopener" class="foot-link" id="caseLink" style="color:var(--ink-faint); font-weight:500; text-decoration:none">Учебный проект · как это сделано</a></div>
+    </div>
+  </section>
+
+  <!-- СВОБОДНЫЙ ТАСБИХ -->
+  <section class="screen" id="freetasbih">
+    <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
+      <div class="row">
+        <button class="back" onclick="back({visual:true})" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px">Тасбих</div></div>
+        <button class="iconbtn" id="ftResetTop" title="Сбросить" aria-label="Сбросить счёт"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+      </div>
+    </div>
+    <div class="ft">
+      <div class="ft-targets" id="ftTargets">
+        <button class="ft-chip" data-t="33">33</button>
+        <button class="ft-chip" data-t="99">99</button>
+        <button class="ft-chip" data-t="100">100</button>
+        <button class="ft-chip" data-t="0">∞</button>
+        <button class="ft-chip" data-t="custom" id="ftCustomBtn">своё</button>
+      </div>
+      <div class="ft-custom-row" id="ftCustomRow" hidden>
+        <input type="number" id="ftCustomInput" min="1" max="10000" inputmode="numeric" placeholder="число повторов">
+        <button id="ftCustomOk">OK</button>
+      </div>
+      <button class="ft-counter" id="ftCounter" aria-label="Считать">
+        <svg viewBox="0 0 220 220" class="ft-ring" aria-hidden="true">
+          <circle class="ft-track" cx="110" cy="110" r="96"/>
+          <circle class="ft-prog" id="ftProg" cx="110" cy="110" r="96"/>
+        </svg>
+        <div class="ft-mid">
+          <div class="ft-ar" id="ftAr">سُبْحَانَ اللَّهِ</div>
+          <b class="ft-num" id="ftNum">0</b>
+          <div class="ft-sub" id="ftSub">цель 33 · кругов 0</div>
+        </div>
+      </button>
+      <div class="ft-dhikr" id="ftDhikr">
+        <button class="ft-d" data-i="0">Субхан-Аллах</button>
+        <button class="ft-d" data-i="1">Аль-хамду-лиллях</button>
+        <button class="ft-d" data-i="2">Аллаху акбар</button>
+        <button class="ft-d" data-i="3">Ля иляха илля-Ллах</button>
+        <button class="ft-d" data-i="4">Свободно</button>
+      </div>
+      <div class="ft-hint">Касание по кругу — считать. Кнопка ↻ сверху обнуляет.</div>
     </div>
   </section>
 
@@ -2849,6 +2927,69 @@
       if(commit) tgHaptic('light');
     }, {passive:true});
     document.addEventListener('touchcancel', ()=>{ if(tracking) cleanup(false); }, {passive:true});
+  })();
+
+  /* ---------- свободный тасбих ---------- */
+  const FT_DHIKR = [
+    { t:'Субхан-Аллах', ar:'سُبْحَانَ اللَّهِ' },
+    { t:'Аль-хамду-лиллях', ar:'الْحَمْدُ لِلَّهِ' },
+    { t:'Аллаху акбар', ar:'اللَّهُ أَكْبَرُ' },
+    { t:'Ля иляха илля-Ллах', ar:'لَا إِلَٰهَ إِلَّا اللَّهُ' },
+    { t:'Свободно', ar:'' },
+  ];
+  let FT = { target:33, count:0, dhikr:0 };
+  try { const s = JSON.parse(localStorage.getItem('azkar_free')||'{}'); if(s && typeof s==='object') FT = { ...FT, ...s }; } catch(e){}
+  function saveFree(){ try{ localStorage.setItem('azkar_free', JSON.stringify(FT)); }catch(e){} }
+  function ftRounds(){ return FT.target>0 ? Math.floor(FT.count/FT.target) : 0; }
+  function renderFree(){
+    const num = document.getElementById('ftNum'); if(num) num.textContent = FT.count;
+    const arEl = document.getElementById('ftAr'); const d = FT_DHIKR[FT.dhikr] || FT_DHIKR[4];
+    if(arEl){ arEl.textContent = d.ar; arEl.style.display = d.ar ? '' : 'none'; }
+    const sub = document.getElementById('ftSub');
+    if(sub) sub.textContent = FT.target>0 ? ('цель '+FT.target+' · кругов '+ftRounds()) : 'без цели';
+    const prog = document.getElementById('ftProg');
+    if(prog){ const C = 603.2; let frac;
+      if(FT.target>0){ const inRound = FT.count % FT.target; frac = (inRound===0 && FT.count>0) ? 1 : inRound/FT.target; }
+      else frac = (FT.count % 100) / 100;
+      prog.style.strokeDashoffset = String(C * (1 - frac));
+    }
+    document.querySelectorAll('#ftTargets .ft-chip').forEach(b=>{ const tv = b.dataset.t;
+      b.classList.toggle('on', tv==='custom' ? ![33,99,100,0].includes(FT.target) : (+tv === FT.target)); });
+    document.querySelectorAll('#ftDhikr .ft-d').forEach(b=> b.classList.toggle('on', +b.dataset.i === FT.dhikr));
+  }
+  function ftInc(){
+    FT.count++;
+    const hit = FT.target>0 && FT.count % FT.target === 0;
+    renderFree(); saveFree();
+    const c = document.getElementById('ftCounter');
+    if(c){ c.classList.toggle('done', hit); c.classList.remove('pulse'); void c.offsetWidth; c.classList.add('pulse'); }
+    if(hit){ tgHaptic('medium'); try{ TG && TG.HapticFeedback && TG.HapticFeedback.notificationOccurred && TG.HapticFeedback.notificationOccurred('success'); }catch(e){} }
+    else tgHaptic('light');
+  }
+  function ftReset(){ FT.count = 0; const c=document.getElementById('ftCounter'); if(c) c.classList.remove('done'); renderFree(); saveFree(); tgHaptic('medium'); }
+  function openFreeTasbih(){ renderFree(); go('freetasbih'); }
+  (function(){
+    const cnt = document.getElementById('ftCounter'); if(cnt) cnt.addEventListener('click', ftInc);
+    const rst = document.getElementById('ftResetTop'); if(rst) rst.addEventListener('click', ftReset);
+    document.querySelectorAll('#ftTargets .ft-chip').forEach(b=> b.addEventListener('click', ()=>{
+      const tv = b.dataset.t;
+      if(tv === 'custom'){ const row = document.getElementById('ftCustomRow');
+        if(row){ row.hidden = !row.hidden; const inp = document.getElementById('ftCustomInput');
+          if(!row.hidden && inp){ inp.value = FT.target || ''; setTimeout(()=>{ try{ inp.focus(); }catch(e){} }, 60); } }
+        return; }
+      FT.target = +tv; FT.count = 0; const row = document.getElementById('ftCustomRow'); if(row) row.hidden = true;
+      const c = document.getElementById('ftCounter'); if(c) c.classList.remove('done');
+      renderFree(); saveFree(); tgHaptic('light');
+    }));
+    const ok = document.getElementById('ftCustomOk');
+    if(ok) ok.addEventListener('click', ()=>{
+      const inp = document.getElementById('ftCustomInput'); let v = parseInt(inp && inp.value, 10);
+      if(!isFinite(v) || v < 1) v = 33; if(v > 10000) v = 10000;
+      FT.target = v; FT.count = 0; const row = document.getElementById('ftCustomRow'); if(row) row.hidden = true;
+      const c = document.getElementById('ftCounter'); if(c) c.classList.remove('done');
+      renderFree(); saveFree(); tgHaptic('light');
+    });
+    document.querySelectorAll('#ftDhikr .ft-d').forEach(b=> b.addEventListener('click', ()=>{ FT.dhikr = +b.dataset.i; renderFree(); saveFree(); tgHaptic('light'); }));
   })();
 
   applyTheme();
