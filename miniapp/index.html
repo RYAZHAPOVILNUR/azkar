@@ -4059,7 +4059,7 @@ https://azkar.nurtech.dev/app`);
         const words = aw && aw[a.n];
         const ar = words ? qcfWordsHtml(words, QPREFS.tj) : ((QPREFS.tj ? tjRender(a.tj) : escHtml(a.ar))+ayahMarker(a.n));
         html += '<div class="q-ayah" data-a="'+a.n+'">'
-          + '<div class="q-ar qcf-ar'+(words&&QPREFS.tj?' qp-paper':'')+'" onclick="openTafsir('+su.n+','+a.n+')" title="Открыть тафсир ас-Саади">'+ar+'</div>'
+          + '<div class="q-ar qcf-ar" onclick="openTafsir('+su.n+','+a.n+')" title="Открыть тафсир ас-Саади">'+ar+'</div>'
           + '<div class="q-tr">'+escHtml(a.ru)+'</div>'
           + '<button type="button" class="q-tafsir-btn" onclick="openTafsir('+su.n+','+a.n+')">'+TAFSIR_ICON+'Тафсир ас-Саади</button>'
           + '</div>';
@@ -4211,7 +4211,7 @@ https://azkar.nurtech.dev/app`);
       for(let j=0;j<l.w.length;j++){ const w=l.w[j]; ws+='<span class="qp-w" data-k="'+w.k+'" onclick="tafsirFromKey(\''+w.k+'\')">'+escHtml(w.c)+'</span>'; }
       html += '<div class="qp-line'+(center?' center':'')+'">'+ws+'</div>';
     }
-    let full='<div class="qp-page'+(QPREFS.tj?' qp-paper':'')+'">'+html+'</div>';
+    let full='<div class="qp-page">'+html+'</div>';
     // режим Чтение: переводы аятов страницы под мусхафом
     if(QPREFS.mode==='reading'){
       const seen={}, order=[];
