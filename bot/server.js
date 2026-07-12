@@ -292,25 +292,51 @@ function ytdlpArgs() {
   a.push(RADIO_URL);
   return a;
 }
-const radio = { proc: null, clients: new Set(), tail: [], starting: false, idleTimer: null };
+const radio = { proc: null, clients: new Set(), tail: [], starting: false, idleTimer: null, lastOk: 0, failCount: 0 };
+// yt-dlp при успешном резолве ПЕРЕЗАПИСЫВАЕТ cookies.txt свежими (ротированными) куками — так
+// сессия YouTube живёт, пока эфир регулярно резолвится. Держим бэкап, чтобы битый прогон не затёр рабочие.
+const YT_COOKIES_BAK = YT_COOKIES + '.bak';
+function cookieBackup() { try { if (radioHasCookies()) fs.copyFileSync(YT_COOKIES, YT_COOKIES_BAK); } catch {} }
+function cookieRestore() { try { if (fs.existsSync(YT_COOKIES_BAK)) fs.copyFileSync(YT_COOKIES_BAK, YT_COOKIES); } catch {} }
+// алерт владельцу (опц., env RADIO_ALERT_CHAT_ID): эфир не поднимается — вероятно, протухли куки
+const RADIO_ALERT_CHAT_ID = process.env.RADIO_ALERT_CHAT_ID || '';
+let _radioAlertedAt = 0;
+function radioAlert(err) {
+  if (!RADIO_ALERT_CHAT_ID || !TOKEN) return;
+  const now = Date.now(); if (now - _radioAlertedAt < 6 * 3600 * 1000) return; _radioAlertedAt = now;   // не спамить (≤1/6ч)
+  const text = '⚠️ Радио: не удаётся поднять эфир (вероятно, протухли YouTube-куки — обнови cookies.txt).\n' + String((err && err.message) || err).slice(0, 200);
+  try { fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: RADIO_ALERT_CHAT_ID, text }) }).catch(() => {}); } catch {}
+}
 function radioResolve() {
   return new Promise((resolve, reject) => {
+    if (radioHasCookies()) cookieBackup();
     const yt = spawn('yt-dlp', ytdlpArgs());
     let out = '', err = '';
     yt.stdout.on('data', (d) => (out += d));
     yt.stderr.on('data', (d) => (err += d));
-    yt.on('error', reject);
-    const to = setTimeout(() => { try { yt.kill('SIGKILL'); } catch {} reject(new Error('yt-dlp timeout')); }, 25000);
-    yt.on('close', (code) => { clearTimeout(to); const url = out.trim().split('\n')[0]; if (code === 0 && url) resolve(url); else reject(new Error('yt-dlp ' + code + ': ' + err.slice(0, 160))); });
+    yt.on('error', (e) => { cookieRestore(); reject(e); });
+    const to = setTimeout(() => { try { yt.kill('SIGKILL'); } catch {} cookieRestore(); reject(new Error('yt-dlp timeout')); }, 25000);
+    yt.on('close', (code) => { clearTimeout(to); const url = out.trim().split('\n')[0];
+      if (code === 0 && url) { cookieBackup(); resolve(url); }              // успех: сохранить свежий бэкап
+      else { cookieRestore(); reject(new Error('yt-dlp ' + code + ': ' + err.slice(0, 160))); } });
   });
+}
+// несколько попыток с backoff — переживать разовые сбои резолва/сети
+async function radioResolveRetry(tries) {
+  let lastErr;
+  for (let i = 0; i < tries; i++) {
+    try { return await radioResolve(); }
+    catch (e) { lastErr = e; if (i < tries - 1) await new Promise((r) => setTimeout(r, 1500 * (i + 1))); }
+  }
+  throw lastErr;
 }
 async function radioStart() {
   if (radio.proc || radio.starting) return;
   radio.starting = true;
   try {
-    const url = await radioResolve();
+    const url = await radioResolveRetry(3);
     const ff = spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '5', '-i', url, '-vn', '-c:a', 'libmp3lame', '-b:a', '64k', '-f', 'mp3', 'pipe:1']);
-    radio.proc = ff;
+    radio.proc = ff; radio.lastOk = Date.now(); radio.failCount = 0;
     ff.stdout.on('data', (chunk) => {
       radio.tail.push(chunk);
       let total = radio.tail.reduce((s, c) => s + c.length, 0);
@@ -322,7 +348,7 @@ async function radioStart() {
     ff.on('error', () => { radio.proc = null; radio.tail = []; });
   } catch (e) {
     console.warn('[radio] не удалось запустить эфир:', e.message);
-    radio.proc = null; radio.tail = [];
+    radio.proc = null; radio.tail = []; radio.failCount = (radio.failCount || 0) + 1; radioAlert(e);
     for (const res of radio.clients) { try { res.end(); } catch {} }
     radio.clients.clear();
   } finally { radio.starting = false; }
@@ -333,6 +359,17 @@ function radioStopIfIdle() {
     if (radio.clients.size === 0 && radio.proc) { try { radio.proc.kill('SIGKILL'); } catch {} radio.proc = null; radio.tail = []; }
   }, 20000);
 }
+// keep-alive кук: периодически тихо резолвим эфир, чтобы yt-dlp освежил куки (write-back) и сессия
+// YouTube не протухла от простоя — работает и без слушателей. Только в простое (идёт эфир → куки и так свежие).
+const RADIO_KEEPALIVE_CRON = process.env.RADIO_KEEPALIVE_CRON || '17 */4 * * *';   // каждые 4 часа
+async function radioKeepAlive(reason) {
+  if (!radioHasCookies() || radio.starting || radio.proc) return;
+  try { await radioResolve(); radio.lastOk = Date.now(); radio.failCount = 0; console.log('[radio] keep-alive ok (' + reason + '): куки освежены'); }
+  catch (e) { radio.failCount = (radio.failCount || 0) + 1; console.warn('[radio] keep-alive FAIL (' + reason + '):', e.message); radioAlert(e); }
+}
+try { cron.schedule(RADIO_KEEPALIVE_CRON, () => radioKeepAlive('cron'), { timezone: TZ }); }
+catch (e) { console.warn('[radio] keep-alive cron не запланирован:', e.message); }
+setTimeout(() => radioKeepAlive('boot'), 60000);   // прогрев + самопроверка через минуту после старта
 app.get('/api/radio/stream', (req, res) => {
   if (radio.clients.size >= 30) return res.status(503).end('busy');
   res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-cache, no-store', 'Access-Control-Allow-Origin': '*' });
@@ -341,7 +378,7 @@ app.get('/api/radio/stream', (req, res) => {
   radioStart();
   req.on('close', () => { radio.clients.delete(res); radioStopIfIdle(); });
 });
-app.get('/api/radio/status', (_req, res) => res.json({ live: !!radio.proc, listeners: radio.clients.size, cookies: radioHasCookies(), pot: !!POT_PROVIDER_URL }));
+app.get('/api/radio/status', (_req, res) => res.json({ live: !!radio.proc, listeners: radio.clients.size, cookies: radioHasCookies(), pot: !!POT_PROVIDER_URL, lastOk: radio.lastOk || 0, fails: radio.failCount || 0 }));
 
 // Mini App живёт под /app, лендинг — на корне. API и health объявлены выше.
 app.use('/app', express.static(path.join(__dirname, '..', 'miniapp'), { extensions: ['html'], index: 'index.html' }));
