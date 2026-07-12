@@ -275,10 +275,25 @@ app.post('/api/hifz', (req, res) => {
 
 // ---------- радио: аудио из YouTube-лайва (один общий ffmpeg раздаёт mp3 всем) ----------
 const RADIO_URL = process.env.RADIO_URL || 'https://www.youtube.com/@bmagrifa/live';
+// PO-token провайдер (bgutil) — обход антибот-проверки YouTube с дата-центрового IP.
+// Пустая строка POT_PROVIDER_URL отключает провайдер (например, при переходе на куки).
+const POT_PROVIDER_URL = ('POT_PROVIDER_URL' in process.env) ? process.env.POT_PROVIDER_URL : 'http://bgutil-provider:4416';
+// Куки залогиненного YouTube-аккаунта (Netscape cookies.txt) — обязательны на зафлаганном
+// дата-центровом IP: без них YouTube отдаёт LOGIN_REQUIRED ещё до стадии PO-токена.
+// Файл лежит в томе данных (переживает пересборку, НЕ в образе/гите). Положить: /opt/azkar -> volume.
+const YT_COOKIES = process.env.YT_COOKIES || path.join(__dirname, 'data', 'cookies.txt');
+function radioHasCookies() { try { return !!YT_COOKIES && fs.existsSync(YT_COOKIES); } catch { return false; } }
+function ytdlpArgs() {
+  const a = ['-f', 'bestaudio/best', '-g', '--no-warnings', '--no-playlist'];
+  if (radioHasCookies()) a.push('--cookies', YT_COOKIES);
+  if (POT_PROVIDER_URL) a.push('--extractor-args', 'youtubepot-bgutilhttp:base_url=' + POT_PROVIDER_URL);
+  a.push(RADIO_URL);
+  return a;
+}
 const radio = { proc: null, clients: new Set(), tail: [], starting: false, idleTimer: null };
 function radioResolve() {
   return new Promise((resolve, reject) => {
-    const yt = spawn('yt-dlp', ['-f', 'bestaudio/best', '-g', '--no-warnings', '--no-playlist', RADIO_URL]);
+    const yt = spawn('yt-dlp', ytdlpArgs());
     let out = '', err = '';
     yt.stdout.on('data', (d) => (out += d));
     yt.stderr.on('data', (d) => (err += d));
@@ -324,7 +339,7 @@ app.get('/api/radio/stream', (req, res) => {
   radioStart();
   req.on('close', () => { radio.clients.delete(res); radioStopIfIdle(); });
 });
-app.get('/api/radio/status', (_req, res) => res.json({ live: !!radio.proc, listeners: radio.clients.size }));
+app.get('/api/radio/status', (_req, res) => res.json({ live: !!radio.proc, listeners: radio.clients.size, cookies: radioHasCookies(), pot: !!POT_PROVIDER_URL }));
 
 // Mini App живёт под /app, лендинг — на корне. API и health объявлены выше.
 app.use('/app', express.static(path.join(__dirname, '..', 'miniapp'), { extensions: ['html'], index: 'index.html' }));
