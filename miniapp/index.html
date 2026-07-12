@@ -758,6 +758,85 @@
 <script>
   /* ---- Telegram WebApp интеграция (graceful, работает и вне Telegram) ---- */
   const TG = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+
+  /* ---- Синхронизация прогресса/порядка/настроек между устройствами через TG CloudStorage ----
+     localStorage остаётся синхронным источником правды; синк-ключи зеркалятся в облако (debounce),
+     на старте подтягиваем новое (last-write-wins по меткам времени). Вне Telegram — чистый localStorage. */
+  const CS = (TG && TG.CloudStorage) ? TG.CloudStorage : null;
+  // CloudStorage появился в Bot API 6.9 — не дёргаем на старых клиентах (иначе SDK шумит в консоль)
+  let CS_OK = !!CS && !!(TG && TG.isVersionAtLeast && TG.isVersionAtLeast('6.9'));
+  const SYNC_SKIP = new Set(['azkar_taphint_seen', 'azkar_sync_meta']);   // локальные для устройства / служебные
+  const isSyncKey = (k) => typeof k === 'string' && k.indexOf('azkar_') === 0 && !SYNC_SKIP.has(k);
+  const _lsSet = localStorage.setItem.bind(localStorage);
+  const _lsRemove = localStorage.removeItem.bind(localStorage);
+  const loadMeta = () => { try { return JSON.parse(localStorage.getItem('azkar_sync_meta') || '{}') || {}; } catch(e){ return {}; } };
+  const saveMeta = (m) => { try { _lsSet('azkar_sync_meta', JSON.stringify(m)); } catch(e){} };
+  let _pushTimer = null; const _dirty = new Set();
+  function schedulePush(){ if(!CS_OK) return; if(_pushTimer) clearTimeout(_pushTimer); _pushTimer = setTimeout(flushPush, 800); }
+  function flushPush(){
+    _pushTimer = null; if(!CS_OK || !_dirty.size) return;
+    const keys = Array.from(_dirty); _dirty.clear();
+    try {
+      keys.forEach(k => {
+        const v = localStorage.getItem(k);
+        if(v === null) CS.removeItem(k, ()=>{});
+        else if(v.length <= 4096) CS.setItem(k, v, ()=>{});
+      });
+      CS.setItem('azkar_sync_meta', JSON.stringify(loadMeta()), ()=>{});
+    } catch(e){ CS_OK = false; }   // методы не поддерживаются (старый TG) — выключаем облако
+  }
+  function markDirty(k){ if(!CS_OK || !isSyncKey(k)) return; const m = loadMeta(); m[k] = Date.now(); saveMeta(m); _dirty.add(k); schedulePush(); }
+  localStorage.setItem = function(k, v){ _lsSet(k, v); markDirty(k); };
+  localStorage.removeItem = function(k){ _lsRemove(k); markDirty(k); };
+  function cloudPull(done){
+    if(!CS_OK){ done && done(false); return; }
+    try {
+      CS.getItem('azkar_sync_meta', (e1, raw) => {
+        if(e1){ done && done(false); return; }
+        let cloudMeta = {}; try { cloudMeta = JSON.parse(raw || '{}') || {}; } catch(_e){}
+        const localMeta = loadMeta();
+        const pullKeys = Object.keys(cloudMeta).filter(k => isSyncKey(k) && (cloudMeta[k]||0) > (localMeta[k]||0));
+        if(!pullKeys.length){ done && done(false); return; }
+        try {
+          CS.getItems(pullKeys, (e2, values) => {
+            if(e2 || !values){ done && done(false); return; }
+            let changed = false;
+            pullKeys.forEach(k => { const v = values[k];
+              if(v === undefined) return;
+              if(v === '' || v === null) _lsRemove(k); else _lsSet(k, v);
+              localMeta[k] = cloudMeta[k]; changed = true;
+            });
+            saveMeta(localMeta); done && done(changed);
+          });
+        } catch(_e2){ CS_OK = false; done && done(false); }
+      });
+    } catch(_e1){ CS_OK = false; done && done(false); }
+  }
+  function seedLocalToCloud(){    // залить в облако существующие локальные данные, которых там ещё нет
+    if(!CS_OK) return; const m = loadMeta(); let any = false;
+    for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i);
+      if(isSyncKey(k) && !(k in m)){ m[k] = Date.now(); _dirty.add(k); any = true; } }
+    if(any){ saveMeta(m); schedulePush(); }
+  }
+  function applyPulledState(){    // применить подтянутые из облака данные к работающему UI
+    try {
+      const tm = localStorage.getItem('azkar_theme'); if(typeof THEMES !== 'undefined' && THEMES.includes(tm)) themeMode = tm;
+      applyTheme();
+      arFont = localStorage.getItem('azkar_font') || arFont; applyFont();
+      const sz = localStorage.getItem('azkar_arsize');
+      if(sz){ document.documentElement.style.setProperty('--ar-size', sz + 'px');
+        const ai = document.getElementById('arSize'); if(ai) ai.value = sz;
+        const av = document.getElementById('arSizeVal'); if(av) av.textContent = sz; }
+      showTranslit = savedBool('azkar_show_translit', true); showTranslate = savedBool('azkar_show_translate', true);
+      applyTextToggles(); applyTextToggleSwitches();
+      madhab = localStorage.getItem('azkar_madhab') || madhab; renderMadhab();
+      PROG = loadProgress(); updateStreakUI(); updateHomeProgress();
+      const scr = document.querySelector('.screen.active');
+      if(CURRENT_KEY && scr && scr.id === 'reading') openReading(CURRENT_KEY);
+    } catch(e){}
+  }
+  function cloudInit(){ if(!CS_OK) return; cloudPull((changed) => { seedLocalToCloud(); if(changed) applyPulledState(); }); }
+
   // safe-area: чёлка устройства + собственные кнопки Telegram сверху (по образцу EasyBot)
   function applySafeArea(){
     if(!TG) return;
@@ -2721,4 +2800,5 @@
   })();
 
   applyTheme();
+  cloudInit();   // подтянуть прогресс/порядок/настройки из TG CloudStorage (если новее) + засеять облако
 </script>
