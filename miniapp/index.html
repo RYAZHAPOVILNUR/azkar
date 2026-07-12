@@ -481,6 +481,11 @@
   .modal .m-grade { display:inline-block; font-size:12.5px; font-weight:700; padding:3px 10px; border-radius:99px;
     background:color-mix(in srgb,var(--good) 14%,transparent); color:var(--good); border:1px solid color-mix(in srgb,var(--good) 35%,transparent); }
   .modal .m-note { font-size:13px; color:var(--ink-faint); font-style:italic; margin-top:18px; line-height:1.5; }
+  .modal .m-share { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; margin-top:16px; padding:13px;
+    border-radius:14px; border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent-deep);
+    font:inherit; font-size:15px; font-weight:700; cursor:pointer; transition:transform .12s; -webkit-tap-highlight-color:transparent; }
+  .modal .m-share:active { transform:scale(.98); }
+  .modal .m-share svg { width:19px; height:19px; flex:0 0 auto; }
   .modal .m-play { display:inline-flex; align-items:center; gap:8px; margin-top:8px; padding:10px 16px; border-radius:12px;
     border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent-deep); font-weight:700; font-size:14.5px; cursor:pointer; }
   .modal .m-actions { display:flex; gap:10px; margin-top:18px; }
@@ -857,6 +862,7 @@
       <div class="m-sec" id="miRefsSec"><div class="m-lbl">Оригиналы и шархи</div><div class="m-refs" id="miRefs"></div></div>
       <div class="m-sec" id="miFadlSec" style="display:none"><div class="m-lbl">Достоинство (фадль)</div><div class="m-txt" id="miFadl"></div></div>
       <div class="m-note">Шарх — авторское пояснение по смыслу зикра с опорой на книги учёных; это не дословная цитата из переводов.</div>
+      <button type="button" class="m-share" id="miShare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Поделиться картинкой</button>
     </div>
   </div>
 
@@ -2448,6 +2454,78 @@
     document.getElementById('miSharh').textContent = modalSharhMode === 'deep' ? richSharhFor(modalZ) : sharhFor(modalZ);
     document.querySelectorAll('#miSharhTabs button').forEach(b=> b.classList.toggle('on', b.dataset.sharhMode === modalSharhMode));
   }
+  /* ---------- поделиться зикром красивой картинкой ---------- */
+  function roundRectPath(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function wrapCanvasLines(ctx, text, maxW){
+    const words = String(text||'').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
+    const lines=[]; let line='';
+    for(const w of words){ const test = line ? line+' '+w : w; if(line && ctx.measureText(test).width > maxW){ lines.push(line); line=w; } else line=test; }
+    if(line) lines.push(line); return lines.length ? lines : [''];
+  }
+  async function shareZikrImage(z){
+    if(!z) return;
+    const btn = document.getElementById('miShare');
+    try {
+      if(btn) btn.disabled = true; tgHaptic('light');
+      const arF = (typeof arFont !== 'undefined' && arFont) ? arFont : 'AzkarNaskh';
+      try { await document.fonts.load('64px "'+arF+'"', z.ar||''); } catch(e){}
+      const dark = (typeof effectiveDark === 'function') && effectiveDark();
+      const col = dark
+        ? { bg:'#14140F', card:'#1B1B14', line:'#322F27', ink:'#ECE8DB', soft:'#A49E8C', faint:'#766F5E', accent:'#ABAF95' }
+        : { bg:'#F3F1E8', card:'#FBFAF6', line:'#E5E0D4', ink:'#23231E', soft:'#66614F', faint:'#97907F', accent:'#56594B' };
+      const SANS = '-apple-system,"Segoe UI",Roboto,sans-serif';
+      const W = 1080, PAD = 104, contentW = W - PAD*2;
+      const AR_LH = 104, TL_LH = 50, TR_LH = 56;
+      // измеряем строки
+      const mc = document.createElement('canvas'), mx = mc.getContext('2d');
+      mx.font = '64px "'+arF+'"'; const arLines = wrapCanvasLines(mx, z.ar, contentW);
+      mx.font = '500 34px '+SANS;   const tlLines = wrapCanvasLines(mx, z.tl, contentW);
+      mx.font = '36px Georgia,serif'; const trLines = wrapCanvasLines(mx, z.tr, contentW);
+      // раскладка (dry-run считает высоту, потом рисуем тем же порядком)
+      function layout(ctx, draw){
+        let y = 150;
+        if(draw){ ctx.textAlign='center'; ctx.fillStyle=col.accent; ctx.font='700 30px '+SANS; ctx.fillText('АЗКАР', W/2, y); }
+        y += 96;
+        if(draw){ ctx.fillStyle=col.ink; ctx.font='64px "'+arF+'"'; ctx.direction='rtl'; }
+        arLines.forEach(l=>{ if(draw) ctx.fillText(l, W/2, y); y += AR_LH; });
+        if(draw) ctx.direction='ltr';
+        y += 14;
+        if(draw){ ctx.fillStyle=col.soft; ctx.font='500 34px '+SANS; }
+        tlLines.forEach(l=>{ if(draw) ctx.fillText(l, W/2, y); y += TL_LH; });
+        y += 30;
+        if(draw){ ctx.strokeStyle=col.line; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W/2-110, y); ctx.lineTo(W/2+110, y); ctx.stroke(); }
+        y += 46;
+        if(draw){ ctx.fillStyle=col.soft; ctx.font='36px Georgia,serif'; }
+        trLines.forEach(l=>{ if(draw) ctx.fillText(l, W/2, y); y += TR_LH; });
+        y += 34;
+        if(draw){ ctx.fillStyle=col.faint; ctx.font='500 27px '+SANS; ctx.fillText(z.src||'', W/2, y); }
+        y += 54;
+        return y;
+      }
+      const contentBottom = layout(mx, false);
+      const H = Math.max(1080, Math.round(contentBottom + 96));
+      const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const ctx = cv.getContext('2d');
+      ctx.fillStyle = col.bg; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle = col.card; roundRectPath(ctx,34,34,W-68,H-68,44); ctx.fill();
+      ctx.strokeStyle = col.line; ctx.lineWidth = 2; roundRectPath(ctx,34,34,W-68,H-68,44); ctx.stroke();
+      layout(ctx, true);
+      ctx.textAlign='center'; ctx.fillStyle = col.faint; ctx.font = '600 26px '+SANS;
+      ctx.fillText('azkar.nurtech.dev', W/2, H-64);
+      const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+      if(!blob) throw new Error('no blob');
+      const file = new File([blob], 'azkar-zikr.png', { type:'image/png' });
+      if(navigator.canShare && navigator.canShare({ files:[file] })){
+        try { await navigator.share({ files:[file], title:'Азкар' }); } catch(e){}   // отмена — ок
+      } else {
+        const url = URL.createObjectURL(blob); const a = document.createElement('a');
+        a.href = url; a.download = 'azkar-zikr.png'; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=> URL.revokeObjectURL(url), 5000);
+      }
+    } catch(e){ /* тихо */ }
+    finally { if(btn) btn.disabled = false; }
+  }
+  (function(){ const b = document.getElementById('miShare'); if(b) b.addEventListener('click', ()=> shareZikrImage(modalZ)); })();
+
   function openInfo(z){
     modalZ = z; modalOpen = true;
     modalSharhMode = 'brief';
