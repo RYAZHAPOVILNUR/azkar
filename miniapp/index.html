@@ -723,6 +723,7 @@
   .q-play-btn { display:inline-flex; align-items:center; justify-content:center; gap:5px; margin:11px 8px 0 0; padding:6px 12px; border-radius:999px;
     border:1px solid var(--line); background:var(--surface); color:var(--accent-deep); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s; }
   .q-play-btn:active { transform:scale(.96); background:var(--surface-2); }
+  .q-play-btn.on { background:var(--accent-soft); color:var(--accent-deep); border-color:color-mix(in srgb, var(--accent) 30%, transparent); }
   .q-mem-btn { display:inline-flex; align-items:center; justify-content:center; gap:5px; margin:11px 8px 0 0; padding:6px 12px; border-radius:999px;
     border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s, background .15s, color .15s; }
   .q-mem-btn:active { transform:scale(.96); }
@@ -1281,8 +1282,8 @@
   <div class="radio-widget" id="radioWidget" hidden>
     <button type="button" class="rw-play" id="rwPlay" onclick="toggleRadio()" aria-label="Играть/пауза"><svg id="rwIc" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
     <div class="rw-mid">
-      <div class="rw-t"><span class="rw-live" id="rwLive">● LIVE</span> Бейт Магрифа</div>
-      <div class="rw-s" id="rwSub">прямой эфир · лекции</div>
+      <div class="rw-t"><span class="rw-live" id="rwLive">● LIVE</span> Эфир</div>
+      <div class="rw-s" id="rwSub">прямой эфир</div>
     </div>
     <button type="button" class="rw-x" onclick="stopRadio()" aria-label="Выключить"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
@@ -4299,7 +4300,7 @@ https://azkar.nurtech.dev/app`);
           + '<div class="q-ar qcf-ar" onclick="qAyahArTap('+su.n+','+a.n+',this)" title="Открыть тафсир ас-Саади">'+wordsOf(a)+'</div>'
           + '<div class="q-tr">'+escHtml(a.ru)+'</div>'
           + '<div class="q-ayah-actions">'
-          + '<button type="button" class="q-play-btn" onclick="qPlayAyah('+su.n+','+a.n+')"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Слушать</button>'
+          + '<button type="button" class="q-play-btn" onclick="qAyahToggle('+su.n+','+a.n+',this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Слушать</button>'
           + '<button type="button" class="q-mem-btn'+(mem?' on':'')+'" onclick="qToggleMem('+su.n+','+a.n+',this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'+(mem?'Заучен':'Заучил')+'</button>'
           + '<button type="button" class="q-tafsir-btn" onclick="openTafsir('+su.n+','+a.n+')">'+TAFSIR_ICON+'Тафсир</button>'
           + '</div></div>';
@@ -4366,8 +4367,20 @@ https://azkar.nurtech.dev/app`);
     const ic=document.getElementById('qpPlayIc'); if(ic) ic.innerHTML=(el && !el.paused && el.currentSrc) ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
     const t=document.getElementById('qpTtl'); if(t && QA_CUR) t.textContent=suraNameRu(QA_CUR.s)+' · аят '+QA_CUR.a;
     const r=(QRECITERS.find(function(x){return x.id===QAUDIO.reciter;})||{}); const sub=document.getElementById('qpSub'); if(sub) sub.textContent=(r.short||'')+(QAUDIO.repeat?' · повтор':(QAUDIO.auto?' · авто':''));
-    const rep=document.getElementById('qpRep'); if(rep) rep.classList.toggle('on', QAUDIO.repeat); }
+    const rep=document.getElementById('qpRep'); if(rep) rep.classList.toggle('on', QAUDIO.repeat);
+    qAyahBtnsReset(); if(QA_CUR){ const b=qAyahPlayBtn(QA_CUR.a); if(b) qAyahBtnState(b, (el && !el.paused && el.currentSrc)?'pause':'resume'); } }
   function qAudioToggle(){ const el=qaEl(); if(!el) return; if(!QA_CUR||!el.currentSrc){ qPlayAyah(QURAN.curN||1, qCurrentAyah()||1); return; } if(el.paused) el.play().catch(function(){}); else el.pause(); qAudioUpdateUI(); }
+  // кнопка «Слушать» на аяте работает как play/пауза для этого же аята (понятнее, чем плавающий плеер)
+  function qAyahPlayBtn(a){ return document.querySelector('#qrAyahs .q-ayah[data-a="'+a+'"] .q-play-btn, #qrAyahs .qcf-ayah[data-a="'+a+'"] .q-play-btn'); }
+  function qAyahBtnState(btn, st){ if(!btn) return;
+    const ic = st==='pause' ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>'
+                            : '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+    btn.innerHTML = ic + (st==='pause'?'Пауза':(st==='resume'?'Продолжить':'Слушать'));
+    btn.classList.toggle('on', st==='pause'||st==='resume'); }
+  function qAyahBtnsReset(){ document.querySelectorAll('#qrAyahs .q-play-btn.on').forEach(function(b){ qAyahBtnState(b,'play'); }); }
+  function qAyahToggle(s,a,btn){ const el=qaEl(); if(!el) return;
+    if(QA_CUR && QA_CUR.s===s && QA_CUR.a===a && el.currentSrc){ if(el.paused) el.play().catch(function(){}); else el.pause(); qAudioUpdateUI(); return; }
+    qPlayAyah(s,a); }
   function qSuraCountN(n){ const su=(QURAN.index||[]).find(function(x){ return x.n===n; }); return su?su.c:0; }
   function qAudioStep(d){ if(!QA_CUR) return; let s=QA_CUR.s, a=QA_CUR.a+d; const cnt=qSuraCountN(s);
     if(cnt && a>cnt){ if(s>=114) return; s++; a=1;
@@ -4381,7 +4394,7 @@ https://azkar.nurtech.dev/app`);
     let s=QA_CUR.s, a=QA_CUR.a+1; const cnt=qSuraCountN(s);
     if(cnt && a>cnt){ if(s>=114){ qAudioStop(); return; } s++; a=1; if(QPREFS.mode!=='page'){ qOpenSura(s,1); setTimeout(function(){ qPlayAyah(s,1); }, 400); return; } }
     qPlayAyah(s,a); }
-  function qAudioStop(){ const el=qaEl(); if(el){ el.pause(); el.removeAttribute('src'); try{ el.load(); }catch(e){} } QA_CUR=null; const pl=document.getElementById('qPlayer'); if(pl) pl.hidden=true; qClearHighlight(); }
+  function qAudioStop(){ const el=qaEl(); if(el){ el.pause(); el.removeAttribute('src'); try{ el.load(); }catch(e){} } QA_CUR=null; const pl=document.getElementById('qPlayer'); if(pl) pl.hidden=true; qClearHighlight(); qAyahBtnsReset(); }
   function qAudioToggleRepeat(){ QAUDIO.repeat=!QAUDIO.repeat; qAudioSave(); qAudioUpdateUI(); tgHaptic('light'); }
   function setReciter(id){ if(!QRECITERS.some(function(r){return r.id===id;})) return; QAUDIO.reciter=id; qAudioSave(); if(QA_CUR) qPlayAyah(QA_CUR.s, QA_CUR.a); qAudioUpdateUI(); tgHaptic('light'); if(QTAF.settings) renderReaderSettings(); }
   function qHighlightAyah(a){ qClearHighlight(); const el=document.querySelector('#qrAyahs .q-ayah[data-a="'+a+'"], #qrAyahs .qcf-ayah[data-a="'+a+'"]'); if(el){ el.classList.add('q-playing'); try{ el.scrollIntoView({ block:'center', behavior:'smooth' }); }catch(e){} } }
@@ -4755,14 +4768,14 @@ https://azkar.nurtech.dev/app`);
     window.addEventListener('orientationchange', refit, { passive:true });
   })();
 
-  // ---- радио: прямой эфир «Бейт Магрифа» (серверный аудио-прокси) ----
+  // ---- радио: прямой эфир (серверный аудио-прокси, источник настраивается на сервере) ----
   let RADIO_ON=false, RADIO_LOADING=false;
   function radioEl(){ return document.getElementById('radioEl'); }
   function radioUI(){ const w=document.getElementById('radioWidget'), btn=document.getElementById('radioBtn'), el=radioEl();
     const playing = RADIO_ON && el && !el.paused && el.currentSrc;
     if(w) w.hidden=!RADIO_ON; if(btn) btn.classList.toggle('on', RADIO_ON);
     const ic=document.getElementById('rwIc'); if(ic) ic.innerHTML = RADIO_LOADING ? '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="38" stroke-dashoffset="10"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.9s" repeatCount="indefinite"/></circle>' : (playing ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>');
-    const sub=document.getElementById('rwSub'); if(sub) sub.textContent = RADIO_LOADING ? 'подключение к эфиру…' : (playing ? 'прямой эфир · лекции' : 'на паузе');
+    const sub=document.getElementById('rwSub'); if(sub) sub.textContent = RADIO_LOADING ? 'подключение к эфиру…' : (playing ? 'прямой эфир' : 'на паузе');
     const live=document.getElementById('rwLive'); if(live) live.style.opacity = playing?'1':'.35'; }
   function toggleRadio(){ const el=radioEl(); if(!el) return; if(!RADIO_ON){ startRadio(); return; } if(el.paused) el.play().catch(function(){}); else el.pause(); radioUI(); }
   function startRadio(){ const el=radioEl(); if(!el) return; if(typeof qAudioStop==='function') qAudioStop(); RADIO_ON=true; RADIO_LOADING=true; radioUI();
