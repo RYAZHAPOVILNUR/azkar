@@ -1,5 +1,8 @@
 FROM node:20-alpine
 
+# ffmpeg + yt-dlp для радио-прокси (аудио из YouTube-лайва)
+RUN apk add --no-cache ffmpeg yt-dlp
+
 WORKDIR /app
 
 # зависимости бота (кэшируемый слой)

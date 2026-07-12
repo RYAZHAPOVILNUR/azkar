@@ -16,6 +16,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const cron = require('node-cron');
+const { spawn } = require('child_process');
 
 // adhan v4 — ESM-only, грузим динамическим import (server.js — CommonJS)
 let adhan = null;
@@ -247,6 +248,84 @@ app.post('/api/reminders', (req, res) => {
   res.json({ ok: true, remindersEnabled: next.remindersEnabled });
 });
 
+// прогресс заучивания/чтения Корана — чтобы бот мог напоминать о повторениях
+app.post('/api/hifz', (req, res) => {
+  const { initData, khatm, read, mem, srs, totAy, totSec, tz } = req.body || {};
+  const user = checkInitData(initData);
+  if (!user || !user.id) return res.status(401).json({ error: 'bad initData' });
+  const subs = loadSubs();
+  const prev = subs[user.id] || {};
+  const next = { ...prev, id: user.id, name: user.first_name || prev.name || '', since: prev.since || Date.now() };
+  if (validTimeZone(tz)) next.tz = next.tz || tz;
+  let srsClean = {};
+  if (srs && typeof srs === 'object') { let n = 0; for (const k in srs) { if (n++ > 300) break; const v = srs[k]; if (v && typeof v.i === 'number' && typeof v.d === 'number') srsClean[k] = { i: v.i | 0, d: v.d | 0 }; } }
+  next.hifz = {
+    khatm: Number(khatm) || 0,
+    read: (typeof read === 'string' && read.length < 4000) ? read : (prev.hifz && prev.hifz.read) || '',
+    mem: (typeof mem === 'string' && mem.length < 4000) ? mem : (prev.hifz && prev.hifz.mem) || '',
+    srs: srsClean,
+    totAy: Number(totAy) || 0,
+    totSec: Number(totSec) || 0,
+    updated: Date.now(),
+  };
+  subs[user.id] = next;
+  saveSubs(subs);
+  res.json({ ok: true });
+});
+
+// ---------- радио: аудио из YouTube-лайва (один общий ffmpeg раздаёт mp3 всем) ----------
+const RADIO_URL = process.env.RADIO_URL || 'https://www.youtube.com/@bmagrifa/live';
+const radio = { proc: null, clients: new Set(), tail: [], starting: false, idleTimer: null };
+function radioResolve() {
+  return new Promise((resolve, reject) => {
+    const yt = spawn('yt-dlp', ['-f', 'bestaudio/best', '-g', '--no-warnings', '--no-playlist', RADIO_URL]);
+    let out = '', err = '';
+    yt.stdout.on('data', (d) => (out += d));
+    yt.stderr.on('data', (d) => (err += d));
+    yt.on('error', reject);
+    const to = setTimeout(() => { try { yt.kill('SIGKILL'); } catch {} reject(new Error('yt-dlp timeout')); }, 25000);
+    yt.on('close', (code) => { clearTimeout(to); const url = out.trim().split('\n')[0]; if (code === 0 && url) resolve(url); else reject(new Error('yt-dlp ' + code + ': ' + err.slice(0, 160))); });
+  });
+}
+async function radioStart() {
+  if (radio.proc || radio.starting) return;
+  radio.starting = true;
+  try {
+    const url = await radioResolve();
+    const ff = spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '5', '-i', url, '-vn', '-c:a', 'libmp3lame', '-b:a', '64k', '-f', 'mp3', 'pipe:1']);
+    radio.proc = ff;
+    ff.stdout.on('data', (chunk) => {
+      radio.tail.push(chunk);
+      let total = radio.tail.reduce((s, c) => s + c.length, 0);
+      while (total > 96 * 1024 && radio.tail.length > 1) total -= radio.tail.shift().length;
+      for (const res of radio.clients) { try { res.write(chunk); } catch {} }
+    });
+    ff.stderr.on('data', () => {});
+    ff.on('close', () => { radio.proc = null; radio.tail = []; if (radio.clients.size) setTimeout(() => radioStart(), 1500); });
+    ff.on('error', () => { radio.proc = null; radio.tail = []; });
+  } catch (e) {
+    console.warn('[radio] не удалось запустить эфир:', e.message);
+    radio.proc = null; radio.tail = [];
+    for (const res of radio.clients) { try { res.end(); } catch {} }
+    radio.clients.clear();
+  } finally { radio.starting = false; }
+}
+function radioStopIfIdle() {
+  if (radio.idleTimer) clearTimeout(radio.idleTimer);
+  radio.idleTimer = setTimeout(() => {
+    if (radio.clients.size === 0 && radio.proc) { try { radio.proc.kill('SIGKILL'); } catch {} radio.proc = null; radio.tail = []; }
+  }, 20000);
+}
+app.get('/api/radio/stream', (req, res) => {
+  if (radio.clients.size >= 30) return res.status(503).end('busy');
+  res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-cache, no-store', 'Access-Control-Allow-Origin': '*' });
+  radio.clients.add(res);
+  for (const c of radio.tail) { try { res.write(c); } catch {} }
+  radioStart();
+  req.on('close', () => { radio.clients.delete(res); radioStopIfIdle(); });
+});
+app.get('/api/radio/status', (_req, res) => res.json({ live: !!radio.proc, listeners: radio.clients.size }));
+
 // Mini App живёт под /app, лендинг — на корне. API и health объявлены выше.
 app.use('/app', express.static(path.join(__dirname, '..', 'miniapp'), { extensions: ['html'], index: 'index.html' }));
 app.use('/', express.static(path.join(__dirname, '..', 'landing'), { extensions: ['html'], index: 'index.html' }));
@@ -318,6 +397,10 @@ if (!TOKEN) {
   function localDay(d, tz) { return d.toLocaleDateString('sv-SE', { timeZone: tz || TZ }); }   // YYYY-MM-DD в зоне пользователя
   function cronToHM(expr) { const p = String(expr).trim().split(/\s+/); const h = +p[1], m = +p[0]; return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'); }
   const FIXED = { morning: cronToHM(MORNING_CRON), evening: cronToHM(EVENING_CRON), sleep: cronToHM(SLEEP_CRON) };
+  const HIFZ_HM = process.env.HIFZ_TIME || '09:00';   // время напоминания о повторении (в зоне пользователя)
+  function popcountB64(b64) { try { const bin = Buffer.from(b64 || '', 'base64'); let c = 0; for (let i = 0; i < bin.length; i++) { let b = bin[i]; while (b) { c += b & 1; b >>= 1; } } return c; } catch { return 0; } }
+  function pluralN(n, a, b, c) { n = Math.abs(n); const d = n % 100, e = n % 10; if (d > 10 && d < 20) return c; if (e > 1 && e < 5) return b; if (e === 1) return a; return c; }
+  function weekdayInTz(now, tz) { try { return new Date(now.toLocaleString('en-US', { timeZone: tz || TZ })).getDay(); } catch { return now.getDay(); } }
 
   // единый поминутный тик: КАЖДОМУ в ЕГО таймзоне (u.tz), дедуп по локальному дню пользователя
   cron.schedule('* * * * *', () => {
@@ -348,6 +431,21 @@ if (!TOKEN) {
       }
       // перед сном — всем, в их зоне
       if (nowHM === FIXED.sleep && u.lastSleep !== day) { u.lastSleep = day; changed = true; send(id, SLEEP_MSG); }
+      // хифз: напоминание о повторении заученного + недельный дайджест (в зоне пользователя)
+      if (u.hifz && nowHM === HIFZ_HM && u.lastHifz !== day) {
+        const today = Math.floor(Date.now() / 86400000);
+        const srs = u.hifz.srs || {}; let due = 0;
+        for (const s in srs) { if (srs[s] && srs[s].d <= today) due++; }
+        if (due > 0) {
+          u.lastHifz = day; changed = true;
+          send(id, `📖 Пора повторить заученное: ${due} ${pluralN(due, 'сура', 'суры', 'сур')}. Открой раздел «Прогресс» → «Повторить».`);
+        } else if (weekdayInTz(now, tz) === 6) {   // суббота — дайджест
+          u.lastHifz = day; changed = true;
+          const pctR = Math.round(popcountB64(u.hifz.read) / 6236 * 100);
+          const memC = popcountB64(u.hifz.mem);
+          send(id, `📊 Твой Коран за неделю: прочитано ${pctR}%, заучено ${memC} ${pluralN(memC, 'аят', 'аята', 'аятов')}, хатмов ${u.hifz.khatm || 0}. Так держать! 🤲`);
+        }
+      }
     }
     if (changed) saveSubs(subs);
   });
