@@ -653,6 +653,12 @@
     font-size:15px; font-weight:700; color:var(--accent-deep); }
   .qp-basmala { text-align:center; font-family:'KFGQPC', var(--ar); font-size:calc(var(--qp-size,23px)*.92); color:var(--ink); margin:2px 0 8px; }
   .qp-loading { text-align:center; color:var(--ink-faint); font-size:14px; padding:40px 0; }
+  /* цветной таджвид (COLRv1) — фиксированные цвета глифов, показываем на «бумаге» и в тёмной теме */
+  .qp-page.qp-paper { background:#fcfbf6; color:#1b1b1b; border-radius:14px; padding:16px 12px 20px; box-shadow:0 1px 4px rgba(0,0,0,.1); border:1px solid #ece7d8; }
+  .qp-paper .qp-basmala { color:#1b1b1b; }
+  .qp-paper .qp-surah:before, .qp-paper .qp-surah:after { background:#dcd6c6; }
+  .qp-paper .qp-surah span { color:#575a48; border-color:#dcd6c6; }
+  .qp-paper .qp-w:active { color:#8a6d1e; }
 
   /* нижняя навигация страниц + шапка джуза */
   .qr-sub-nav { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12px; color:var(--ink-faint); margin-top:6px; }
@@ -4051,14 +4057,17 @@ https://azkar.nurtech.dev/app`);
   function qBackToList(){ qClockStop(); if(QURAN.io){ QURAN.io.disconnect(); QURAN.io=null; } back({visual:true}); }
 
   // ---- режим Страница: точная раскладка мусхафа (пофайловые шрифты QCF) ----
-  const QCF_CDN='https://static.qurancdn.com/fonts/quran/hafs/v2/woff2/';
+  const QCF_CDN='https://static.qurancdn.com/fonts/quran/hafs/v2/woff2/';           // обычный мединский пофайловый
+  const QCF_TAJ_CDN='https://verses.quran.foundation/fonts/quran/hafs/v4/colrv1/woff2/'; // тот же шрифт с ВШИТЫМ цветным таджвидом (COLRv1)
   const BASMALA='بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ';
   function qLoadPagesMeta(){ if(QURAN.pmeta) return Promise.resolve(QURAN.pmeta); return qFetchJSON('assets/quran/pages/meta.json').then(function(m){ QURAN.pmeta=m; return m; }); }
   function qLoadPage(n){ if(QURAN.pcache[n]) return Promise.resolve(QURAN.pcache[n]); return qFetchJSON('assets/quran/pages/'+n+'.json').then(function(d){ QURAN.pcache[n]=d; return d; }); }
-  function qLoadPageFont(n){ const fam='QCFP'+n; if(QURAN.pfonts[n]) return QURAN.pfonts[n];
-    const st=document.createElement('style'); st.textContent='@font-face{font-family:"'+fam+'";src:url("'+QCF_CDN+'p'+n+'.woff2") format("woff2");font-display:swap}'; document.head.appendChild(st);
+  function qLoadPageFont(n){ const taj=!!QPREFS.tj; const fam=(taj?'QCFT':'QCFP')+n;
+    if(QURAN.pfonts[fam]) return QURAN.pfonts[fam];
+    const url=(taj?QCF_TAJ_CDN:QCF_CDN)+'p'+n+'.woff2';
+    const st=document.createElement('style'); st.textContent='@font-face{font-family:"'+fam+'";src:url("'+url+'") format("woff2");font-display:swap}'; document.head.appendChild(st);
     const p=(window.FontFace&&document.fonts&&document.fonts.load)? document.fonts.load('30px "'+fam+'"').then(function(){ return fam; }).catch(function(){ return fam; }) : Promise.resolve(fam);
-    QURAN.pfonts[n]=p; return p; }
+    QURAN.pfonts[fam]=p; return p; }
   function pageSuraStartPage(s){ const m=QURAN.pmeta; return (m&&m.suraStart&&m.suraStart[s])||1; }
   function tafsirFromKey(vk){ const p=String(vk).split(':'); openTafsir(parseInt(p[0],10), parseInt(p[1],10)); }
   function suraNameRu(n){ const su=(QURAN.index||[]).find(function(x){ return x.n===n; }); return su?su.nr:('Сура '+n); }
@@ -4107,7 +4116,7 @@ https://azkar.nurtech.dev/app`);
       const a0 = l.w.length ? l.w[0].k.split(':')[1] : '';
       html += '<div class="qp-line'+(center?' center':'')+'" data-a="'+a0+'">'+ws+'</div>';
     }
-    wrap.innerHTML='<div class="qp-page">'+html+'</div>';
+    wrap.innerHTML='<div class="qp-page'+(QPREFS.tj?' qp-paper':'')+'">'+html+'</div>';
     // шапка
     document.getElementById('qrTitle').textContent = suraNameRu(firstSura);
     document.getElementById('qrSub').textContent = 'Джуз '+(data.j||'')+' · страница '+data.p;
@@ -4151,7 +4160,7 @@ https://azkar.nurtech.dev/app`);
   function qTitleTap(){ if(QPREFS.mode==='page') openPagePicker(); else openQuran(); }
 
   function qToggleTr(){ QPREFS.tr=!QPREFS.tr; qSavePrefs(); tgHaptic('light'); qRerender(); if(QTAF.settings) renderReaderSettings(); }
-  function qToggleTj(){ QPREFS.tj=!QPREFS.tj; qSavePrefs(); tgHaptic('light'); qRerender(); if(QTAF.settings) renderReaderSettings(); }
+  function qToggleTj(){ QPREFS.tj=!QPREFS.tj; qSavePrefs(); tgHaptic('light'); if(QPREFS.mode==='page') qOpenPage(QURAN.curPage); else qRerender(); if(QTAF.settings) renderReaderSettings(); }
   function setReaderFontSize(d){ QPREFS.fs=Math.max(22,Math.min(50,QPREFS.fs+2*d)); qSavePrefs();
     const w=document.getElementById('qrAyahs'); if(w) w.style.setProperty('--q-ar-size', QPREFS.fs+'px');
     const v=document.getElementById('rsSizeVal'); if(v) v.textContent=QPREFS.fs; tgHaptic('light'); }
@@ -4178,7 +4187,9 @@ https://azkar.nurtech.dev/app`);
     let html='';
     html += '<div class="rs-lbl">Режим чтения</div><div class="rs-modes rs-modes-3">'+mode('page','Страница',P_ICON,'мусхаф Медины')+mode('mushaf','Сура',M_ICON,'сплошным текстом')+mode('reading','Чтение',R_ICON,'с переводом')+'</div>';
     if(isPage){
-      html += '<div class="rs-note-k">Точная постраничная раскладка мусхафа Медины (KFGQPC) — 604 страницы, как в печатном издании. Тап по названию сверху — переход по джузам и сурам. Тап по аяту — тафсир.</div>';
+      html += '<div class="rs-lbl">Оформление</div>';
+      html += '<button type="button" class="rs-row" onclick="qToggleTj()"><span>Таджвид — цвета правил</span>'+sw(QPREFS.tj)+'</button>';
+      html += '<div class="rs-note-k">Точная постраничная раскладка мусхафа Медины — 604 страницы, как в печати. С таджвидом это <b>тот же мединский шрифт</b>, но с вшитыми цветами правил. Тап по названию — переход по джузам/сурам, тап по аяту — тафсир.</div>';
     } else {
       html += '<div class="rs-lbl">Шрифт</div><div class="rs-fonts">'+Q_FONTS.map(font).join('')+'</div>';
       html += '<div class="rs-lbl">Размер</div><div class="rs-size"><button type="button" onclick="setReaderFontSize(-1)" aria-label="Меньше">A−</button><span class="rs-size-val" id="rsSizeVal">'+QPREFS.fs+'</span><button type="button" onclick="setReaderFontSize(1)" aria-label="Больше">A+</button></div>';
