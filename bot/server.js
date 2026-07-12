@@ -67,6 +67,68 @@ function validTimeZone(tz) {
   try { new Intl.DateTimeFormat('ru-RU', { timeZone: tz }).format(new Date()); return true; }
   catch { return false; }
 }
+const TZ_APPROX_COORDS = {
+  'Asia/Bishkek': { lat: 42.8746, lng: 74.5698, name: 'Бишкек' },
+  'Asia/Almaty': { lat: 43.2389, lng: 76.8897, name: 'Алматы' },
+  'Asia/Aqtau': { lat: 43.6532, lng: 51.1975, name: 'Актау' },
+  'Asia/Aqtobe': { lat: 50.2839, lng: 57.1670, name: 'Актобе' },
+  'Asia/Atyrau': { lat: 47.0945, lng: 51.9238, name: 'Атырау' },
+  'Asia/Oral': { lat: 51.2278, lng: 51.3865, name: 'Уральск' },
+  'Asia/Qostanay': { lat: 53.2144, lng: 63.6246, name: 'Костанай' },
+  'Asia/Qyzylorda': { lat: 44.8488, lng: 65.4823, name: 'Кызылорда' },
+  'Asia/Tashkent': { lat: 41.2995, lng: 69.2401, name: 'Ташкент' },
+  'Asia/Samarkand': { lat: 39.6542, lng: 66.9597, name: 'Самарканд' },
+  'Asia/Dushanbe': { lat: 38.5598, lng: 68.7870, name: 'Душанбе' },
+  'Asia/Ashgabat': { lat: 37.9601, lng: 58.3261, name: 'Ашхабад' },
+  'Europe/Moscow': { lat: 55.7558, lng: 37.6173, name: 'Москва' },
+  'Europe/Minsk': { lat: 53.9006, lng: 27.5590, name: 'Минск' },
+  'Europe/Kyiv': { lat: 50.4501, lng: 30.5234, name: 'Киев' },
+  'Europe/Kiev': { lat: 50.4501, lng: 30.5234, name: 'Киев' },
+  'Europe/Istanbul': { lat: 41.0082, lng: 28.9784, name: 'Стамбул' },
+  'Asia/Yekaterinburg': { lat: 56.8389, lng: 60.6057, name: 'Екатеринбург' },
+  'Asia/Omsk': { lat: 54.9885, lng: 73.3242, name: 'Омск' },
+  'Asia/Novosibirsk': { lat: 55.0084, lng: 82.9357, name: 'Новосибирск' },
+  'Asia/Barnaul': { lat: 53.3474, lng: 83.7784, name: 'Барнаул' },
+  'Asia/Krasnoyarsk': { lat: 56.0153, lng: 92.8932, name: 'Красноярск' },
+  'Asia/Irkutsk': { lat: 52.2864, lng: 104.2807, name: 'Иркутск' },
+  'Asia/Yakutsk': { lat: 62.0355, lng: 129.6755, name: 'Якутск' },
+  'Asia/Vladivostok': { lat: 43.1155, lng: 131.8855, name: 'Владивосток' },
+  'Asia/Sakhalin': { lat: 46.9592, lng: 142.7380, name: 'Южно-Сахалинск' },
+  'Asia/Kamchatka': { lat: 53.0370, lng: 158.6559, name: 'Петропавловск-Камчатский' },
+  'Asia/Baku': { lat: 40.4093, lng: 49.8671, name: 'Баку' },
+  'Asia/Tbilisi': { lat: 41.7151, lng: 44.8271, name: 'Тбилиси' },
+  'Asia/Yerevan': { lat: 40.1872, lng: 44.5152, name: 'Ереван' },
+  'Asia/Dubai': { lat: 25.2048, lng: 55.2708, name: 'Дубай' },
+  'Asia/Riyadh': { lat: 24.7136, lng: 46.6753, name: 'Эр-Рияд' },
+  'Asia/Qatar': { lat: 25.2854, lng: 51.5310, name: 'Доха' },
+  'Asia/Kuwait': { lat: 29.3759, lng: 47.9774, name: 'Кувейт' },
+  'Asia/Bahrain': { lat: 26.2235, lng: 50.5876, name: 'Манама' },
+  'Asia/Muscat': { lat: 23.5880, lng: 58.3829, name: 'Маскат' },
+  'Asia/Tehran': { lat: 35.6892, lng: 51.3890, name: 'Тегеран' },
+  'Asia/Karachi': { lat: 24.8607, lng: 67.0011, name: 'Карачи' },
+  'Asia/Kabul': { lat: 34.5553, lng: 69.2075, name: 'Кабул' },
+  'Asia/Dhaka': { lat: 23.8103, lng: 90.4125, name: 'Дакка' },
+  'Asia/Jakarta': { lat: -6.2088, lng: 106.8456, name: 'Джакарта' },
+  'Asia/Kuala_Lumpur': { lat: 3.1390, lng: 101.6869, name: 'Куала-Лумпур' },
+  'Asia/Singapore': { lat: 1.3521, lng: 103.8198, name: 'Сингапур' },
+};
+function timezoneOffsetHours(tz, date = new Date()) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' }).formatToParts(date);
+    const name = (parts.find(p => p.type === 'timeZoneName') || {}).value || '';
+    const m = name.match(/^GMT([+-])(\d{1,2})(?::(\d{2}))?$/);
+    if (!m) return null;
+    const hours = Number(m[2]) + (Number(m[3] || 0) / 60);
+    return (m[1] === '-' ? -1 : 1) * hours;
+  } catch { return null; }
+}
+function approxCoordsForTz(tz) {
+  const exact = TZ_APPROX_COORDS[tz];
+  if (exact) return exact;
+  const offset = timezoneOffsetHours(tz);
+  if (!Number.isFinite(offset)) return null;
+  return { lat: 30, lng: Math.max(-180, Math.min(180, offset * 15)), name: 'ваша таймзона' };
+}
 
 // ---------- расчёт времён намаза ----------
 function prayerTimes(lat, lng, madhab, date) {
@@ -90,6 +152,23 @@ app.get('/api/times', (req, res) => {
   try {
     const t = prayerTimes(lat, lng, madhab, new Date());
     res.json({
+      fajr: t.fajr, sunrise: t.sunrise, dhuhr: t.dhuhr,
+      asr: t.asr, maghrib: t.maghrib, isha: t.isha,
+    });
+  } catch (e) { res.status(500).json({ error: String(e) }); }
+});
+
+// примерные времена намаза по таймзоне, если пользователь ещё не дал геолокацию
+app.get('/api/approx-times', (req, res) => {
+  const { tz, madhab } = req.query;
+  if (!validTimeZone(tz)) return res.status(400).json({ error: 'bad tz' });
+  if (!adhan) return res.status(503).json({ error: 'prayer engine warming up' });
+  const approx = approxCoordsForTz(tz);
+  if (!approx) return res.status(404).json({ error: 'approx location not found' });
+  try {
+    const t = prayerTimes(approx.lat, approx.lng, madhab, new Date());
+    res.json({
+      approx: true, city: approx.name,
       fajr: t.fajr, sunrise: t.sunrise, dhuhr: t.dhuhr,
       asr: t.asr, maghrib: t.maghrib, isha: t.isha,
     });
@@ -250,15 +329,20 @@ if (!TOKEN) {
       if (!tz) continue;
       const day = localDay(now, tz);
       const nowHM = hhmm(now, tz);
-      if (typeof u.lat === 'number') {
-        // персональные — по времени намаза (в его зоне)
-        let t; try { t = prayerTimes(u.lat, u.lng, u.madhab, now); } catch { t = null; }
-        if (t) {
-          if (hhmm(t.fajr, tz) === nowHM && u.lastMorning !== day) { u.lastMorning = day; changed = true; send(id, MORNING_MSG); }
-          if (hhmm(t.asr, tz) === nowHM && u.lastEvening !== day) { u.lastEvening = day; changed = true; send(id, EVENING_MSG); }
-        }
+      let t = null;
+      if (typeof u.lat === 'number' && typeof u.lng === 'number') {
+        // точные — по геолокации пользователя
+        try { t = prayerTimes(u.lat, u.lng, u.madhab, now); } catch { t = null; }
       } else {
-        // без геолокации — фикс. расписание в локальной зоне пользователя
+        // примерные — по основному городу таймзоны телефона
+        const approx = approxCoordsForTz(tz);
+        if (approx) { try { t = prayerTimes(approx.lat, approx.lng, u.madhab, now); } catch { t = null; } }
+      }
+      if (t) {
+        if (hhmm(t.fajr, tz) === nowHM && u.lastMorning !== day) { u.lastMorning = day; changed = true; send(id, MORNING_MSG); }
+        if (hhmm(t.asr, tz) === nowHM && u.lastEvening !== day) { u.lastEvening = day; changed = true; send(id, EVENING_MSG); }
+      } else {
+        // крайний fallback для таймзон, которых нет в карте
         if (nowHM === FIXED.morning && u.lastMorning !== day) { u.lastMorning = day; changed = true; send(id, MORNING_MSG); }
         if (nowHM === FIXED.evening && u.lastEvening !== day) { u.lastEvening = day; changed = true; send(id, EVENING_MSG); }
       }
