@@ -1,10 +1,14 @@
-FROM node:20-alpine
+# node:22 — обязателен: yt-dlp решает JS-челлендж YouTube («n challenge») только на node>=22
+# (NodeJsRuntime.MIN_SUPPORTED_VERSION=(22,0,0)); на node:20 — «No video formats found».
+FROM node:22-alpine
 
-# ffmpeg + yt-dlp (через pip, чтобы работал плагин PO-token) для радио-прокси (аудио из YouTube-лайва).
-# Плагин bgutil-ytdlp-pot-provider обходит антибот-проверку YouTube с дата-центрового IP —
-# резолвит эфир через отдельный контейнер bgutil-provider (см. ops/radio-provider).
+# ffmpeg + yt-dlp (через pip, чтобы работали плагины) для радио-прокси (аудио из YouTube-лайва).
+# Для эфира с дата-центрового IP нужны ВСЕ три:
+#  - yt-dlp-ejs — solver-скрипты JS-челленджа (n challenge), запускаются node-раннером
+#  - bgutil-ytdlp-pot-provider — PO-токен через контейнер bgutil-provider (см. ops/radio-provider)
+#  - cookies.txt в томе данных (см. server.js) — снимает антибот «Sign in to confirm you're not a bot»
 RUN apk add --no-cache ffmpeg python3 py3-pip \
- && pip3 install --no-cache-dir --break-system-packages yt-dlp "bgutil-ytdlp-pot-provider==1.3.1"
+ && pip3 install --no-cache-dir --break-system-packages yt-dlp yt-dlp-ejs "bgutil-ytdlp-pot-provider==1.3.1"
 
 WORKDIR /app
 

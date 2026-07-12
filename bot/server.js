@@ -284,7 +284,9 @@ const POT_PROVIDER_URL = ('POT_PROVIDER_URL' in process.env) ? process.env.POT_P
 const YT_COOKIES = process.env.YT_COOKIES || path.join(__dirname, 'data', 'cookies.txt');
 function radioHasCookies() { try { return !!YT_COOKIES && fs.existsSync(YT_COOKIES); } catch { return false; } }
 function ytdlpArgs() {
-  const a = ['-f', 'bestaudio/best', '-g', '--no-warnings', '--no-playlist'];
+  // --js-runtimes node: включить node как JS-раннер для решения n-challenge (deno по умолчанию,
+  // но его нет в alpine; node>=22 в образе поддерживается). yt-dlp-ejs даёт solver-скрипты.
+  const a = ['-f', 'bestaudio/best', '-g', '--no-warnings', '--no-playlist', '--js-runtimes', 'node'];
   if (radioHasCookies()) a.push('--cookies', YT_COOKIES);
   if (POT_PROVIDER_URL) a.push('--extractor-args', 'youtubepot-bgutilhttp:base_url=' + POT_PROVIDER_URL);
   a.push(RADIO_URL);
