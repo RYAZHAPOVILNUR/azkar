@@ -488,6 +488,7 @@
     font:inherit; font-size:15px; font-weight:700; cursor:pointer; transition:transform .12s; -webkit-tap-highlight-color:transparent; }
   .modal .m-share:active { transform:scale(.98); }
   .modal .m-share svg { width:19px; height:19px; flex:0 0 auto; }
+  #transReader { z-index:50; }   /* ридер перевода поверх модалки инфо */
   .modal .m-play { display:inline-flex; align-items:center; gap:8px; margin-top:8px; padding:10px 16px; border-radius:12px;
     border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent-deep); font-weight:700; font-size:14.5px; cursor:pointer; }
   .modal .m-actions { display:flex; gap:10px; margin-top:18px; }
@@ -864,7 +865,23 @@
       <div class="m-sec" id="miSharhSec"><div class="m-lbl">Перевод смысла</div><div class="m-sharh-tabs" id="miSharhTabs"><button type="button" data-sharh-mode="brief">Кратко</button><button type="button" data-sharh-mode="deep">Подробно</button></div><div class="m-txt sharh" id="miSharh"></div><div class="m-note" id="miSharhSrc"></div></div>
       <div class="m-sec" id="miRefsSec"><div class="m-lbl">Открыть источники и шархи</div><div class="m-refs" id="miRefs"></div></div>
       <div class="m-sec" id="miFadlSec" style="display:none"><div class="m-lbl">Достоинство (фадль)</div><div class="m-txt" id="miFadl"></div></div>
-      <div class="m-note">Внутри приложения показываются только вручную сверенные переводы шархов. Если перевода ещё нет, откройте оригинальные источники и шархи по ссылкам выше.</div>
+      <div class="m-note">По каждой ссылке — русский перевод смысла (нейросеть) для тех, кто не читает по-арабски; арабский оригинал открывается внутри.</div>
+    </div>
+  </div>
+
+  <!-- ридер: нейросетевой перевод смысла источника + арабский оригинал -->
+  <div class="modal" id="transReader">
+    <div class="scrim" id="trScrim"></div>
+    <div class="sheet">
+      <div class="grip"></div>
+      <div class="m-head">
+        <div class="m-title" id="trTitle" style="flex:1">Перевод смысла</div>
+        <button class="m-close" id="trClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="m-lbl" id="trSrcLabel" style="margin-bottom:10px"></div>
+      <div class="m-txt sharh" id="trBody"></div>
+      <div class="m-note">Нейросетевой перевод смысла — для тех, кто не читает по-арабски. Это не дословная цитата учёного; арабский оригинал открывается кнопкой ниже.</div>
+      <a class="m-share" id="trOrig" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14L21 3"/></svg>Открыть арабский оригинал</a>
     </div>
   </div>
 
@@ -1683,13 +1700,13 @@
   }
 
   const SHARH_BASE_REFS = [
-    { kind:'книга', label:'فقه الأدعية والأذكار — عبد الرزاق البدر', url:'https://www.al-badr.net/ebook/18' },
-    { kind:'раздел', label:'الأذكار والأدعية — موقع الشيخ عبد الرزاق البدر', url:'https://www.al-badr.net/category/238' },
-    { kind:'шарх', label:'شرح الكلم الطيب — عبد الرزاق البدر', url:'https://www.al-badr.net/sub/64' },
-    { kind:'книга', label:'صحيح الكلم الطيب — عبد الرزاق البدر', url:'https://www.al-badr.net/sub/78' },
-    { kind:'шарх', label:'الوابل الصيب — عبد الرزاق البدر', url:'https://www.al-badr.net/sub/371' },
-    { kind:'книга', label:'تحفة الأخيار — ابن باز', url:'https://binbaz.org.sa/books/120/%D8%AA%D8%AD%D9%81%D8%A9-%D8%A7%D9%84%D8%A7%D8%AE%D9%8A%D8%A7%D8%B1' },
-    { kind:'шарх', label:'معاني الأذكار — خالد السبت', url:'https://khaledalsabt.com/explanations/book/222/%D9%85%D8%B9%D8%A7%D9%86%D9%8A-%D8%A7%D9%84%D8%A7%D8%B0%D9%83%D8%A7%D8%B1---%D8%AD%D8%B5%D9%86-%D8%A7%D9%84%D9%85%D8%B3%D9%84%D9%85' }
+    { kind:'книга', label:'«Фикх дуа и азкаров» — Абдурраззак аль-Бадр', url:'https://www.al-badr.net/ebook/18' },
+    { kind:'раздел', label:'Азкары и дуа — сайт шейха аль-Бадра', url:'https://www.al-badr.net/category/238' },
+    { kind:'шарх', label:'Шарх «аль-Калим ат-таййиб» — аль-Бадр', url:'https://www.al-badr.net/sub/64' },
+    { kind:'книга', label:'«Сахих аль-Калим ат-таййиб» — аль-Бадр', url:'https://www.al-badr.net/sub/78' },
+    { kind:'шарх', label:'«аль-Вабиль ас-саййиб» — аль-Бадр', url:'https://www.al-badr.net/sub/371' },
+    { kind:'книга', label:'«Тухфат аль-ахйар» — Ибн Баз', url:'https://binbaz.org.sa/books/120/%D8%AA%D8%AD%D9%81%D8%A9-%D8%A7%D9%84%D8%A7%D8%AE%D9%8A%D8%A7%D8%B1' },
+    { kind:'шарх', label:'«Ма‘ани аль-азкар» — Халид ас-Сабт', url:'https://khaledalsabt.com/explanations/book/222/%D9%85%D8%B9%D8%A7%D9%86%D9%8A-%D8%A7%D9%84%D8%A7%D8%B0%D9%83%D8%A7%D8%B1---%D8%AD%D8%B5%D9%86-%D8%A7%D9%84%D9%85%D8%B3%D9%84%D9%85' }
   ];
   const HADITH_COLLECTIONS = [
     { rx:/(?:Аль-)?Бухари\s+(\d+)/gi, slug:'bukhari', name:'Аль-Бухари' },
@@ -1771,7 +1788,7 @@
     ]);
   }
   function refHtml(r){
-    return `<a class="m-ref" href="${escHtml(r.url)}" target="_blank" rel="noopener"><span class="kind">${escHtml(r.kind)}</span><span class="label">${escHtml(r.label)}</span><span class="open">Открыть</span></a>`;
+    return `<button type="button" class="m-ref js-ref" data-url="${escHtml(r.url)}" data-label="${escHtml(r.label)}"><span class="kind">${escHtml(r.kind)}</span><span class="label">${escHtml(r.label)}</span><span class="open">Читать →</span></button>`;
   }
 
   let navStack = ['home'];
@@ -2579,6 +2596,34 @@ https://azkar.nurtech.dev/app`);
     finally { if(btn) btn.disabled = false; }
   }
   (function(){ const b = document.getElementById('miShare'); if(b) b.addEventListener('click', ()=> shareZikrImage(modalZ)); })();
+
+  /* ридер: тап по ссылке-источнику → русский перевод смысла + арабский оригинал */
+  function openTransReader(url, label){
+    const z = modalZ;
+    const tr = (z && z._id && typeof SHARH_RU !== 'undefined') ? SHARH_RU[z._id] : '';
+    const body = document.getElementById('trBody');
+    if(body) body.textContent = tr || 'Перевод смысла для этого зикра пока не добавлен. Откройте арабский оригинал кнопкой ниже.';
+    const lbl = document.getElementById('trSrcLabel');
+    if(lbl) lbl.textContent = label ? ('Источник: ' + label) : '';
+    const orig = document.getElementById('trOrig');
+    if(orig){ if(url){ orig.href = url; orig.style.display = ''; } else orig.style.display = 'none'; }
+    const m = document.getElementById('transReader'), sheet = m.querySelector('.sheet');
+    if(sheet) sheet.scrollTop = 0;
+    m.classList.add('open'); document.body.classList.add('info-open');
+    tgBack(true, closeTransReader);
+  }
+  function closeTransReader(){
+    const m = document.getElementById('transReader'); if(m) m.classList.remove('open');
+    const infoOpen = document.getElementById('infoModal').classList.contains('open');
+    if(!infoOpen) document.body.classList.remove('info-open');
+    tgBack(infoOpen ? true : (navStack.length > 1), infoOpen ? closeInfo : back);
+  }
+  (function(){
+    const rd = document.getElementById('miRefs');
+    if(rd) rd.addEventListener('click', e=>{ const b = e.target.closest('.js-ref'); if(!b) return; e.preventDefault(); openTransReader(b.dataset.url, b.dataset.label); tgHaptic('light'); });
+    const c = document.getElementById('trClose'); if(c) c.addEventListener('click', closeTransReader);
+    const s = document.getElementById('trScrim'); if(s) s.addEventListener('click', closeTransReader);
+  })();
 
   function openInfo(z){
     modalZ = z; modalOpen = true;
