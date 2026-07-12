@@ -2526,7 +2526,7 @@ https://azkar.nurtech.dev/app`);
       });
       card.querySelector('.js-share').addEventListener('click', e=>{
         e.stopPropagation();
-        shareZikrImage(CURRENT_ITEMS.find(x=>x._id===card.dataset.id) || CURRENT_ITEMS[idx]);
+        shareZikr(CURRENT_ITEMS.find(x=>x._id===card.dataset.id) || CURRENT_ITEMS[idx]);
       });
       card.querySelector('.arabic').addEventListener('click', e=>{
         if(LEARN_MODE === 'memory'){ e.stopPropagation(); card.classList.toggle('reveal'); tgHaptic('light'); }
@@ -2880,7 +2880,7 @@ https://azkar.nurtech.dev/app`);
     } catch(e){ /* тихо */ }
     finally { if(btn) btn.disabled = false; }
   }
-  (function(){ const b = document.getElementById('miShare'); if(b) b.addEventListener('click', ()=> shareZikrImage(modalZ)); })();
+  (function(){ const b = document.getElementById('miShare'); if(b) b.addEventListener('click', ()=> shareZikr(modalZ)); })();
 
   /* ридер: тап по ссылке-источнику → русский перевод смысла + арабский оригинал */
   function openTransReader(url, label){
