@@ -272,6 +272,7 @@
   .top .mini:hover { color: var(--accent); }
   .top .mini:active { transform: scale(.9); }
   .top .mini.fav-btn.is-fav { color:var(--accent-deep); background:var(--accent-soft); border-color:color-mix(in srgb, var(--accent) 36%, var(--line)); }
+  .top .mini.share-btn { color:var(--ink-soft); }
   .top .drag-grip { cursor:grab; touch-action:none; }
   .top .drag-grip:active { cursor:grabbing; }
   .foot-link { color: var(--accent-deep); text-decoration:none; }
@@ -316,7 +317,7 @@
   .list.reordering .zikr .drag-grip { display:grid; cursor:grab; color:var(--ink-faint); }
   .list.reordering .zikr .drag-grip:active { cursor:grabbing; }
   .list.reordering .zikr .pill, .list.reordering .zikr .sp { display:none; }
-  .list.reordering .zikr .fav-btn { display:none; }
+  .list.reordering .zikr .fav-btn, .list.reordering .zikr .share-btn { display:none; }
   .list.reordering .zikr .badge { width:26px; height:26px; }
   .list.reordering .zikr .badge b { font-size:12px; }
   .list.reordering .zikr .ro-name { display:flex; align-items:center; gap:6px; flex:1; min-width:0;
@@ -477,6 +478,7 @@
   .modal .m-ref:active { transform:scale(.99); }
   .modal .m-ref .kind { flex:0 0 auto; font-size:11px; font-weight:800; color:var(--accent-deep); }
   .modal .m-ref .label { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .modal .m-ref .open { flex:0 0 auto; font-size:12px; color:var(--ink-faint); }
   .modal .m-grade { display:inline-block; font-size:12.5px; font-weight:700; padding:3px 10px; border-radius:99px;
     background:color-mix(in srgb,var(--good) 14%,transparent); color:var(--good); border:1px solid color-mix(in srgb,var(--good) 35%,transparent); }
   .modal .m-note { font-size:13px; color:var(--ink-faint); font-style:italic; margin-top:18px; line-height:1.5; }
@@ -774,10 +776,11 @@
       <div class="m-ar" id="miAr"></div>
       <div class="m-sec"><div class="m-lbl">Перевод и достоинство</div><div class="m-txt soft" id="miTr"></div></div>
       <div class="m-sec"><div class="m-lbl">Источник</div><div class="m-src" id="miSrc"></div><div style="margin-top:8px"><span class="m-grade" id="miGrade"></span></div></div>
-      <div class="m-sec" id="miSharhSec"><div class="m-lbl">Шарх</div><div class="m-sharh-tabs" id="miSharhTabs"><button type="button" data-sharh-mode="brief">Кратко</button><button type="button" data-sharh-mode="deep">Подробно</button></div><div class="m-txt sharh" id="miSharh"></div><div class="m-note" id="miSharhSrc"></div></div>
-      <div class="m-sec" id="miRefsSec"><div class="m-lbl">Оригиналы и шархи</div><div class="m-refs" id="miRefs"></div></div>
+      <button type="button" class="m-play" id="miShare"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>Поделиться зикром</button>
+      <div class="m-sec" id="miSharhSec"><div class="m-lbl">Проверенный перевод шарха</div><div class="m-sharh-tabs" id="miSharhTabs"><button type="button" data-sharh-mode="brief">Кратко</button><button type="button" data-sharh-mode="deep">Подробно</button></div><div class="m-txt sharh" id="miSharh"></div><div class="m-note" id="miSharhSrc"></div></div>
+      <div class="m-sec" id="miRefsSec"><div class="m-lbl">Открыть источники и шархи</div><div class="m-refs" id="miRefs"></div></div>
       <div class="m-sec" id="miFadlSec" style="display:none"><div class="m-lbl">Достоинство (фадль)</div><div class="m-txt" id="miFadl"></div></div>
-      <div class="m-note">Шарх — авторское пояснение по смыслу зикра с опорой на книги учёных; это не дословная цитата из переводов.</div>
+      <div class="m-note">Внутри приложения показываются только вручную сверенные переводы шархов. Если перевода ещё нет, откройте оригинальные источники и шархи по ссылкам выше.</div>
     </div>
   </div>
 
@@ -1584,6 +1587,11 @@
   function richSharhFor(z){
     return cleanSharh(`${sharhFor(z)}\n\n${readLongerFor(z)}`);
   }
+  function verifiedSharhFor(z){
+    const s = z && z.sharhRu;
+    if(!s || !s.text || !s.source || !s.url) return null;
+    return s;
+  }
 
   const SHARH_BASE_REFS = [
     { kind:'книга', label:'فقه الأدعية والأذكار — عبد الرزاق البدر', url:'https://www.al-badr.net/ebook/18' },
@@ -1674,7 +1682,7 @@
     ]);
   }
   function refHtml(r){
-    return `<a class="m-ref" href="${escHtml(r.url)}" target="_blank" rel="noopener"><span class="kind">${escHtml(r.kind)}</span><span class="label">${escHtml(r.label)}</span></a>`;
+    return `<a class="m-ref" href="${escHtml(r.url)}" target="_blank" rel="noopener"><span class="kind">${escHtml(r.kind)}</span><span class="label">${escHtml(r.label)}</span><span class="open">Открыть</span></a>`;
   }
 
   let navStack = ['home'];
@@ -1873,6 +1881,34 @@
     }
     return z.target;
   }
+  function shareTextFor(z){
+    const target = effectiveTarget(z._session || CURRENT_KEY || 'morning', z);
+    return cleanSharh(`${z.ar}
+
+${z.tl || ''}
+
+${z.tr || ''}
+
+Источник: ${z.src || 'достоверная Сунна'}
+Повторений: ${target}
+
+Азкар — поминания на каждый день
+https://azkar.nurtech.dev/app`);
+  }
+  async function shareZikr(z){
+    if(!z) return;
+    const text = shareTextFor(z);
+    try{
+      if(navigator.share){
+        await navigator.share({ title:'Азкар', text, url:'https://azkar.nurtech.dev/app' });
+      } else {
+        const url = 'https://t.me/share/url?url=' + encodeURIComponent('https://azkar.nurtech.dev/app') + '&text=' + encodeURIComponent(text);
+        if(TG && TG.openTelegramLink) TG.openTelegramLink(url);
+        else window.open(url, '_blank', 'noopener');
+      }
+      tgHaptic('light');
+    }catch(e){}
+  }
   function routineDayFromTimes(t){
     const now = new Date();
     const day = new Date(now);
@@ -1952,6 +1988,7 @@
           <div class="badge"><b>${z.n}</b></div>
           <div class="pill">×${target}</div>
           <button class="mini fav-btn js-fav ${isFavorite(z._id) ? 'is-fav' : ''}" title="В избранное" aria-label="В избранное"><svg width="16" height="16" viewBox="0 0 24 24" fill="${isFavorite(z._id) ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
+          <button class="mini share-btn js-share" title="Поделиться" aria-label="Поделиться зикром"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg></button>
           <span class="ro-name"><span class="ro-name-txt">${shortLabel(z)}</span><svg class="ro-peek" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
           <div class="sp"></div>
           <div class="ro-move">
@@ -2095,6 +2132,10 @@
         e.currentTarget.classList.toggle('is-fav', nowFav);
         if(icon) icon.setAttribute('fill', nowFav ? 'currentColor' : 'none');
         tgHaptic('light');
+      });
+      card.querySelector('.js-share').addEventListener('click', e=>{
+        e.stopPropagation();
+        shareZikr(CURRENT_ITEMS.find(x=>x._id===card.dataset.id) || CURRENT_ITEMS[idx]);
       });
       card.querySelector('.arabic').addEventListener('click', e=>{
         if(LEARN_MODE === 'memory'){ e.stopPropagation(); card.classList.toggle('reveal'); tgHaptic('light'); }
@@ -2366,8 +2407,17 @@
   }
   function renderModalSharh(){
     if(!modalZ) return;
-    document.getElementById('miSharh').textContent = modalSharhMode === 'deep' ? richSharhFor(modalZ) : sharhFor(modalZ);
-    document.querySelectorAll('#miSharhTabs button').forEach(b=> b.classList.toggle('on', b.dataset.sharhMode === modalSharhMode));
+    const sec = document.getElementById('miSharhSec');
+    const tabs = document.getElementById('miSharhTabs');
+    const verified = verifiedSharhFor(modalZ);
+    if(!verified){
+      if(sec) sec.style.display = 'none';
+      return;
+    }
+    if(sec) sec.style.display = '';
+    if(tabs) tabs.hidden = true;
+    document.getElementById('miSharh').textContent = verified.text;
+    document.getElementById('miSharhSrc').innerHTML = `Перевод: <a href="${escHtml(verified.url)}" target="_blank" rel="noopener">${escHtml(verified.source)}</a>`;
   }
   function openInfo(z){
     modalZ = z; modalOpen = true;
@@ -2381,7 +2431,6 @@
     document.getElementById('miSrc').textContent = z.src;
     document.getElementById('miGrade').textContent = gradeLabel(z.src);
     renderModalSharh();
-    document.getElementById('miSharhSrc').textContent = SHARH_SOURCE_NOTE;
     const refs = refsFor(z);
     const refsSec = document.getElementById('miRefsSec');
     const refsEl = document.getElementById('miRefs');
@@ -2423,6 +2472,7 @@
   }
   document.getElementById('miClose').addEventListener('click', closeInfo);
   document.getElementById('infoScrim').addEventListener('click', closeInfo);
+  document.getElementById('miShare').addEventListener('click', ()=>shareZikr(modalZ));
   document.querySelectorAll('#miSharhTabs button').forEach(b=> b.addEventListener('click', ()=>{
     modalSharhMode = b.dataset.sharhMode || 'brief';
     renderModalSharh();
