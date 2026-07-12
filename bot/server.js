@@ -5,10 +5,10 @@
  * - Отдаёт лендинг (../landing) на / и Mini App (../miniapp) на /app.
  * - API: /api/times (времена намаза по координатам+мазхабу), /api/location (регистрация
  *   геолокации пользователя для персональных напоминаний, с проверкой Telegram initData).
- * - Бот: /start (кнопка Mini App), /stop. Напоминания:
+ * - Бот: /start (кнопка Mini App), /stop. Напоминания только после явного включения в Mini App:
  *     • у кого задана геолокация — по времени намаза (утренние после Фаджра, вечерние после Асра);
- *     • у кого нет — по фиксированному расписанию (MORNING_CRON/EVENING_CRON);
- *     • перед сном — по SLEEP_CRON для всех подписчиков.
+ *     • у кого нет геолокации, но есть таймзона — по фиксированному расписанию в его зоне;
+ *     • без таймзоны бот ничего не угадывает и не шлёт.
  */
 
 const express = require('express');
@@ -49,11 +49,11 @@ const WELCOME_CAPTION = `<b>Ассаляму алейкум 🌿</b>
 
 Добро пожаловать в <b>Азкар</b> — приложение для утренних, вечерних, перед сном и азкаров после намаза.
 
-Читайте список сверху вниз, отмечайте повторения счётчиком-тасбихом и включайте напоминания по времени намаза.`;
+Читайте список сверху вниз, отмечайте повторения счётчиком-тасбихом и при желании включайте напоминания в настройках.`;
 const HELP_TEXT = `<b>Как пользоваться Азкаром</b>
 
 1. Нажмите кнопку ниже, чтобы открыть приложение.
-2. В настройках включите геолокацию — напоминания будут приходить после Фаджра и Асра по вашему времени намаза.
+2. В настройках включите напоминания. Если включить геолокацию, они будут приходить после Фаджра и Асра по вашему времени намаза.
 3. Выберите мазхаб для расчёта времени.
 4. Читайте азкары сверху вниз, а счётчик-тасбих отмечает повторения касанием или свайпом вниз.
 5. Перед сном бот пришлёт отдельное спокойное напоминание.`;
@@ -62,6 +62,11 @@ const HELP_TEXT = `<b>Как пользоваться Азкаром</b>
 const DATA_FILE = path.join(__dirname, 'data', 'subscribers.json');
 function loadSubs() { try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); } catch { return {}; } }
 function saveSubs(s) { fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true }); fs.writeFileSync(DATA_FILE, JSON.stringify(s, null, 2)); }
+function validTimeZone(tz) {
+  if (typeof tz !== 'string' || !tz) return false;
+  try { new Intl.DateTimeFormat('ru-RU', { timeZone: tz }).format(new Date()); return true; }
+  catch { return false; }
+}
 
 // ---------- расчёт времён намаза ----------
 function prayerTimes(lat, lng, madhab, date) {
@@ -113,21 +118,43 @@ app.post('/api/location', (req, res) => {
   const subs = loadSubs();
   subs[user.id] = { ...(subs[user.id] || {}), id: user.id, name: user.first_name || '',
     lat, lng, madhab: madhab === 'hanafi' ? 'hanafi' : 'shafi',
-    tz: (typeof tz === 'string' && tz) ? tz : subs[user.id]?.tz,
+    tz: validTimeZone(tz) ? tz : subs[user.id]?.tz,
+    remindersEnabled: subs[user.id]?.remindersEnabled === true,
     since: subs[user.id]?.since || Date.now() };
   saveSubs(subs);
   res.json({ ok: true });
 });
 
-// регистрация таймзоны (чтобы фикс. напоминания шли в локальной зоне) — только для уже подписанных
+// регистрация таймзоны — только для уже подписанных, чтобы один запуск приложения не включал рассылку
 app.post('/api/tz', (req, res) => {
   const { initData, tz } = req.body || {};
   const user = checkInitData(initData);
   if (!user || !user.id) return res.status(401).json({ error: 'bad initData' });
-  if (typeof tz !== 'string' || !tz) return res.status(400).json({ error: 'tz required' });
+  if (!validTimeZone(tz)) return res.status(400).json({ error: 'bad tz' });
   const subs = loadSubs();
   if (subs[user.id]) { subs[user.id].tz = tz; saveSubs(subs); }   // не создаём новых подписчиков из tz
   res.json({ ok: true });
+});
+
+// явное включение/выключение напоминаний из Mini App
+app.post('/api/reminders', (req, res) => {
+  const { initData, enabled, tz, lat, lng, madhab } = req.body || {};
+  const user = checkInitData(initData);
+  if (!user || !user.id) return res.status(401).json({ error: 'bad initData' });
+  const subs = loadSubs();
+  const prev = subs[user.id] || {};
+  const next = { ...prev, id: user.id, name: user.first_name || prev.name || '', since: prev.since || Date.now() };
+  if (validTimeZone(tz)) next.tz = tz;
+  if (typeof lat === 'number' && typeof lng === 'number') {
+    next.lat = lat;
+    next.lng = lng;
+    next.madhab = madhab === 'hanafi' ? 'hanafi' : 'shafi';
+  }
+  if (enabled === true && !validTimeZone(next.tz)) return res.status(400).json({ error: 'tz required' });
+  next.remindersEnabled = enabled === true;
+  subs[user.id] = next;
+  saveSubs(subs);
+  res.json({ ok: true, remindersEnabled: next.remindersEnabled });
 });
 
 // Mini App живёт под /app, лендинг — на корне. API и health объявлены выше.
@@ -170,8 +197,10 @@ if (!TOKEN) {
 
   bot.onText(/\/start/, (msg) => {
     const id = msg.chat.id, subs = loadSubs();
-    subs[id] = { ...(subs[id] || {}), id, name: msg.from.first_name || '', since: subs[id]?.since || Date.now() };
-    saveSubs(subs);
+    if (subs[id]) {
+      subs[id] = { ...subs[id], id, name: msg.from.first_name || subs[id].name || '' };
+      saveSubs(subs);
+    }
     bot.sendPhoto(id, WELCOME_IMAGE, { caption: WELCOME_CAPTION, parse_mode: 'HTML', ...kb })
       .catch((e) => {
         console.warn('[bot] welcome photo не отправилось:', e?.message || e);
@@ -181,7 +210,11 @@ if (!TOKEN) {
   bot.onText(/\/help/, (msg) => {
     bot.sendMessage(msg.chat.id, HELP_TEXT, { parse_mode: 'HTML', ...kb });
   });
-  bot.onText(/\/stop/, (msg) => { const s = loadSubs(); delete s[msg.chat.id]; saveSubs(s); bot.sendMessage(msg.chat.id, 'Напоминания отключены. /start — включить снова.'); });
+  bot.onText(/\/stop/, (msg) => {
+    const s = loadSubs();
+    if (s[msg.chat.id]) { s[msg.chat.id].remindersEnabled = false; saveSubs(s); }
+    bot.sendMessage(msg.chat.id, 'Напоминания отключены. Чтобы включить снова, открой приложение и включи их в настройках.');
+  });
 
   function send(id, text) {
     bot.sendMessage(id, text, kb).catch((e) => {
@@ -201,7 +234,9 @@ if (!TOKEN) {
     const subs = loadSubs(); const now = new Date(); let changed = false;
     for (const id in subs) {
       const u = subs[id];
-      const tz = u.tz || TZ;
+      if (u.remindersEnabled !== true) continue;
+      const tz = validTimeZone(u.tz) ? u.tz : '';
+      if (!tz) continue;
       const day = localDay(now, tz);
       const nowHM = hhmm(now, tz);
       if (typeof u.lat === 'number') {
@@ -212,7 +247,7 @@ if (!TOKEN) {
           if (hhmm(t.asr, tz) === nowHM && u.lastEvening !== day) { u.lastEvening = day; changed = true; send(id, EVENING_MSG); }
         }
       } else {
-        // без геолокации — фикс. расписание в ЛОКАЛЬНОЙ зоне пользователя (а не по МСК)
+        // без геолокации — фикс. расписание в локальной зоне пользователя
         if (nowHM === FIXED.morning && u.lastMorning !== day) { u.lastMorning = day; changed = true; send(id, MORNING_MSG); }
         if (nowHM === FIXED.evening && u.lastEvening !== day) { u.lastEvening = day; changed = true; send(id, EVENING_MSG); }
       }
@@ -222,5 +257,5 @@ if (!TOKEN) {
     if (changed) saveSubs(subs);
   });
 
-  console.log(`[bot] запущен. Напоминания в таймзоне пользователя (намаз/фикс/сон), дефолт ${TZ}.`);
+  console.log('[bot] запущен. Напоминания только после явного включения в Mini App и только при известной таймзоне.');
 }
