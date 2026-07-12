@@ -492,8 +492,8 @@
   .modal .m-actions .secondary { background:var(--surface-2); color:var(--ink-soft); }
   :root[data-theme="dark"] .modal .m-actions .primary { color:var(--bg); }
   @media (prefers-color-scheme: dark){ :root:not([data-theme]) .modal .m-actions .primary { color:var(--bg); } }
-  .share-preview { margin-top:12px; border-radius:22px; overflow:hidden; border:1px solid var(--line); background:var(--surface-2); box-shadow:var(--shadow-card); }
-  .share-preview canvas { width:100%; display:block; aspect-ratio:9/16; }
+  .share-preview { margin-top:12px; border-radius:22px; overflow:hidden; border:1px solid var(--line); background:var(--surface-2); box-shadow:var(--shadow-card); display:flex; justify-content:center; align-items:center; }
+  .share-preview canvas { width:auto; max-width:100%; height:min(56vh, 620px); display:block; aspect-ratio:9/16; }
   .share-tools { margin-top:14px; display:flex; flex-direction:column; gap:10px; }
   .share-bg-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
   .share-bg { height:42px; border-radius:14px; border:1px solid var(--line); cursor:pointer; position:relative; overflow:hidden; }
@@ -916,6 +916,10 @@
         <div class="share-toggles">
           <button type="button" class="share-toggle on" id="shareGradient">Градиент</button>
           <button type="button" class="share-toggle on" id="shareBlur">Мягкость</button>
+        </div>
+        <div class="share-toggles">
+          <button type="button" class="share-toggle on" id="shareTranslit">Транскрипция</button>
+          <button type="button" class="share-toggle on" id="shareTranslation">Перевод</button>
         </div>
         <div class="m-actions">
           <button type="button" class="secondary" id="shareDownload">Скачать</button>
@@ -2031,6 +2035,8 @@ https://azkar.nurtech.dev/app`);
   shareStyle.bg = shareStyle.bg || 'dawn';
   shareStyle.gradient = shareStyle.gradient !== false;
   shareStyle.blur = shareStyle.blur !== false;
+  shareStyle.translit = shareStyle.translit !== false;
+  shareStyle.translation = shareStyle.translation !== false;
   function saveShareStyle(){ try{ localStorage.setItem('azkar_share_style', JSON.stringify(shareStyle)); }catch(e){} }
   function shareSetStatus(s){ const el=document.getElementById('shareStatus'); if(el) el.textContent=s || ''; }
   function roundRect(ctx,x,y,w,h,r){
@@ -2074,8 +2080,8 @@ https://azkar.nurtech.dev/app`);
     const arFamily = '"Times New Roman", "Arial", serif';
     const raw = {
       ar: shareZ.ar || '',
-      tl: shareZ.tl || '',
-      tr: shareZ.tr || '',
+      tl: shareStyle.translit ? (shareZ.tl || '') : '',
+      tr: shareStyle.translation ? (shareZ.tr || '') : '',
       src: shareZ.src || 'Достоверная Сунна',
     };
     let best = null;
@@ -2169,12 +2175,12 @@ https://azkar.nurtech.dev/app`);
     if(layout.tl.length){
       ctx.fillStyle = theme.soft;
       setShareFont(ctx, 500, layout.tlSize, layout.sans);
-      y = drawWrapped(ctx, shareZ.tl, left, y, maxW, layout.tlLine, { lines:layout.tl }) + layout.gap2;
+      y = drawWrapped(ctx, '', left, y, maxW, layout.tlLine, { lines:layout.tl }) + layout.gap2;
     }
     if(layout.tr.length){
       ctx.fillStyle = theme.ink;
       setShareFont(ctx, 500, layout.trSize, layout.serif);
-      y = drawWrapped(ctx, shareZ.tr, left, y, maxW, layout.trLine, { lines:layout.tr }) + layout.gap3;
+      y = drawWrapped(ctx, '', left, y, maxW, layout.trLine, { lines:layout.tr }) + layout.gap3;
     }
     ctx.save();
     ctx.globalAlpha = shareStyle.bg === 'night' ? .34 : .18;
@@ -2195,8 +2201,11 @@ https://azkar.nurtech.dev/app`);
   function updateShareControls(){
     document.querySelectorAll('[data-share-bg]').forEach(b=>b.classList.toggle('on', b.dataset.shareBg === shareStyle.bg));
     const grad=document.getElementById('shareGradient'), blur=document.getElementById('shareBlur');
+    const translit=document.getElementById('shareTranslit'), translation=document.getElementById('shareTranslation');
     if(grad) grad.classList.toggle('on', !!shareStyle.gradient);
     if(blur) blur.classList.toggle('on', !!shareStyle.blur);
+    if(translit) translit.classList.toggle('on', !!shareStyle.translit);
+    if(translation) translation.classList.toggle('on', !!shareStyle.translation);
   }
   function lockShareScroll(){
     shareScrollY = window.scrollY || document.documentElement.scrollTop || 0;
@@ -2843,6 +2852,12 @@ https://azkar.nurtech.dev/app`);
   });
   document.getElementById('shareBlur').addEventListener('click', e=>{
     shareStyle.blur = !shareStyle.blur; saveShareStyle(); updateShareControls(); drawShareCanvas(); tgHaptic('light');
+  });
+  document.getElementById('shareTranslit').addEventListener('click', e=>{
+    shareStyle.translit = !shareStyle.translit; saveShareStyle(); updateShareControls(); drawShareCanvas(); tgHaptic('light');
+  });
+  document.getElementById('shareTranslation').addEventListener('click', e=>{
+    shareStyle.translation = !shareStyle.translation; saveShareStyle(); updateShareControls(); drawShareCanvas(); tgHaptic('light');
   });
   document.getElementById('shareImage').addEventListener('click', shareImageCard);
   document.getElementById('shareDownload').addEventListener('click', downloadShareCard);
