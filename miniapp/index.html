@@ -659,6 +659,22 @@
   .qp-paper .qp-surah:before, .qp-paper .qp-surah:after { background:#dcd6c6; }
   .qp-paper .qp-surah span { color:#575a48; border-color:#dcd6c6; }
   .qp-paper .qp-w:active { color:#8a6d1e; }
+  /* режим Чтение: переводы под страницей */
+  .qp-trans { direction:ltr; text-align:left; margin-top:18px; border-top:1px solid var(--line); padding-top:4px; }
+  .qp-trans-h { font-size:11.5px; letter-spacing:.5px; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin:10px 0 10px; }
+  .qp-tr-item { display:flex; gap:11px; padding:12px 2px; border-bottom:1px solid color-mix(in srgb, var(--line) 60%, transparent); }
+  .qp-tr-item:last-child { border-bottom:0; }
+  .qp-tr-n { flex:0 0 auto; width:26px; height:26px; border-radius:50%; background:var(--accent-soft); color:var(--accent-deep); font-size:12px; font-weight:700; display:grid; place-items:center; font-variant-numeric:tabular-nums; }
+  .qp-tr-b { flex:1 1 auto; min-width:0; }
+  .qp-tr-tx { font-size:15px; line-height:1.62; color:var(--ink-soft); }
+  .qp-tr-item .q-tafsir-btn { margin-top:9px; }
+  /* ландшафт: во весь экран, компактная шапка, крупный мусхаф */
+  @media (orientation:landscape) and (max-height:600px){
+    .phone:has(#quranReader.active){ max-width:none; border-radius:0; }
+    .qr-head { padding-top:calc(4px + var(--tg-safe-top)); padding-bottom:4px; margin-bottom:6px; }
+    .qr-head .qr-ttl .s { display:none; }
+    #quranReader .qwrap { padding:0 26px !important; }
+  }
 
   /* нижняя навигация страниц + шапка джуза */
   .qr-sub-nav { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12px; color:var(--ink-faint); margin-top:6px; }
@@ -3921,7 +3937,8 @@ https://azkar.nurtech.dev/app`);
   function qStats(){ try{ const s=JSON.parse(localStorage.getItem(QST_KEY)||'null'); if(s&&s.days) return s; }catch(e){} return { days:{}, totSec:0, totAy:0 }; }
   function qStatsSave(s){ const keys=Object.keys(s.days||{}).sort(); while(keys.length>120){ delete s.days[keys.shift()]; } try{ localStorage.setItem(QST_KEY, JSON.stringify(s)); }catch(e){} }
   function qAddSec(sec){ sec=Math.round(sec); if(sec<=0) return; const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].sec+=sec; s.totSec=(s.totSec||0)+sec; qStatsSave(s); }
-  function qMarkAyah(){ if(QPREFS.mode==='page') return; const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].ay+=1; s.totAy=(s.totAy||0)+1; qStatsSave(s); }
+  function qIsPageBased(){ return QPREFS.mode==='page' || QPREFS.mode==='reading'; }
+  function qMarkAyah(){ if(qIsPageBased()) return; const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].ay+=1; s.totAy=(s.totAy||0)+1; qStatsSave(s); }
   function qFmtMin(sec){ const m=Math.round((sec||0)/60); if(m<1) return sec>0?'меньше мин':'0 мин'; if(m<60) return m+' мин'; const h=Math.floor(m/60), mm=m%60; return h+' ч'+(mm?' '+mm+' м':''); }
 
   // ---- часы чтения ----
@@ -3967,9 +3984,9 @@ https://azkar.nurtech.dev/app`);
     return qFetchJSON('assets/quran/kfgqpc/'+n+'.json').then(function(d){ QURAN.kcache[n]=d; return d; }); }
   function qOpenSura(n, ayah){
     n=parseInt(n,10); if(!(n>=1&&n<=114)) return;
-    if(QPREFS.mode==='page'){ QURAN.curN=n; qLoadPagesMeta().then(function(){ qOpenPage(pageSuraStartPage(n)); }).catch(function(){ qOpenPage(1); }); return; }
+    if(qIsPageBased()){ QURAN.curN=n; qLoadPagesMeta().then(function(){ qOpenPage(pageSuraStartPage(n)); }).catch(function(){ qOpenPage(1); }); return; }
     QURAN._lastA = 0;
-    const jobs=[ qLoadIndex().catch(function(){ return null; }), qLoadSura(n), (isKfgqpc()&&!QPREFS.tj)?qLoadKfgqpc(n).catch(function(){ return null; }):Promise.resolve(null) ];
+    const jobs=[ qLoadIndex().catch(function(){ return null; }), qLoadSura(n), isKfgqpc()?qLoadKfgqpc(n).catch(function(){ return null; }):Promise.resolve(null) ];
     Promise.all(jobs).then(function(res){
       const su=res[1];
       QURAN.curK = res[2];
@@ -3986,10 +4003,10 @@ https://azkar.nurtech.dev/app`);
   function ayahMarker(n){ return '<span class="q-end">۝'+toArabicDigits(n)+'</span>'; }
   function renderReader(su, ayah){
     QURAN.cur=su; QURAN.curN=su.n;
-    const kfgqpcClean = isKfgqpc() && !QPREFS.tj;            // точный KFGQPC — только без таджвида
-    const useK = kfgqpcClean && QURAN.curK && QURAN.curK.length===su.a.length;
+    // режим Сура: мединский (KFGQPC) шрифт НЕ меняется; для KFGQPC всегда его парный текст (без цветного таджвида — он только в постранич. режимах)
+    const useK = isKfgqpc() && QURAN.curK && QURAN.curK.length===su.a.length;
     const kmap = useK ? QURAN.curK : null;
-    const renderFont = (isKfgqpc() && QPREFS.tj) ? 'AzkarMushaf' : QPREFS.font;  // таджвид рисуется насх-мусхафом (Amiri Quran)
+    const renderFont = QPREFS.font;
     document.getElementById('qrTitle').textContent = su.n+'. '+su.nr;
     document.getElementById('qrSub').textContent = su.c+' '+qPlural(su.c,'аят','аята','аятов')+' · '+su.t;
     document.getElementById('qrBism').hidden = !su.bism;
@@ -4051,9 +4068,9 @@ https://azkar.nurtech.dev/app`);
   }
   function qRerender(){ if(!QURAN.cur) return; const a=qCurrentAyah();
     const after=function(){ renderReader(QURAN.cur, null); requestAnimationFrame(function(){ qScrollToAyah(a,false); qSetupObserver(); }); };
-    if(isKfgqpc() && !QPREFS.tj && (!QURAN.curK || QURAN.curK.length!==QURAN.cur.a.length)){ qLoadKfgqpc(QURAN.curN).then(function(d){ QURAN.curK=d; after(); }).catch(after); }
-    else { if(!isKfgqpc() || QPREFS.tj) QURAN.curK=null; after(); } }
-  function qNav(dir){ if(QPREFS.mode==='page'){ const p=QURAN.curPage+dir; if(p<1||p>604) return; qClockStop(); qOpenPage(p); return; }
+    if(isKfgqpc() && (!QURAN.curK || QURAN.curK.length!==QURAN.cur.a.length)){ qLoadKfgqpc(QURAN.curN).then(function(d){ QURAN.curK=d; after(); }).catch(after); }
+    else { if(!isKfgqpc()) QURAN.curK=null; after(); } }
+  function qNav(dir){ if(qIsPageBased()){ const p=QURAN.curPage+dir; if(p<1||p>604) return; qClockStop(); qOpenPage(p); return; }
     const n=QURAN.curN+dir; if(n<1||n>114) return; qClockStop(); if(QURAN.io){ QURAN.io.disconnect(); QURAN.io=null; } qOpenSura(n); }
   function qBackToList(){ qClockStop(); if(QURAN.io){ QURAN.io.disconnect(); QURAN.io=null; } back({visual:true}); }
 
@@ -4101,6 +4118,12 @@ https://azkar.nurtech.dev/app`);
       .catch(function(){ if(el) el.textContent='ошибка'; QDL.running=false; });
   }
   function pageSuraStartPage(s){ const m=QURAN.pmeta; return (m&&m.suraStart&&m.suraStart[s])||1; }
+  // переводы аятов страницы (для режима Чтение): грузим нужные суры, строим {verseKey: ru}
+  function qLoadPageTr(n){ return qLoadPage(n).then(function(data){
+    const suras={}; (data.lines||[]).forEach(function(l){ l.w.forEach(function(w){ suras[w.k.split(':')[0]]=1; }); });
+    return Promise.all(Object.keys(suras).map(function(s){ return qLoadSura(parseInt(s,10)).then(function(su){ return {s:parseInt(s,10),su:su}; }).catch(function(){ return null; }); }))
+      .then(function(arr){ const map={}; arr.forEach(function(x){ if(x&&x.su&&x.su.a){ x.su.a.forEach(function(a){ map[x.s+':'+a.n]=a.ru; }); } }); return map; });
+  }); }
   function tafsirFromKey(vk){ const p=String(vk).split(':'); openTafsir(parseInt(p[0],10), parseInt(p[1],10)); }
   function suraNameRu(n){ const su=(QURAN.index||[]).find(function(x){ return x.n===n; }); return su?su.nr:('Сура '+n); }
 
@@ -4115,8 +4138,9 @@ https://azkar.nurtech.dev/app`);
     const wrap=document.getElementById('qrAyahs');
     wrap.className='q-ayahs q-pagemode'; wrap.innerHTML='<div class="qp-loading">Загрузка страницы…</div>';
     document.getElementById('qrBism').hidden=true;
-    Promise.all([ qLoadPagesMeta().catch(function(){ return null; }), qLoadPage(n) ]).then(function(res){
-      QURAN.pageData=res[1];
+    const needTr = QPREFS.mode==='reading';
+    Promise.all([ qLoadPagesMeta().catch(function(){ return null; }), qLoadPage(n), needTr?qLoadPageTr(n):Promise.resolve(null) ]).then(function(res){
+      QURAN.pageData=res[1]; QURAN.pageTr=res[2];
       return qLoadPageFont(n).then(function(r){
         if(!r.ok){ throw { nofont:true }; }
         renderPageView(res[1], r.fam);
@@ -4154,7 +4178,22 @@ https://azkar.nurtech.dev/app`);
       for(let j=0;j<l.w.length;j++){ const w=l.w[j]; ws+='<span class="qp-w" data-k="'+w.k+'" onclick="tafsirFromKey(\''+w.k+'\')">'+escHtml(w.c)+'</span>'; }
       html += '<div class="qp-line'+(center?' center':'')+'">'+ws+'</div>';
     }
-    wrap.innerHTML='<div class="qp-page'+(QPREFS.tj?' qp-paper':'')+'">'+html+'</div>';
+    let full='<div class="qp-page'+(QPREFS.tj?' qp-paper':'')+'">'+html+'</div>';
+    // режим Чтение: переводы аятов страницы под мусхафом
+    if(QPREFS.mode==='reading'){
+      const seen={}, order=[];
+      lines.forEach(function(l){ l.w.forEach(function(w){ if(!seen[w.k]){ seen[w.k]=1; order.push(w.k); } }); });
+      const tr=QURAN.pageTr||{};
+      let ti='<div class="qp-trans"><div class="qp-trans-h">Перевод · страница '+data.p+'</div>';
+      for(let k=0;k<order.length;k++){ const vk=order[k]; const parts=vk.split(':'); const a=parts[1];
+        const ru=tr[vk]||''; if(!ru) continue;
+        ti+='<div class="qp-tr-item"><span class="qp-tr-n">'+a+'</span><div class="qp-tr-b"><div class="qp-tr-tx">'+escHtml(ru)+'</div>'
+          +'<button type="button" class="q-tafsir-btn" onclick="tafsirFromKey(\''+vk+'\')">'+TAFSIR_ICON+'Тафсир ас-Саади</button></div></div>';
+      }
+      ti+='</div>';
+      full+=ti;
+    }
+    wrap.innerHTML=full;
     // шапка
     document.getElementById('qrTitle').textContent = suraNameRu(firstSura);
     document.getElementById('qrSub').textContent = 'Джуз '+(data.j||'')+' · страница '+data.p;
@@ -4166,15 +4205,16 @@ https://azkar.nurtech.dev/app`);
     let maxW=0; page.querySelectorAll('.qp-line:not(.center)').forEach(function(l){ let s=0; l.querySelectorAll('.qp-w').forEach(function(w){ s+=w.getBoundingClientRect().width; }); if(s>maxW) maxW=s; });
     if(maxW<=0) return;
     const cur=parseFloat(getComputedStyle(page).fontSize)||23;
-    let nf=cur*(avail/maxW); nf=Math.min(nf, 30); nf=Math.max(11, nf);
+    const isLand = window.innerWidth > window.innerHeight;
+    let nf=cur*(avail/maxW); nf=Math.min(nf, isLand?42:30); nf=Math.max(11, nf);
     page.style.setProperty('--qp-size', nf.toFixed(1)+'px');
-    // ужать по ВЫСОТЕ, чтобы страница влезала в экран целиком (как в мусхафе)
-    requestAnimationFrame(function(){
+    // режим Страница (портрет) — ужимаем по ВЫСОТЕ, чтобы страница влезала целиком без прокрутки; в ландшафте — крупно + прокрутка
+    if(QPREFS.mode==='page' && !isLand) requestAnimationFrame(function(){
       const navEl=document.querySelector('#quranReader .qr-nav');
-      const reserve = (navEl?navEl.offsetHeight:70) + 24;
+      const reserve = (navEl?navEl.offsetHeight:70) + 20;
       const availH = window.innerHeight - page.getBoundingClientRect().top - reserve;
       const ph = page.getBoundingClientRect().height;
-      if(ph>availH && availH>140){ let nf2 = nf*(availH/ph); nf2=Math.max(10, nf2); if(nf2<nf-0.3) page.style.setProperty('--qp-size', nf2.toFixed(1)+'px'); }
+      if(ph>availH && availH>120){ let nf2 = nf*(availH/ph); nf2=Math.max(9, nf2); if(nf2<nf-0.3) page.style.setProperty('--qp-size', nf2.toFixed(1)+'px'); }
     });
   }
   function qUpdatePageNav(p){
@@ -4203,18 +4243,19 @@ https://azkar.nurtech.dev/app`);
     body.innerHTML=html;
   }
   function qGotoPage(p){ QTAF.picker=false; closeQSheet(); qOpenPage(p); }
-  function qTitleTap(){ if(QPREFS.mode==='page') openPagePicker(); else openQuran(); }
+  function qTitleTap(){ if(qIsPageBased()) openPagePicker(); else openQuran(); }
 
   function qToggleTr(){ QPREFS.tr=!QPREFS.tr; qSavePrefs(); tgHaptic('light'); qRerender(); if(QTAF.settings) renderReaderSettings(); }
-  function qToggleTj(){ QPREFS.tj=!QPREFS.tj; qSavePrefs(); tgHaptic('light'); if(QPREFS.mode==='page') qOpenPage(QURAN.curPage); else qRerender(); if(QTAF.settings) renderReaderSettings(); }
+  function qToggleTj(){ QPREFS.tj=!QPREFS.tj; qSavePrefs(); tgHaptic('light'); if(qIsPageBased()) qOpenPage(QURAN.curPage); else qRerender(); if(QTAF.settings) renderReaderSettings(); }
   function setReaderFontSize(d){ QPREFS.fs=Math.max(22,Math.min(50,QPREFS.fs+2*d)); qSavePrefs();
     const w=document.getElementById('qrAyahs'); if(w) w.style.setProperty('--q-ar-size', QPREFS.fs+'px');
     const v=document.getElementById('rsSizeVal'); if(v) v.textContent=QPREFS.fs; tgHaptic('light'); }
   function setReaderFont(f){ if(!Q_FONTS.some(function(x){return x.id===f;})) return; QPREFS.font=f; qSavePrefs();
     try{ document.fonts.load('30px "'+f+'"'); }catch(e){} tgHaptic('light'); qRerender(); renderReaderSettings(); }
   function setReaderMode(m){ if(['mushaf','reading','page'].indexOf(m)<0) return; if(QPREFS.mode===m) return; const prev=QPREFS.mode; QPREFS.mode=m; qSavePrefs(); tgHaptic('light');
-    if(m==='page'){ qEnterPageMode(); }
-    else if(prev==='page'){ document.getElementById('qrBism').hidden=false; qOpenSura(QURAN.curN||1); }
+    const nowPage = (m==='page'||m==='reading'), wasPage = (prev==='page'||prev==='reading');
+    if(nowPage){ if(wasPage && QURAN.curPage){ qOpenPage(QURAN.curPage); } else { qEnterPageMode(); } }
+    else if(wasPage){ document.getElementById('qrBism').hidden=false; qOpenSura(QURAN.curN||1); }
     else { qRerender(); }
     renderReaderSettings(); }
 
@@ -4229,23 +4270,20 @@ https://azkar.nurtech.dev/app`);
     const mode=function(id,lbl,ic,sub){ return '<button type="button" class="rs-mode'+(QPREFS.mode===id?' on':'')+'" onclick="setReaderMode(\''+id+'\')">'+ic+'<span class="rm-l">'+lbl+'</span><span class="rm-s">'+sub+'</span></button>'; };
     const font=function(f){ return '<button type="button" class="rs-font'+(QPREFS.font===f.id?' on':'')+'" onclick="setReaderFont(\''+f.id+'\')"><span class="rs-fprev" style="font-family:\''+f.id+'\'">'+(f.prev||'ٱلْحَمْدُ')+'</span><span class="rs-flbl">'+f.label+'</span></button>'; };
     const sw=function(on){ return '<span class="rs-sw'+(on?' on':'')+'"><i></i></span>'; };
-    const isPage = QPREFS.mode==='page';
+    const isPageBased = qIsPageBased();
     let html='';
-    html += '<div class="rs-lbl">Режим чтения</div><div class="rs-modes rs-modes-3">'+mode('page','Страница',P_ICON,'мусхаф Медины')+mode('mushaf','Сура',M_ICON,'сплошным текстом')+mode('reading','Чтение',R_ICON,'с переводом')+'</div>';
-    if(isPage){
+    html += '<div class="rs-lbl">Режим чтения</div><div class="rs-modes rs-modes-3">'+mode('page','Страница',P_ICON,'мусхаф Медины')+mode('reading','Чтение',R_ICON,'мусхаф+перевод')+mode('mushaf','Сура',M_ICON,'сплошным текстом')+'</div>';
+    if(isPageBased){
       html += '<div class="rs-lbl">Оформление</div>';
       html += '<button type="button" class="rs-row" onclick="qToggleTj()"><span>Таджвид — цвета правил</span>'+sw(QPREFS.tj)+'</button>';
       html += '<div class="rs-lbl">Офлайн</div>';
       const dlDone = (function(){ try{ return localStorage.getItem('azkar_mushaf_dl'); }catch(e){ return null; } })();
       html += '<button type="button" class="rs-row" onclick="downloadMushaf()"><span>⬇ Скачать мусхаф для офлайн<br><small style="color:var(--ink-faint);font-weight:400">все 604 страницы · ~25 МБ</small></span><span class="rs-dl" id="dlState">'+(dlDone?'скачано ✓':'')+'</span></button>';
-      html += '<div class="rs-note-k">Точная постраничная раскладка мусхафа Медины — 604 страницы, как в печати. С таджвидом это <b>тот же мединский шрифт</b>, но с вшитыми цветами правил. Тап по названию — переход по джузам/сурам, тап по аяту — тафсир. Скачайте мусхаф, чтобы листать без интернета.</div>';
+      html += '<div class="rs-note-k">'+(QPREFS.mode==='reading'?'Точная мединская страница (тот же шрифт и таджвид, что в «Странице») + перевод аятов под ней. ':'Точная постраничная раскладка мусхафа Медины — 604 страницы, как в печати. ')+'Тап по названию — переход по джузам/сурам, тап по аяту — тафсир. Поверните телефон — крупнее. Скачайте мусхаф, чтобы листать офлайн.</div>';
     } else {
       html += '<div class="rs-lbl">Шрифт</div><div class="rs-fonts">'+Q_FONTS.map(font).join('')+'</div>';
       html += '<div class="rs-lbl">Размер</div><div class="rs-size"><button type="button" onclick="setReaderFontSize(-1)" aria-label="Меньше">A−</button><span class="rs-size-val" id="rsSizeVal">'+QPREFS.fs+'</span><button type="button" onclick="setReaderFontSize(1)" aria-label="Больше">A+</button></div>';
-      html += '<div class="rs-lbl">Оформление</div>';
-      html += '<button type="button" class="rs-row" onclick="qToggleTj()"><span>Таджвид — цвета правил</span>'+sw(QPREFS.tj)+'</button>';
-      if(isKfgqpc()) html += '<div class="rs-note-k">'+(QPREFS.tj?'С таджвидом мусхаф показан насх-шрифтом (цвета правил). Выключите таджвид — вернётся точная каллиграфия Медины.':'Точная каллиграфия мусхафа Медины. Включите таджвид — добавятся цвета правил (насх-шрифт).')+'</div>';
-      if(QPREFS.mode==='reading') html += '<button type="button" class="rs-row" onclick="qToggleTr()"><span>Перевод под каждым аятом</span>'+sw(QPREFS.tr)+'</button>';
+      html += '<div class="rs-note-k">Сплошное чтение суры мединским шрифтом (работает офлайн). Цветной таджвид — в режимах «Страница» и «Чтение».</div>';
     }
     html += '<div class="rs-links"><button type="button" onclick="openTajweedLegend()">Правила таджвида</button><button type="button" onclick="openQuranStats()">Статистика чтения</button></div>';
     body.innerHTML=html;
@@ -4350,10 +4388,14 @@ https://azkar.nurtech.dev/app`);
     const x=document.getElementById('qSheetClose'), sc=document.getElementById('qSheetScrim');
     if(x) x.addEventListener('click', closeQSheet); if(sc) sc.addEventListener('click', closeQSheet);
     window.addEventListener('scroll', function(){
-      const a=activeScreen(); if(!(a&&a.id==='quranReader')) return; if(QPREFS.mode==='page') return; if(QURAN._raf) return;
+      const a=activeScreen(); if(!(a&&a.id==='quranReader')) return; if(qIsPageBased()) return; if(QURAN._raf) return;
       QURAN._raf=requestAnimationFrame(function(){ QURAN._raf=0; const ay=qCurrentAyah();
         if(ay&&ay!==QURAN._lastA){ QURAN._lastA=ay; if(QURAN.saveT) clearTimeout(QURAN.saveT); QURAN.saveT=setTimeout(function(){ qSavePos(QURAN.curN, ay); }, 400); } });
     }, { passive:true });
+    let _rt=null;
+    const refit=function(){ const a=activeScreen(); if(!(a&&a.id==='quranReader')) return; if(!qIsPageBased()) return; if(_rt) clearTimeout(_rt); _rt=setTimeout(function(){ qpFit(); if(QPREFS.mode==='page') window.scrollTo(0,0); }, 160); };
+    window.addEventListener('resize', refit, { passive:true });
+    window.addEventListener('orientationchange', refit, { passive:true });
   })();
 
   applyTheme();
