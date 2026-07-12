@@ -711,6 +711,7 @@
   .rs-sw i { position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:var(--ink-faint); transition:transform .18s, background .18s; }
   .rs-sw.on { background:var(--accent); border-color:var(--accent); }
   .rs-sw.on i { transform:translateX(18px); background:#fff; }
+  .rs-dl { flex:0 0 auto; font-size:13px; font-weight:700; color:var(--accent-deep); font-variant-numeric:tabular-nums; min-width:56px; text-align:right; }
   .rs-links { display:flex; flex-direction:column; gap:2px; margin-top:16px; }
   .rs-links button { text-align:left; padding:13px 4px; border:0; border-top:1px solid var(--line); background:none; color:var(--accent-deep); font:inherit; font-size:14.5px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 
@@ -3920,7 +3921,7 @@ https://azkar.nurtech.dev/app`);
   function qStats(){ try{ const s=JSON.parse(localStorage.getItem(QST_KEY)||'null'); if(s&&s.days) return s; }catch(e){} return { days:{}, totSec:0, totAy:0 }; }
   function qStatsSave(s){ const keys=Object.keys(s.days||{}).sort(); while(keys.length>120){ delete s.days[keys.shift()]; } try{ localStorage.setItem(QST_KEY, JSON.stringify(s)); }catch(e){} }
   function qAddSec(sec){ sec=Math.round(sec); if(sec<=0) return; const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].sec+=sec; s.totSec=(s.totSec||0)+sec; qStatsSave(s); }
-  function qMarkAyah(){ const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].ay+=1; s.totAy=(s.totAy||0)+1; qStatsSave(s); }
+  function qMarkAyah(){ if(QPREFS.mode==='page') return; const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].ay+=1; s.totAy=(s.totAy||0)+1; qStatsSave(s); }
   function qFmtMin(sec){ const m=Math.round((sec||0)/60); if(m<1) return sec>0?'меньше мин':'0 мин'; if(m<60) return m+' мин'; const h=Math.floor(m/60), mm=m%60; return h+' ч'+(mm?' '+mm+' м':''); }
 
   // ---- часы чтения ----
@@ -4046,7 +4047,7 @@ https://azkar.nurtech.dev/app`);
       for(let i=0;i<entries.length;i++){ if(entries[i].isIntersecting){ const a=parseInt(entries[i].target.dataset.a,10);
         if(QURAN.seen && !QURAN.seen.has(a)){ QURAN.seen.add(a); qMarkAyah(); } } }
     }, { root:null, rootMargin:'-90px 0px -55% 0px', threshold:0 });
-    document.querySelectorAll('#qrAyahs [data-a]').forEach(function(el){ QURAN.io.observe(el); });
+    document.querySelectorAll('#qrAyahs .q-ayah[data-a]').forEach(function(el){ QURAN.io.observe(el); });
   }
   function qRerender(){ if(!QURAN.cur) return; const a=qCurrentAyah();
     const after=function(){ renderReader(QURAN.cur, null); requestAnimationFrame(function(){ qScrollToAyah(a,false); qSetupObserver(); }); };
@@ -4062,12 +4063,43 @@ https://azkar.nurtech.dev/app`);
   const BASMALA='بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ';
   function qLoadPagesMeta(){ if(QURAN.pmeta) return Promise.resolve(QURAN.pmeta); return qFetchJSON('assets/quran/pages/meta.json').then(function(m){ QURAN.pmeta=m; return m; }); }
   function qLoadPage(n){ if(QURAN.pcache[n]) return Promise.resolve(QURAN.pcache[n]); return qFetchJSON('assets/quran/pages/'+n+'.json').then(function(d){ QURAN.pcache[n]=d; return d; }); }
+  const FONT_CACHE='mushaf-fonts-v1';
+  const pageFontUrl=function(n,taj){ return (taj?QCF_TAJ_CDN:QCF_CDN)+'p'+n+'.woff2'; };
+  // берём шрифт из Cache API (офлайн) либо из сети + кладём в кэш; отдаём blob-URL или исходный URL
+  function cachedFontSrc(url){
+    if(!('caches' in window)) return fetch(url,{mode:'cors'}).then(function(r){ if(!r.ok) throw 0; return r.blob(); }).then(function(b){ return URL.createObjectURL(b); }).catch(function(){ return url; });
+    return caches.open(FONT_CACHE).then(function(cache){
+      return cache.match(url).then(function(hit){
+        if(hit) return hit.blob().then(function(b){ return URL.createObjectURL(b); });
+        return fetch(url,{mode:'cors'}).then(function(r){ if(!r.ok) throw 0; return cache.put(url, r.clone()).then(function(){ return r.blob(); }); }).then(function(b){ return URL.createObjectURL(b); });
+      });
+    }).catch(function(){ return url; });
+  }
   function qLoadPageFont(n){ const taj=!!QPREFS.tj; const fam=(taj?'QCFT':'QCFP')+n;
     if(QURAN.pfonts[fam]) return QURAN.pfonts[fam];
-    const url=(taj?QCF_TAJ_CDN:QCF_CDN)+'p'+n+'.woff2';
-    const st=document.createElement('style'); st.textContent='@font-face{font-family:"'+fam+'";src:url("'+url+'") format("woff2");font-display:swap}'; document.head.appendChild(st);
-    const p=(window.FontFace&&document.fonts&&document.fonts.load)? document.fonts.load('30px "'+fam+'"').then(function(){ return fam; }).catch(function(){ return fam; }) : Promise.resolve(fam);
+    const p = cachedFontSrc(pageFontUrl(n,taj)).then(function(src){
+      const st=document.createElement('style'); st.textContent='@font-face{font-family:"'+fam+'";src:url("'+src+'") format("woff2");font-display:swap}'; document.head.appendChild(st);
+      if(!(window.FontFace&&document.fonts&&document.fonts.load)) return { fam:fam, ok:true };
+      return document.fonts.load('30px "'+fam+'"').then(function(fs){ return { fam:fam, ok: (fs&&fs.length>0) || document.fonts.check('30px "'+fam+'"') }; }).catch(function(){ return { fam:fam, ok:false }; });
+    });
     QURAN.pfonts[fam]=p; return p; }
+  // предзагрузка всех 604 шрифтов текущего варианта в кэш (офлайн-мусхаф)
+  let QDL={ running:false };
+  function downloadMushaf(){
+    if(QDL.running || !('caches' in window)) return; QDL.running=true;
+    const taj=!!QPREFS.tj; const el=document.getElementById('dlState'); if(el) el.textContent='0%';
+    caches.open(FONT_CACHE).then(function(cache){
+      const nums=[]; for(let i=1;i<=604;i++) nums.push(i);
+      let done=0; const total=604;
+      const worker=function(){ if(!nums.length) return Promise.resolve();
+        const n=nums.shift(); const url=pageFontUrl(n,taj);
+        return cache.match(url).then(function(hit){ if(hit) return; return fetch(url,{mode:'cors'}).then(function(r){ if(r.ok) return cache.put(url,r.clone()); }).catch(function(){}); })
+          .then(function(){ done++; if(el) el.textContent=Math.round(done/total*100)+'%'; return worker(); });
+      };
+      return Promise.all([worker(),worker(),worker(),worker(),worker(),worker()]);
+    }).then(function(){ if(el) el.textContent='скачано ✓'; try{ localStorage.setItem('azkar_mushaf_dl', taj?'t':'p'); }catch(e){} tgHaptic('medium'); QDL.running=false; })
+      .catch(function(){ if(el) el.textContent='ошибка'; QDL.running=false; });
+  }
   function pageSuraStartPage(s){ const m=QURAN.pmeta; return (m&&m.suraStart&&m.suraStart[s])||1; }
   function tafsirFromKey(vk){ const p=String(vk).split(':'); openTafsir(parseInt(p[0],10), parseInt(p[1],10)); }
   function suraNameRu(n){ const su=(QURAN.index||[]).find(function(x){ return x.n===n; }); return su?su.nr:('Сура '+n); }
@@ -4085,13 +4117,20 @@ https://azkar.nurtech.dev/app`);
     document.getElementById('qrBism').hidden=true;
     Promise.all([ qLoadPagesMeta().catch(function(){ return null; }), qLoadPage(n) ]).then(function(res){
       QURAN.pageData=res[1];
-      return qLoadPageFont(n).then(function(fam){ renderPageView(res[1], fam); });
-    }).then(function(){
+      return qLoadPageFont(n).then(function(r){
+        if(!r.ok){ throw { nofont:true }; }
+        renderPageView(res[1], r.fam);
+        if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
+        try{ localStorage.setItem('azkar_quran_page', String(n)); }catch(e){}
+        requestAnimationFrame(function(){ window.scrollTo(0,0); qpFit(); qClockStart(); });
+        tgHaptic('light');
+      });
+    }).catch(function(e){
       if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
-      try{ localStorage.setItem('azkar_quran_page', String(n)); }catch(e){}
-      requestAnimationFrame(function(){ window.scrollTo(0,0); qpFit(); qClockStart(); });
-      tgHaptic('light');
-    }).catch(function(){ wrap.innerHTML='<div class="qp-loading">Не удалось загрузить страницу.<br>Проверьте соединение.</div>'; });
+      QURAN.curPage=n; document.getElementById('qrTitle').textContent='Мусхаф'; document.getElementById('qrSub').textContent='страница '+n; qUpdatePageNav(n);
+      if(e&&e.nofont) wrap.innerHTML='<div class="qp-loading">Шрифт страницы недоступен офлайн.<br>Откройте настройки ⚙ и нажмите «Скачать мусхаф», либо включите интернет.</div>';
+      else wrap.innerHTML='<div class="qp-loading">Не удалось загрузить страницу.<br>Проверьте соединение.</div>';
+    });
   }
   function renderPageView(data, fam){
     const wrap=document.getElementById('qrAyahs');
@@ -4113,8 +4152,7 @@ https://azkar.nurtech.dev/app`);
       const center = (i===lines.length-1) || nextStartsSura;
       let ws='';
       for(let j=0;j<l.w.length;j++){ const w=l.w[j]; ws+='<span class="qp-w" data-k="'+w.k+'" onclick="tafsirFromKey(\''+w.k+'\')">'+escHtml(w.c)+'</span>'; }
-      const a0 = l.w.length ? l.w[0].k.split(':')[1] : '';
-      html += '<div class="qp-line'+(center?' center':'')+'" data-a="'+a0+'">'+ws+'</div>';
+      html += '<div class="qp-line'+(center?' center':'')+'">'+ws+'</div>';
     }
     wrap.innerHTML='<div class="qp-page'+(QPREFS.tj?' qp-paper':'')+'">'+html+'</div>';
     // шапка
@@ -4128,8 +4166,16 @@ https://azkar.nurtech.dev/app`);
     let maxW=0; page.querySelectorAll('.qp-line:not(.center)').forEach(function(l){ let s=0; l.querySelectorAll('.qp-w').forEach(function(w){ s+=w.getBoundingClientRect().width; }); if(s>maxW) maxW=s; });
     if(maxW<=0) return;
     const cur=parseFloat(getComputedStyle(page).fontSize)||23;
-    let nf=cur*(avail/maxW); nf=Math.min(nf, 30); nf=Math.max(13, nf);
+    let nf=cur*(avail/maxW); nf=Math.min(nf, 30); nf=Math.max(11, nf);
     page.style.setProperty('--qp-size', nf.toFixed(1)+'px');
+    // ужать по ВЫСОТЕ, чтобы страница влезала в экран целиком (как в мусхафе)
+    requestAnimationFrame(function(){
+      const navEl=document.querySelector('#quranReader .qr-nav');
+      const reserve = (navEl?navEl.offsetHeight:70) + 24;
+      const availH = window.innerHeight - page.getBoundingClientRect().top - reserve;
+      const ph = page.getBoundingClientRect().height;
+      if(ph>availH && availH>140){ let nf2 = nf*(availH/ph); nf2=Math.max(10, nf2); if(nf2<nf-0.3) page.style.setProperty('--qp-size', nf2.toFixed(1)+'px'); }
+    });
   }
   function qUpdatePageNav(p){
     const prev=document.getElementById('qrPrev'), next=document.getElementById('qrNext');
@@ -4189,7 +4235,10 @@ https://azkar.nurtech.dev/app`);
     if(isPage){
       html += '<div class="rs-lbl">Оформление</div>';
       html += '<button type="button" class="rs-row" onclick="qToggleTj()"><span>Таджвид — цвета правил</span>'+sw(QPREFS.tj)+'</button>';
-      html += '<div class="rs-note-k">Точная постраничная раскладка мусхафа Медины — 604 страницы, как в печати. С таджвидом это <b>тот же мединский шрифт</b>, но с вшитыми цветами правил. Тап по названию — переход по джузам/сурам, тап по аяту — тафсир.</div>';
+      html += '<div class="rs-lbl">Офлайн</div>';
+      const dlDone = (function(){ try{ return localStorage.getItem('azkar_mushaf_dl'); }catch(e){ return null; } })();
+      html += '<button type="button" class="rs-row" onclick="downloadMushaf()"><span>⬇ Скачать мусхаф для офлайн<br><small style="color:var(--ink-faint);font-weight:400">все 604 страницы · ~25 МБ</small></span><span class="rs-dl" id="dlState">'+(dlDone?'скачано ✓':'')+'</span></button>';
+      html += '<div class="rs-note-k">Точная постраничная раскладка мусхафа Медины — 604 страницы, как в печати. С таджвидом это <b>тот же мединский шрифт</b>, но с вшитыми цветами правил. Тап по названию — переход по джузам/сурам, тап по аяту — тафсир. Скачайте мусхаф, чтобы листать без интернета.</div>';
     } else {
       html += '<div class="rs-lbl">Шрифт</div><div class="rs-fonts">'+Q_FONTS.map(font).join('')+'</div>';
       html += '<div class="rs-lbl">Размер</div><div class="rs-size"><button type="button" onclick="setReaderFontSize(-1)" aria-label="Меньше">A−</button><span class="rs-size-val" id="rsSizeVal">'+QPREFS.fs+'</span><button type="button" onclick="setReaderFontSize(1)" aria-label="Больше">A+</button></div>';
