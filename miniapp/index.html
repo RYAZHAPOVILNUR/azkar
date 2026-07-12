@@ -671,6 +671,17 @@
   .q-week .wk i { width:100%; max-width:22px; min-height:3px; border-radius:5px 5px 3px 3px; background:color-mix(in srgb, var(--accent) 55%, var(--accent-soft)); transition:height .3s; }
   .q-week .wk .wl { font-size:10px; color:var(--ink-faint); }
 
+  /* тафсир ас-Саади по клику на аят */
+  .q-ar { cursor:pointer; }
+  .q-tafsir-btn { display:inline-flex; align-items:center; gap:6px; margin-top:11px; padding:6px 12px; border-radius:999px;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); font:inherit; font-size:12.5px; font-weight:600;
+    cursor:pointer; direction:ltr; -webkit-tap-highlight-color:transparent; transition:background .15s, transform .12s, color .15s; }
+  .q-tafsir-btn:active { transform:scale(.96); background:var(--surface-2); }
+  .q-tafsir-btn svg { flex:0 0 auto; color:var(--accent-deep); }
+  .q-taf-sub { font-size:12px; letter-spacing:.4px; text-transform:uppercase; color:var(--accent-deep); font-weight:700; margin-bottom:10px; }
+  .q-taf-text { font-size:15.5px; line-height:1.75; color:var(--ink); white-space:pre-line; }
+  .q-taf-loading { padding:18px 2px; color:var(--ink-faint); font-size:14px; text-align:center; }
+
   @media (prefers-reduced-motion: reduce) { *, *:before, *:after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 </style>
 
@@ -3881,8 +3892,11 @@ https://azkar.nurtech.dev/app`);
     let html='';
     for(let i=0;i<su.a.length;i++){ const a=su.a[i];
       const ar = QPREFS.tj ? tjRender(a.tj) : escHtml(a.ar);
-      html += '<div class="q-ayah" data-a="'+a.n+'"><div class="q-ar">'+ar+'<span class="q-num">'+a.n+'</span></div>'
-        + (QPREFS.tr ? '<div class="q-tr">'+escHtml(a.ru)+'</div>' : '') + '</div>';
+      html += '<div class="q-ayah" data-a="'+a.n+'">'
+        + '<div class="q-ar" onclick="openTafsir('+su.n+','+a.n+')" title="Открыть тафсир ас-Саади">'+ar+'<span class="q-num">'+a.n+'</span></div>'
+        + (QPREFS.tr ? '<div class="q-tr">'+escHtml(a.ru)+'</div>' : '')
+        + '<button type="button" class="q-tafsir-btn" onclick="openTafsir('+su.n+','+a.n+')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H19a1 1 0 0 1 1 1v13.5"/><path d="M6 4v13.5"/><path d="M6.5 17.5H20"/><path d="M6.5 21H18a2 2 0 0 0 2-2v-.5"/></svg>Тафсир ас-Саади</button>'
+        + '</div>';
     }
     const wrap=document.getElementById('qrAyahs');
     wrap.innerHTML=html;
@@ -3966,6 +3980,30 @@ https://azkar.nurtech.dev/app`);
     const set=function(nr){ sub.textContent='Продолжить: '+nr+' · аят '+(pos.a||1); };
     if(QURAN.index){ const su=QURAN.index.find(function(x){ return x.n===pos.s; }); set(su?su.nr:('Сура '+pos.s)); }
     else qLoadIndex().then(function(idx){ const su=idx.find(function(x){ return x.n===pos.s; }); set(su?su.nr:('Сура '+pos.s)); }).catch(function(){ set('Сура '+pos.s); });
+  }
+
+  // ---- тафсир ас-Саади по клику на аят ----
+  const QTAF = { cache:{} };
+  function qLoadTafsir(s){ if(QTAF.cache[s]) return Promise.resolve(QTAF.cache[s]); return qFetchJSON('assets/quran/tafsir/'+s+'.json').then(function(d){ QTAF.cache[s]=d; return d; }); }
+  function tafsirRangeFor(list, a){ if(!Array.isArray(list)) return null; for(let i=0;i<list.length;i++){ if(a>=list[i].f && a<=list[i].t) return list[i]; } return null; }
+  function openTafsir(s, a){
+    s=parseInt(s,10); a=parseInt(a,10);
+    document.getElementById('qSheetTitle').textContent='Тафсир ас-Саади';
+    document.getElementById('qSheetBody').innerHTML='<div class="q-taf-loading">Загрузка тафсира…</div>';
+    openQSheet();
+    qLoadTafsir(s).then(function(list){
+      const r=tafsirRangeFor(list, a);
+      const body=document.getElementById('qSheetBody');
+      if(!r || !r.x){ body.innerHTML='<div class="m-note">Для этого аята тафсир ас-Саади пока недоступен.</div>'; return; }
+      const su=QURAN.index ? QURAN.index.find(function(x){ return x.n===s; }) : null;
+      const nm=su ? su.nr : ('Сура '+s);
+      const rangeLabel = r.f===r.t ? ('аят '+r.f) : ('аяты '+r.f+'–'+r.t);
+      const txt = String(r.x).replace(/^\s*-(\d+)\s*/, '($1) ');
+      body.innerHTML =
+        '<div class="q-taf-sub">'+escHtml(nm)+' · '+rangeLabel+'</div>'
+        +'<div class="q-taf-text">'+escHtml(txt)+'</div>'
+        +'<div class="m-note">Тафсир ас-Саади (‘Абд ар-Рахман ибн Насир ас-Саади), русский перевод. Толкование даётся к пассажу целиком — как в печатном издании.</div>';
+    }).catch(function(){ document.getElementById('qSheetBody').innerHTML='<div class="m-note">Не удалось загрузить тафсир. Проверьте соединение и попробуйте снова.</div>'; });
   }
 
   (function(){
