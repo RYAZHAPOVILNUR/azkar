@@ -2597,6 +2597,21 @@
       updateSessionTimeHints(t);
     }catch(e){}
   }
+  async function fetchApproxTimes(){
+    if(loc || !CLIENT_TZ) return;
+    try{
+      const r = await fetch(`/api/approx-times?tz=${encodeURIComponent(CLIENT_TZ)}&madhab=${madhab}`);
+      if(!r.ok) return;
+      const t = await r.json();
+      latestTimes = t;
+      const rm=document.getElementById('remMorning'), re=document.getElementById('remEvening');
+      const city = t.city ? ` (${t.city})` : '';
+      if(rm){ rm.textContent=fmtTime(t.fajr); document.getElementById('remMorningDesc').textContent='Примерно по таймзоне'+city; }
+      if(re){ re.textContent=fmtTime(t.asr); document.getElementById('remEveningDesc').textContent='Примерно по таймзоне'+city; }
+      updateNextPrayer(t);
+      updateSessionTimeHints(t);
+    }catch(e){}
+  }
 
   function setLocStatus(s){ const el=document.getElementById('locStatus'); if(el) el.textContent=s; }
   function locDone(){ const b=document.getElementById('locBtn'); b.classList.add('done'); b.textContent='Местоположение определено'; }
@@ -2665,14 +2680,14 @@
   document.getElementById('locBtn').addEventListener('click', requestLocation);
   document.querySelectorAll('#madhabSeg button').forEach(b=> b.addEventListener('click', ()=>{
     madhab = b.dataset.madhab; localStorage.setItem('azkar_madhab', madhab);
-    renderMadhab(); fetchTimes(); postLocation();
+    renderMadhab(); fetchTimes(); fetchApproxTimes(); postLocation();
   }));
   renderMadhab();
-  if(loc){ locDone(); setLocStatus('Напоминания по времени намаза'); fetchTimes(); }
+  if(loc){ locDone(); setLocStatus('Напоминания по времени намаза'); fetchTimes(); } else fetchApproxTimes();
   setInterval(()=>{ if(latestTimes){ updateNextPrayer(latestTimes); updateSessionTimeHints(latestTimes); } }, 30000);
-  setInterval(()=>{ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); }, 60000);
-  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); } });
-  window.addEventListener('focus', ()=>{ if(loc) fetchTimes(); else ensureProgressFresh(todayStr()); });
+  setInterval(()=>{ if(loc) fetchTimes(); else { fetchApproxTimes(); ensureProgressFresh(todayStr()); } }, 60000);
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ if(loc) fetchTimes(); else { fetchApproxTimes(); ensureProgressFresh(todayStr()); } } });
+  window.addEventListener('focus', ()=>{ if(loc) fetchTimes(); else { fetchApproxTimes(); ensureProgressFresh(todayStr()); } });
   updateStreakUI(); updateHomeProgress();
 
   /* ---- добавить приложение иконкой на главный экран телефона ---- */
