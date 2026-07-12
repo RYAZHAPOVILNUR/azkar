@@ -493,7 +493,7 @@
   :root[data-theme="dark"] .modal .m-actions .primary { color:var(--bg); }
   @media (prefers-color-scheme: dark){ :root:not([data-theme]) .modal .m-actions .primary { color:var(--bg); } }
   .share-preview { margin-top:12px; border-radius:22px; overflow:hidden; border:1px solid var(--line); background:var(--surface-2); box-shadow:var(--shadow-card); }
-  .share-preview canvas { width:100%; display:block; aspect-ratio:4/5; }
+  .share-preview canvas { width:100%; display:block; aspect-ratio:9/16; }
   .share-tools { margin-top:14px; display:flex; flex-direction:column; gap:10px; }
   .share-bg-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
   .share-bg { height:42px; border-radius:14px; border:1px solid var(--line); cursor:pointer; position:relative; overflow:hidden; }
@@ -905,7 +905,7 @@
         <div class="m-title">Открытка зикра</div>
         <button class="m-close" id="shareClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
-      <div class="share-preview"><canvas id="shareCanvas" width="1080" height="1350"></canvas></div>
+      <div class="share-preview"><canvas id="shareCanvas" width="1080" height="1920"></canvas></div>
       <div class="share-tools">
         <div class="share-bg-row">
           <button type="button" class="share-bg" data-share-bg="paper" aria-label="Фон бумага"></button>
@@ -2068,6 +2068,51 @@ https://azkar.nurtech.dev/app`);
     setShareFont(ctx, weight, size, family);
     return fitLines(ctx, text, maxWidth, maxLines);
   }
+  function shareLayout(ctx, maxW, availableH){
+    const sans = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    const serif = 'Georgia, "Times New Roman", serif';
+    const arFamily = '"Times New Roman", "Arial", serif';
+    const raw = {
+      ar: shareZ.ar || '',
+      tl: shareZ.tl || '',
+      tr: shareZ.tr || '',
+      src: shareZ.src || 'Достоверная Сунна',
+    };
+    let best = null;
+    for(let scale = 1; scale >= .18; scale -= .025){
+      const cfg = {
+        arSize: Math.round(58 * scale),
+        arLine: Math.round(78 * scale),
+        tlSize: Math.round(26 * scale),
+        tlLine: Math.round(36 * scale),
+        trSize: Math.round(30 * scale),
+        trLine: Math.round(43 * scale),
+        srcSize: Math.round(22 * scale),
+        srcLine: Math.round(31 * scale),
+        gap1: Math.round(26 * scale),
+        gap2: Math.round(24 * scale),
+        gap3: Math.round(26 * scale),
+      };
+      cfg.arSize = Math.max(16, cfg.arSize); cfg.arLine = Math.max(23, cfg.arLine);
+      cfg.tlSize = Math.max(10, cfg.tlSize); cfg.tlLine = Math.max(15, cfg.tlLine);
+      cfg.trSize = Math.max(11, cfg.trSize); cfg.trLine = Math.max(17, cfg.trLine);
+      cfg.srcSize = Math.max(10, cfg.srcSize); cfg.srcLine = Math.max(15, cfg.srcLine);
+      cfg.gap1 = Math.max(8, cfg.gap1); cfg.gap2 = Math.max(7, cfg.gap2); cfg.gap3 = Math.max(8, cfg.gap3);
+      const lines = {
+        ar: shareLinesForFont(ctx, raw.ar, maxW, 0, 600, cfg.arSize, arFamily),
+        tl: raw.tl ? shareLinesForFont(ctx, raw.tl, maxW, 0, 500, cfg.tlSize, sans) : [],
+        tr: raw.tr ? shareLinesForFont(ctx, raw.tr, maxW, 0, 500, cfg.trSize, serif) : [],
+        src: shareLinesForFont(ctx, raw.src, maxW, 0, 700, cfg.srcSize, sans),
+      };
+      const h = lines.ar.length*cfg.arLine
+        + (lines.tl.length ? cfg.gap1 + lines.tl.length*cfg.tlLine : 0)
+        + (lines.tr.length ? cfg.gap2 + lines.tr.length*cfg.trLine : 0)
+        + cfg.gap3 + lines.src.length*cfg.srcLine;
+      best = { ...cfg, ...lines, sans, serif, arFamily, height:h };
+      if(h <= availableH) return best;
+    }
+    return best;
+  }
   function drawShareCanvas(){
     const canvas = document.getElementById('shareCanvas');
     if(!canvas || !shareZ) return;
@@ -2087,9 +2132,9 @@ https://azkar.nurtech.dev/app`);
     }
     ctx.save();
     ctx.globalAlpha = .12; ctx.strokeStyle = theme.accent; ctx.lineWidth = 8;
-    for(let i=0;i<3;i++){ roundRect(ctx, 132+i*18, 116+i*18, W-264-i*36, H-232-i*36, 54); ctx.stroke(); }
+    for(let i=0;i<3;i++){ roundRect(ctx, 118+i*18, 112+i*18, W-236-i*36, H-224-i*36, 54); ctx.stroke(); }
     ctx.restore();
-    const cardX=86, cardY=108, cardW=W-172, cardH=H-216;
+    const cardX=78, cardY=110, cardW=W-156, cardH=H-220;
     ctx.save();
     ctx.globalAlpha = shareStyle.bg === 'night' ? .20 : .72;
     ctx.fillStyle = shareStyle.bg === 'night' ? '#0D1417' : '#FFFDF7';
@@ -2109,50 +2154,40 @@ https://azkar.nurtech.dev/app`);
     const maxW = cardW - 116;
     const left = cardX + 58;
     const right = cardX + cardW - 58;
-    const footerY = cardY + cardH - 92;
-    const sourceY = footerY - 72;
-    const contentBottom = sourceY - 26;
-    let y = cardY + 178;
+    const contentTop = cardY + 178;
+    const footerY = cardY + cardH - 82;
+    const availableH = footerY - contentTop - 46;
+    const layout = shareLayout(ctx, maxW, availableH);
+    let y = contentTop + Math.max(0, Math.floor((availableH - layout.height) / 2));
     ctx.direction = 'rtl';
     ctx.textAlign = 'right';
     ctx.fillStyle = theme.ink;
-    const arFamily = '"Times New Roman", "Arial", serif';
-    let arSize = 56, arLine = 78, arLines = [];
-    const arMaxH = 390;
-    while(arSize >= 38){
-      arLine = Math.round(arSize * 1.38);
-      arLines = shareLinesForFont(ctx, shareZ.ar || '', maxW, Math.floor(arMaxH / arLine), 600, arSize, arFamily);
-      if(arLines.length * arLine <= arMaxH) break;
-      arSize -= 4;
-    }
-    y = drawWrapped(ctx, shareZ.ar || '', right, y, maxW, arLine, { lines:arLines }) + 24;
+    setShareFont(ctx, 600, layout.arSize, layout.arFamily);
+    y = drawWrapped(ctx, shareZ.ar || '', right, y, maxW, layout.arLine, { lines:layout.ar }) + layout.gap1;
     ctx.direction = 'ltr';
     ctx.textAlign = 'left';
-    if(shareZ.tl && y < contentBottom - 120){
+    if(layout.tl.length){
       ctx.fillStyle = theme.soft;
-      setShareFont(ctx, 500, 25, '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
-      y = drawWrapped(ctx, shareZ.tl, left, y, maxW, 35, { maxLines:2 }) + 24;
+      setShareFont(ctx, 500, layout.tlSize, layout.sans);
+      y = drawWrapped(ctx, shareZ.tl, left, y, maxW, layout.tlLine, { lines:layout.tl }) + layout.gap2;
     }
-    if(shareZ.tr && y < contentBottom - 54){
+    if(layout.tr.length){
       ctx.fillStyle = theme.ink;
-      const available = Math.max(54, contentBottom - y);
-      const trLine = 43;
-      const trLines = Math.max(1, Math.min(5, Math.floor(available / trLine)));
-      setShareFont(ctx, 500, 29, 'Georgia, "Times New Roman", serif');
-      y = drawWrapped(ctx, shareZ.tr, left, y, maxW, trLine, { maxLines:trLines }) + 20;
+      setShareFont(ctx, 500, layout.trSize, layout.serif);
+      y = drawWrapped(ctx, shareZ.tr, left, y, maxW, layout.trLine, { lines:layout.tr }) + layout.gap3;
     }
     ctx.save();
     ctx.globalAlpha = shareStyle.bg === 'night' ? .34 : .18;
     ctx.strokeStyle = theme.soft;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(left, sourceY - 26);
-    ctx.lineTo(right, sourceY - 26);
+    ctx.moveTo(left, y - Math.round(layout.gap3 * .55));
+    ctx.lineTo(right, y - Math.round(layout.gap3 * .55));
     ctx.stroke();
     ctx.restore();
     ctx.fillStyle = theme.soft;
-    setShareFont(ctx, 700, 22, '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
-    drawWrapped(ctx, shareZ.src || 'Достоверная Сунна', left, sourceY, maxW, 30, { maxLines:1 });
+    setShareFont(ctx, 700, layout.srcSize, layout.sans);
+    drawWrapped(ctx, shareZ.src || 'Достоверная Сунна', left, y, maxW, layout.srcLine, { lines:layout.src });
     ctx.fillStyle = theme.accent;
     setShareFont(ctx, 700, 25, '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
     ctx.fillText('azkar.nurtech.dev', left, footerY);
