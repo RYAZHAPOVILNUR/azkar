@@ -2159,11 +2159,15 @@
 
   function applyLearnMode(){
     if(!['full','check','memory'].includes(LEARN_MODE)) LEARN_MODE = 'full';
+    const enabled = CURRENT_KEY === 'favorites';
     const list = document.getElementById('zikrList');
-    if(list) list.dataset.learn = LEARN_MODE;
+    if(list) list.dataset.learn = enabled ? LEARN_MODE : 'full';
+    const seg = document.getElementById('learnSeg');
+    if(seg) seg.hidden = !enabled;
     document.querySelectorAll('#learnSeg button').forEach(b=> b.classList.toggle('on', b.dataset.learn === LEARN_MODE));
     const hint = document.getElementById('learnHint');
     if(hint){
+      hint.hidden = !enabled;
       hint.textContent = LEARN_MODE === 'full'
         ? 'Арабский, транскрипция и перевод видны полностью'
         : LEARN_MODE === 'check'
