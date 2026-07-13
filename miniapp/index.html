@@ -3456,7 +3456,9 @@ https://azkar.nurtech.dev/app`);
       const titleHtml = cleanTitle ? `<div class="zikr-title">${azkarEsc(cleanTitle)}${chapterTitle && chapterTitle !== cleanTitle ? `<span class="muted">${azkarEsc(chapterTitle)}</span>` : ''}</div>` : '';
       const status = azkarStatusLabel(z);
       const metaHtml = `<div class="zikr-meta"><span class="verify-pill ${status.cls}">${azkarEsc(status.text)}</span></div>`;
-      const audioBtn = '';
+      const audioBtn = azkarHasAudio(z)
+        ? `<button class="mini audio-btn js-audio" title="Прослушать" aria-label="Прослушать аскар"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>`
+        : '';
       if(catId){
         const groupTitle = azkarCategoryGroupTitle(z, data.title);
         if(groupTitle && groupTitle !== lastCategoryGroup){
