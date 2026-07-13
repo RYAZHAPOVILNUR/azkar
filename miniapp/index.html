@@ -823,32 +823,43 @@
   .q-toast.show { opacity:1; transform:translate(-50%, 0); }
   /* радио */
   .iconbtn.on { color:var(--accent-deep); background:var(--accent-soft); }
-  /* Кибла — компас направления на Каабу */
-  .qibla-wrap { display:flex; flex-direction:column; align-items:center; gap:26px; padding:26px 20px 48px; }
-  .qibla-dial { position:relative; width:min(80vw, 300px); aspect-ratio:1; border-radius:50%;
-    background:radial-gradient(circle at 50% 40%, var(--surface), var(--surface-2));
-    box-shadow: inset 0 0 0 1px var(--line), 0 12px 34px rgba(0,0,0,.14); transition:box-shadow .2s; }
-  .qibla-dial.aligned { box-shadow: inset 0 0 0 2px var(--accent), 0 0 30px color-mix(in srgb, var(--accent) 45%, transparent); }
-  .qd-fixed { position:absolute; top:-9px; left:50%; transform:translateX(-50%); color:var(--accent); z-index:3; line-height:0; }
+  /* Кибла — компас направления на киблу */
+  .qibla-wrap { display:flex; flex-direction:column; align-items:center; gap:18px; padding:20px 20px 42px; }
+  .qibla-dial { position:relative; width:min(78vw, 288px); aspect-ratio:1; border-radius:50%;
+    background:radial-gradient(circle at 50% 36%, var(--surface), var(--surface-2) 74%, color-mix(in srgb,var(--surface-2) 82%, var(--ink)) 100%);
+    box-shadow: inset 0 0 0 1px var(--line), inset 0 2px 12px rgba(0,0,0,.06), 0 16px 42px rgba(0,0,0,.16); transition:box-shadow .25s; }
+  .qibla-dial.aligned { box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 6px color-mix(in srgb,var(--accent) 14%, transparent), 0 16px 46px color-mix(in srgb,var(--accent) 42%, transparent); }
+  .qd-glow { position:absolute; inset:9%; border-radius:50%; box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 65%, transparent); pointer-events:none; }
+  .qd-fixed { position:absolute; top:-12px; left:50%; transform:translateX(-50%); color:var(--accent); z-index:5; line-height:0; filter:drop-shadow(0 1px 1px rgba(0,0,0,.18)); }
   .qd-rose { position:absolute; inset:0; will-change:transform; }
-  .qd-card { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:13px; font-weight:800; color:var(--ink-faint); }
-  .qd-n { top:16px; color:var(--accent-deep); }
-  .qd-s { top:auto; bottom:16px; }
-  .qd-e { left:auto; right:16px; }
-  .qd-w { left:16px; }
-  .qd-needle { position:absolute; inset:0; will-change:transform; z-index:2; }
-  .qd-line { position:absolute; left:50%; top:12%; width:4px; height:38%; transform:translateX(-50%); border-radius:4px;
-    background:linear-gradient(var(--accent), color-mix(in srgb, var(--accent) 25%, transparent)); }
-  .qd-kaaba { position:absolute; left:50%; top:3%; transform:translateX(-50%); font-size:28px; line-height:1; filter:drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
-  .qd-center { position:absolute; left:50%; top:50%; width:14px; height:14px; border-radius:50%; background:var(--accent); transform:translate(-50%,-50%); z-index:2; box-shadow:0 0 0 4px var(--surface); }
-  .qibla-info { display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; max-width:340px; }
-  .qi-status { font-size:15px; font-weight:600; color:var(--ink); text-align:center; min-height:20px; }
+  .qd-ticks { position:absolute; inset:0; }
+  .qd-tick { position:absolute; left:50%; top:0; height:50%; width:2px; margin-left:-1px; transform-origin:bottom center; }
+  .qd-tick::before { content:''; position:absolute; top:5px; left:0; width:100%; height:7px; border-radius:1px; background:var(--ink-faint); opacity:.45; }
+  .qd-tick.major::before { height:12px; opacity:.85; background:var(--ink-soft); }
+  .qd-card { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:13px; font-weight:800; color:var(--ink-faint); z-index:2; }
+  .qd-n { top:22px; color:var(--accent-deep); font-size:15px; }
+  .qd-s { top:auto; bottom:22px; }
+  .qd-e { left:auto; right:22px; }
+  .qd-w { left:22px; }
+  .qd-needle { position:absolute; inset:0; will-change:transform; z-index:3; }
+  .qd-arrow { position:absolute; left:50%; top:15%; width:13px; height:35%; margin-left:-6.5px;
+    background:linear-gradient(var(--accent), color-mix(in srgb,var(--accent) 50%, var(--surface))); clip-path:polygon(50% 0, 100% 88%, 50% 100%, 0 88%);
+    box-shadow:0 2px 9px color-mix(in srgb,var(--accent) 35%, transparent); }
+  .qd-marker { position:absolute; left:50%; top:0; transform:translateX(-50%); color:var(--accent-deep); filter:drop-shadow(0 2px 3px rgba(0,0,0,.22)); }
+  .qibla-dial.aligned .qd-marker { color:var(--accent); }
+  .qd-hub { position:absolute; left:50%; top:50%; width:16px; height:16px; border-radius:50%; background:var(--surface); transform:translate(-50%,-50%); z-index:4; box-shadow:0 0 0 3px var(--accent), 0 1px 3px rgba(0,0,0,.2); }
+  .qibla-info { display:flex; flex-direction:column; align-items:center; gap:12px; width:100%; max-width:340px; }
+  .qi-big { display:flex; flex-direction:column; align-items:center; gap:0; }
+  .qi-big b { font-size:36px; font-weight:800; color:var(--ink); line-height:1.05; font-variant-numeric:tabular-nums; }
+  .qibla-dial.aligned + .qibla-info .qi-big b, .qi-big.on b { color:var(--accent-deep); }
+  .qi-big span { font-size:12px; color:var(--ink-faint); }
+  .qi-status { font-size:13.5px; font-weight:600; color:var(--ink-soft); text-align:center; min-height:17px; }
   .qi-enable { border:0; border-radius:999px; padding:11px 22px; background:var(--accent); color:var(--surface); font:inherit; font-weight:700; font-size:14px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
   .qi-enable:active { background:var(--accent-deep); }
-  .qi-metrics { display:flex; gap:14px; width:100%; }
-  .qi-m { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:14px 10px; border-radius:16px; background:var(--surface-2); }
-  .qi-m b { font-size:22px; font-weight:800; color:var(--ink); }
-  .qi-m span { font-size:11.5px; color:var(--ink-faint); text-align:center; }
+  .qi-metrics { display:flex; gap:12px; width:100%; }
+  .qi-m { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:12px 10px; border-radius:16px; background:var(--surface-2); }
+  .qi-m b { font-size:20px; font-weight:800; color:var(--ink); }
+  .qi-m span { font-size:11px; color:var(--ink-faint); text-align:center; }
   .qi-hint { font-size:12px; color:var(--ink-faint); text-align:center; line-height:1.4; }
   /* режим Сура — сплошной цветной мединский */
   .q-flow .qr-flow { direction:rtl; text-align:center; font-size:var(--q-ar-size, 30px); line-height:2.15; color:var(--ink);
@@ -1449,25 +1460,28 @@
     </div>
     <div class="qibla-wrap">
       <div class="qibla-dial" id="qiblaDial">
-        <div class="qd-fixed" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l6 8H6z"/></svg></div>
+        <div class="qd-fixed" aria-hidden="true"><svg width="20" height="14" viewBox="0 0 24 16" fill="currentColor"><path d="M12 16L4 0h16z"/></svg></div>
+        <div class="qd-glow" aria-hidden="true"></div>
         <div class="qd-rose" id="qdRose">
+          <div class="qd-ticks" id="qdTicks" aria-hidden="true"></div>
           <span class="qd-card qd-n">С</span>
           <span class="qd-card qd-e">В</span>
           <span class="qd-card qd-s">Ю</span>
           <span class="qd-card qd-w">З</span>
         </div>
         <div class="qd-needle" id="qdNeedle">
-          <div class="qd-line"></div>
-          <div class="qd-kaaba">🕋</div>
+          <div class="qd-arrow"></div>
+          <div class="qd-marker" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.4c-1 .9-1.5 1.8-1.5 2.7 0 .9.6 1.5 1.5 1.5s1.5-.6 1.5-1.5c0-.9-.5-1.8-1.5-2.7z"/><path d="M3 22v-6.2c0-1.9 1-3.3 2.4-3.9V9.2h1.1v2.5c.5.2 1 .5 1.4.9V22H3z"/><path d="M16.1 12.6c.4-.4.9-.7 1.4-.9V9.2h1.1v2.7c1.4.6 2.4 2 2.4 3.9V22h-4.9V12.6z"/><path d="M8 22v-7.5a4 4 0 0 1 8 0V22h-2.7v-3.8a1.3 1.3 0 0 0-2.6 0V22H8z"/></svg></div>
         </div>
-        <div class="qd-center"></div>
+        <div class="qd-hub"></div>
       </div>
       <div class="qibla-info">
+        <div class="qi-big"><b id="qiblaOff">—</b><span id="qiblaOffL">до киблы</span></div>
         <div class="qi-status" id="qiblaStatus">Определяем направление…</div>
         <button type="button" class="qi-enable" id="qiblaEnable" hidden onclick="qiblaEnableCompass()">Включить компас</button>
         <div class="qi-metrics">
           <div class="qi-m"><b id="qiblaDeg">—</b><span>азимут от севера</span></div>
-          <div class="qi-m"><b id="qiblaDist">—</b><span>до Каабы</span></div>
+          <div class="qi-m"><b id="qiblaDist">—</b><span>до Мекки</span></div>
         </div>
         <div class="qi-hint" id="qiblaHint">Держи телефон горизонтально. Компас может требовать калибровки — поводи им «восьмёркой».</div>
       </div>
@@ -5406,7 +5420,10 @@ https://azkar.nurtech.dev/app`);
 
   // ---- Кибла: направление на Каабу (азимут + живой компас) ----
   const KAABA = { lat:21.4225, lng:39.8262 };
-  const QIBLA = { lat:null, lng:null, bearing:0, dist:0, targetHeading:null, displayHeading:null, rawHeading:null, listening:false, ev:null, fbTimer:null, raf:0, animTs:0, alignedHapt:false, lastStatus:'', lastStatusAt:0 };
+  const QIBLA = { lat:null, lng:null, bearing:0, dist:0, targetHeading:null, displayHeading:null, rawHeading:null, listening:false, ev:null, fbTimer:null, raf:0, animTs:0, alignedHapt:false, lastStatus:'', lastStatusAt:0, lastHaptHeading:null, ticksBuilt:false };
+  function qiblaBuildTicks(){ if(QIBLA.ticksBuilt) return; const box=document.getElementById('qdTicks'); if(!box) return;
+    let html=''; for(let i=0;i<72;i++){ html+='<div class="qd-tick'+(i%6===0?' major':'')+'" style="transform:rotate('+(i*5)+'deg)"></div>'; }
+    box.innerHTML=html; QIBLA.ticksBuilt=true; }
   function qiblaBearingDeg(lat,lng){ const r=Math.PI/180, f1=lat*r, f2=KAABA.lat*r, dl=(KAABA.lng-lng)*r;
     const y=Math.sin(dl), x=Math.cos(f1)*Math.tan(f2)-Math.sin(f1)*Math.cos(dl);
     return (Math.atan2(y,x)/r+360)%360; }
@@ -5424,7 +5441,7 @@ https://azkar.nurtech.dev/app`);
     const step=Math.max(-maxStep, Math.min(maxStep, d*follow));
     return qiblaNormDeg(current+step);
   }
-  function openQibla(){ go('qibla'); qiblaInit(); }
+  function openQibla(){ go('qibla'); qiblaBuildTicks(); qiblaInit(); }
   function qiblaSetStatus(s){ const el=document.getElementById('qiblaStatus'); if(el) el.textContent=s; }
   function qiblaSetStatusSoft(s, force){
     const now=Date.now();
@@ -5459,12 +5476,14 @@ https://azkar.nurtech.dev/app`);
   function qiblaAttach(){ if(QIBLA.listening) return; QIBLA.listening=true;
     QIBLA.ev = ('ondeviceorientationabsolute' in window) ? 'deviceorientationabsolute' : 'deviceorientation';
     window.addEventListener(QIBLA.ev, qiblaOnOrient, true);
-    qiblaSetStatus('Поверни телефон — 🕋 укажет на Каабу');
+    qiblaSetStatus('Поворачивай телефон — метка укажет на киблу');
     qiblaStartAnim();
     if(QIBLA.fbTimer) clearTimeout(QIBLA.fbTimer);
     QIBLA.fbTimer=setTimeout(function(){ if(QIBLA.targetHeading==null) qiblaNoCompass(); }, 3000); }
   function qiblaNoCompass(msg){ const b=document.getElementById('qiblaEnable'); if(b) b.hidden=true;
     const h=document.getElementById('qiblaHint'); if(h) h.textContent='Компас недоступен. Направь верх телефона на '+Math.round(QIBLA.bearing)+'° от севера (сверься с компасом или солнцем).';
+    const offEl=document.getElementById('qiblaOff'), offL=document.getElementById('qiblaOffL');
+    if(offEl) offEl.textContent=Math.round(QIBLA.bearing)+'°'; if(offL) offL.textContent='азимут от севера';
     qiblaSetStatus(msg||'Компас недоступен — ориентируйся по азимуту'); }
   function qiblaOnOrient(e){ let heading=null;
     if(typeof e.webkitCompassHeading==='number' && !isNaN(e.webkitCompassHeading)) heading=e.webkitCompassHeading;   // iOS: к северу
@@ -5477,6 +5496,12 @@ https://azkar.nurtech.dev/app`);
       const b=document.getElementById('qiblaEnable'); if(b) b.hidden=true; }
     QIBLA.rawHeading=heading;
     QIBLA.targetHeading=heading;
+    // непрерывный тактильный отклик при вращении: тик по мере движения (ближе к кибле — тики чаще, «теплее»)
+    const offNow=Math.abs(qiblaAngleDelta(QIBLA.bearing, heading));
+    const step=Math.max(4, Math.min(18, offNow*0.4));
+    if(QIBLA.lastHaptHeading==null || Math.abs(qiblaAngleDelta(heading, QIBLA.lastHaptHeading))>=step){
+      QIBLA.lastHaptHeading=heading; if(offNow>=5) tgHaptic('select');
+    }
     if(QIBLA.displayHeading==null) QIBLA.displayHeading=heading;
     if(typeof e.webkitCompassAccuracy==='number' && e.webkitCompassAccuracy>30){
       const hn=document.getElementById('qiblaHint'); if(hn) hn.textContent='Компас сейчас неточный. Подержи телефон ровно и поводи им «восьмёркой» для калибровки.';
@@ -5502,10 +5527,13 @@ https://azkar.nurtech.dev/app`);
     if(needle) needle.style.transform='rotate('+delta+'deg)';
     const off=Math.abs(qiblaAngleDelta(QIBLA.bearing, h));
     const aligned=off<5; if(dial) dial.classList.toggle('aligned', aligned);
-    if(aligned){ qiblaSetStatusSoft('✓ Ты смотришь на киблу', true); if(!QIBLA.alignedHapt){ QIBLA.alignedHapt=true; tgHaptic('medium'); } }
-    else { QIBLA.alignedHapt=false; qiblaSetStatusSoft('Поверни телефон к 🕋 · осталось '+Math.round(off)+'°'); } }
+    const offEl=document.getElementById('qiblaOff'), offL=document.getElementById('qiblaOffL');
+    if(offEl) offEl.textContent = aligned ? '✓' : (Math.round(off)+'°');
+    if(offL) offL.textContent = aligned ? 'точно на кибле' : 'до киблы';
+    if(aligned){ qiblaSetStatusSoft('Ты смотришь на киблу', true); if(!QIBLA.alignedHapt){ QIBLA.alignedHapt=true; tgHaptic('success'); } }
+    else { QIBLA.alignedHapt=false; qiblaSetStatusSoft('Поворачивай телефон в сторону метки'); } }
   function qiblaStop(){ if(QIBLA.ev){ window.removeEventListener(QIBLA.ev, qiblaOnOrient, true); QIBLA.ev=null; }
-    QIBLA.listening=false; QIBLA.targetHeading=null; QIBLA.displayHeading=null; QIBLA.rawHeading=null; QIBLA.animTs=0; QIBLA.alignedHapt=false; QIBLA.lastStatus=''; QIBLA.lastStatusAt=0;
+    QIBLA.listening=false; QIBLA.targetHeading=null; QIBLA.displayHeading=null; QIBLA.rawHeading=null; QIBLA.animTs=0; QIBLA.alignedHapt=false; QIBLA.lastStatus=''; QIBLA.lastStatusAt=0; QIBLA.lastHaptHeading=null;
     if(QIBLA.fbTimer){ clearTimeout(QIBLA.fbTimer); QIBLA.fbTimer=null; }
     if(QIBLA.raf){ cancelAnimationFrame(QIBLA.raf); QIBLA.raf=0; }
     const d=document.getElementById('qiblaDial'); if(d) d.classList.remove('aligned'); }
