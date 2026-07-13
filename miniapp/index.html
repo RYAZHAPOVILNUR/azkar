@@ -4004,12 +4004,13 @@ https://azkar.nurtech.dev/app`);
     gradeEl.classList.toggle('review', !azkarIsVerified(z));
     const audioBtn = document.getElementById('miAudio');
     const audioNote = document.getElementById('miAudioNote');
+    const hasAudio = azkarHasAudio(z);
     if(audioBtn){
-      audioBtn.hidden = true;
       audioBtn.classList.remove('is-playing');
-      audioBtn.onclick = null;
+      audioBtn.hidden = !hasAudio;
+      audioBtn.onclick = hasAudio ? (()=> playZikrAudio(z, audioBtn)) : null;
     }
-    if(audioNote) audioNote.hidden = true;
+    if(audioNote) audioNote.hidden = !hasAudio;
     renderModalSharh();
     const refs = refsFor(z);
     const refsSec = document.getElementById('miRefsSec');
@@ -4028,6 +4029,7 @@ https://azkar.nurtech.dev/app`);
     if(!modal.classList.contains('open')){ modalOpen=false; unlockInfoScroll(); tgBack(navStack.length>1, back); return; }
     if(modal.dataset.closing === '1') return;
     modalOpen = false;
+    try{ if(ZIKR_AUDIO && !ZIKR_AUDIO.paused) ZIKR_AUDIO.pause(); }catch(_e){}
     tgBack(navStack.length>1, back);
     if(instant){
       if(sheet){ sheet.style.transition=''; sheet.style.transform=''; sheet.style.animation=''; }
