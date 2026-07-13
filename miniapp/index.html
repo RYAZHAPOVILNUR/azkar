@@ -1582,7 +1582,25 @@
     });
     try { TG.onEvent && TG.onEvent('themeChanged', applyTgColors); } catch(e){}
   }
-  function tgHaptic(type){ try { TG && TG.HapticFeedback && TG.HapticFeedback.impactOccurred(type||'light'); } catch(e){} }
+  let _haptT=0;
+  function tgHaptic(type){
+    try {
+      const h = TG && TG.HapticFeedback; if(!h) return;
+      type = type || 'light';
+      if(type==='success'||type==='error'||type==='warning'){ h.notificationOccurred && h.notificationOccurred(type); return; }
+      if(type==='select'){ h.selectionChanged && h.selectionChanged(); return; }
+      // impact (light/medium/heavy/rigid/soft): дедуп частых лёгких тычков (глобальный тап + ручной вызов в одном действии → одна вибрация)
+      const now = Date.now(); if(now - _haptT < 70) return; _haptT = now;
+      h.impactOccurred && h.impactOccurred(type);
+    } catch(e){}
+  }
+  // Глобальный лёгкий хаптик на ЛЮБОЙ интерактивный тап — нативное «премиальное» ощущение.
+  // Покрывает всё, где нет ручного вызова; дедуп в tgHaptic не даёт двойной вибрации.
+  document.addEventListener('pointerdown', function(e){
+    const t = e.target; if(!t || !t.closest) return;
+    const el = t.closest('button, a[href], [role="button"], [onclick], .session, .qm-cell, .seg button, .rs-fonts button, .q-ayah .q-ar, .qcf-ayah, .q-w, .ft-chip, label.switch');
+    if(el && !el.disabled && el.getAttribute('aria-disabled')!=='true') tgHaptic('light');
+  }, { passive:true, capture:true });
   function tgBack(show, handler){
     if(!TG || !TG.BackButton) return;
     try {
@@ -4082,7 +4100,7 @@ https://azkar.nurtech.dev/app`);
     renderFree(); saveFree();
     const c = document.getElementById('ftCounter');
     if(c){ c.classList.toggle('done', hit); c.classList.remove('pulse'); void c.offsetWidth; c.classList.add('pulse'); }
-    if(hit){ tgHaptic('medium'); try{ TG && TG.HapticFeedback && TG.HapticFeedback.notificationOccurred && TG.HapticFeedback.notificationOccurred('success'); }catch(e){} }
+    if(hit){ tgHaptic('success'); }
     else tgHaptic('light');
   }
   function ftReset(){ FT.count = 0; const c=document.getElementById('ftCounter'); if(c) c.classList.remove('done'); renderFree(); saveFree(); tgHaptic('medium'); }
@@ -4247,7 +4265,7 @@ https://azkar.nurtech.dev/app`);
 
   // ---- честный учёт: аят засчитан только после ≥3с на экране (не при листании) ----
   function qOnNewRead(){ const st=qReadLoad(); if(QURAN._lastKhatm==null) QURAN._lastKhatm=st.khatm;
-    if(st.khatm>QURAN._lastKhatm){ QURAN._lastKhatm=st.khatm; tgHaptic('medium'); try{ TG&&TG.HapticFeedback&&TG.HapticFeedback.notificationOccurred&&TG.HapticFeedback.notificationOccurred('success'); }catch(e){} } }
+    if(st.khatm>QURAN._lastKhatm){ QURAN._lastKhatm=st.khatm; tgHaptic('success'); } }
   function qRegisterRead(s,a){ if(qMarkRead(s,a)){ qOnNewRead(); } }
   function qStartDwell(){ if(!QURAN.dwell) QURAN.dwell={}; if(!QURAN.visible) QURAN.visible=new Set(); if(QURAN.dwellTimer) return; QURAN.dwellTimer=setInterval(function(){
     if(document.hidden) return; const a=activeScreen(); if(!(a&&a.id==='quranReader')) return;
