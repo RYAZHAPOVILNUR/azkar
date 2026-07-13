@@ -274,10 +274,16 @@ app.post('/api/hifz', (req, res) => {
 });
 
 // ---------- радио: один общий ffmpeg раздаёт mp3 всем ----------
-// Сначала используем прямые MP3-потоки Корана: они не зависят от YouTube-кук и антибота.
-// YouTube-лайв остаётся последним fallback-источником, если прямые потоки недоступны.
+// Сначала используем прямые официальные Saudi Radio/SBA HLS-потоки: они не зависят от
+// YouTube-кук и антибота. YouTube-лайв остаётся последним fallback-источником.
 const RADIO_URL = process.env.RADIO_URL || 'https://www.youtube.com/@bmagrifa/live';
 const DEFAULT_RADIO_STREAMS = [
+  // Saudi Radio + / SBA: إذاعة القران الكريم
+  'https://live.kwikmotion.com/sbrksaquranradiolive/ksaquranradio/playlist.m3u8',
+  // Saudi Radio + / SBA: إذاعة نداء الإسلام
+  'https://live.kwikmotion.com/sbrksanedaradiolive/ksanedaradio/playlist.m3u8',
+  // MP3Quran/Qurango fallback: Quran radio
+  'https://Qurango.net/radio/tarateel',
   'http://66.45.232.131:9994/stream',
   'http://192.99.170.8:5550/stream',
   'http://66.45.232.131:9992/stream',
