@@ -1279,14 +1279,8 @@
   </section>
   <audio id="qAudioEl" preload="none"></audio>
   <audio id="radioEl" preload="none"></audio>
-  <div class="radio-widget" id="radioWidget" hidden>
-    <button type="button" class="rw-play" id="rwPlay" onclick="toggleRadio()" aria-label="Играть/пауза"><svg id="rwIc" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
-    <div class="rw-mid">
-      <div class="rw-t"><span class="rw-live" id="rwLive">● LIVE</span> Эфир</div>
-      <div class="rw-s" id="rwSub">прямой эфир</div>
-    </div>
-    <button type="button" class="rw-x" onclick="stopRadio()" aria-label="Выключить"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-  </div>
+  <!-- плавающая плашка радио убрана (мешала чтению) — управление радио через кнопку в шапке -->
+
 
   <!-- QURAN: карта прогресса -->
   <section class="screen" id="quranMap">
@@ -4771,18 +4765,18 @@ https://azkar.nurtech.dev/app`);
   // ---- радио: прямой эфир (серверный аудио-прокси, источник настраивается на сервере) ----
   let RADIO_ON=false, RADIO_LOADING=false;
   function radioEl(){ return document.getElementById('radioEl'); }
-  function radioUI(){ const w=document.getElementById('radioWidget'), btn=document.getElementById('radioBtn'), el=radioEl();
-    const playing = RADIO_ON && el && !el.paused && el.currentSrc;
-    if(w) w.hidden=!RADIO_ON; if(btn) btn.classList.toggle('on', RADIO_ON);
-    const ic=document.getElementById('rwIc'); if(ic) ic.innerHTML = RADIO_LOADING ? '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="38" stroke-dashoffset="10"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.9s" repeatCount="indefinite"/></circle>' : (playing ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>');
-    const sub=document.getElementById('rwSub'); if(sub) sub.textContent = RADIO_LOADING ? 'подключение к эфиру…' : (playing ? 'прямой эфир' : 'на паузе');
-    const live=document.getElementById('rwLive'); if(live) live.style.opacity = playing?'1':'.35'; }
-  function toggleRadio(){ const el=radioEl(); if(!el) return; if(!RADIO_ON){ startRadio(); return; } if(el.paused) el.play().catch(function(){}); else el.pause(); radioUI(); }
-  function startRadio(){ const el=radioEl(); if(!el) return; if(typeof qAudioStop==='function') qAudioStop(); RADIO_ON=true; RADIO_LOADING=true; radioUI();
+  const RADIO_ICON = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 6L7 9"/><rect x="3" y="9" width="18" height="11" rx="2"/><circle cx="8" cy="14.5" r="2.5"/><path d="M16 13h2M16 16h2"/></svg>';
+  const RADIO_SPIN = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="38" stroke-dashoffset="10"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.9s" repeatCount="indefinite"/></circle></svg>';
+  function radioUI(){ const btn=document.getElementById('radioBtn'); if(!btn) return;
+    btn.classList.toggle('on', RADIO_ON);
+    btn.innerHTML = RADIO_LOADING ? RADIO_SPIN : RADIO_ICON;
+    btn.setAttribute('title', RADIO_ON ? (RADIO_LOADING ? 'Подключение к эфиру…' : 'Эфир идёт — нажми, чтобы выключить') : 'Радио — прямой эфир'); }
+  function toggleRadio(){ if(!RADIO_ON) startRadio(); else stopRadio(); }
+  function startRadio(){ const el=radioEl(); if(!el) return; if(typeof qAudioStop==='function') qAudioStop(); RADIO_ON=true; RADIO_LOADING=true; radioUI(); if(typeof qToast==='function') qToast('Подключение к эфиру…');
     el.src='/api/radio/stream?t='+Date.now(); el.play().catch(function(){ RADIO_LOADING=false; radioUI(); }); tgHaptic('light'); }
   function stopRadio(){ const el=radioEl(); if(el){ el.pause(); el.removeAttribute('src'); try{ el.load(); }catch(e){} } RADIO_ON=false; RADIO_LOADING=false; radioUI(); }
-  (function(){ const el=radioEl(); if(el){ el.addEventListener('playing', function(){ RADIO_LOADING=false; radioUI(); }); el.addEventListener('waiting', function(){ if(RADIO_ON) RADIO_LOADING=true; radioUI(); }); el.addEventListener('play', radioUI); el.addEventListener('pause', radioUI);
-    el.addEventListener('error', function(){ if(!RADIO_ON) return; RADIO_LOADING=false; const sub=document.getElementById('rwSub'); if(sub) sub.textContent='эфир сейчас недоступен'; setTimeout(stopRadio, 2500); }); } })();
+  (function(){ const el=radioEl(); if(el){ el.addEventListener('playing', function(){ const was=RADIO_LOADING; RADIO_LOADING=false; radioUI(); if(was&&typeof qToast==='function') qToast('Эфир'); }); el.addEventListener('waiting', function(){ if(RADIO_ON) RADIO_LOADING=true; radioUI(); }); el.addEventListener('play', radioUI); el.addEventListener('pause', radioUI);
+    el.addEventListener('error', function(){ if(!RADIO_ON) return; RADIO_LOADING=false; radioUI(); if(typeof qToast==='function') qToast('Эфир сейчас недоступен'); setTimeout(stopRadio, 1200); }); } })();
 
   applyTheme();
   cloudInit();   // подтянуть прогресс/порядок/настройки из TG CloudStorage (если новее) + засеять облако
