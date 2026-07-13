@@ -284,6 +284,11 @@
 
   .zikr-title { margin:16px 2px 8px; color:var(--accent-deep); font-size:15px; line-height:1.35; font-weight:800; }
   .zikr-title .muted { display:block; margin-top:3px; color:var(--ink-faint); font-size:12px; font-weight:650; }
+  .zikr-section { display:flex; align-items:center; gap:10px; margin:6px 2px -6px; color:var(--ink-soft); }
+  .zikr-section:before, .zikr-section:after { content:""; height:1px; background:var(--line); flex:1; opacity:.85; }
+  .zikr-section span { max-width:78%; padding:7px 12px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2);
+    color:var(--accent-deep); font-size:13px; font-weight:850; line-height:1.25; text-align:center; }
+  .zikr-section small { display:inline-block; margin-left:6px; color:var(--ink-faint); font-size:11px; font-weight:750; white-space:nowrap; }
   .arabic { font-family: var(--ar-font), var(--ar); direction:rtl; text-align:right; color: var(--ink);
     font-size: var(--ar-size); line-height:2.3; margin:4px 2px 2px; cursor:pointer; }
   .list[data-learn="check"] .translate { display:none !important; }
@@ -2720,6 +2725,92 @@
       .filter(z => azkarItemBelongsToCategory(z, id))
       .map((z, idx)=>({ ...z, _idx:idx }));
   }
+  const HISNUL_CHAPTER_TITLE_OVERRIDES = {
+    16:'Перед началом молитвы',
+    17:'Во время поясного поклона',
+    18:'После выпрямления из поясного поклона',
+    20:'Между двумя земными поклонами',
+    21:'Земной поклон при чтении Корана',
+    23:'Салават Пророку ﷺ после ташаххуда',
+    25:'После завершения молитвы',
+    29:'Если испугался во сне',
+    30:'Если страшно засыпать или одиноко',
+    31:'Если увидел сон',
+    32:'Кунут в витр-намазе',
+    33:'После витр-намаза',
+    34:'При тревоге и печали',
+    35:'При трудности',
+    36:'При встрече с врагом',
+    37:'От несправедливости правителя',
+    40:'Против врага',
+    42:'От наущений шайтана в молитве и чтении Корана',
+    43:'Если дело стало трудным',
+    46:'Если случилось нежеланное',
+    48:'Защита детей',
+    49:'За больного при посещении',
+    50:'Достоинство посещения больного',
+    51:'Для тяжелобольного',
+    53:'При беде',
+    55:'За умершего в погребальной молитве',
+    56:'За умершего ребёнка',
+    58:'При опускании умершего в могилу',
+    61:'Когда дует ветер',
+    68:'При разговении',
+    71:'Дуа гостя за хозяина',
+    74:'Если постящемуся предлагают еду',
+    76:'При виде первых плодов сезона',
+    80:'В брачную ночь или при покупке животного',
+    81:'Перед близостью',
+    82:'При гневе',
+    86:'За сказавшего: «Да простит тебя Аллах»',
+    88:'Защита от Даджаля',
+    89:'За сказавшего: «Я люблю тебя ради Аллаха»',
+    94:'Если увидел плохую примету',
+    96:'В путешествии',
+    98:'При входе на рынок',
+    100:'Дуа путника за остающегося',
+    103:'Путнику перед рассветом',
+    105:'При возвращении из путешествия',
+    106:'Когда что-то радует или огорчает',
+    107:'Достоинство салавата Пророку ﷺ',
+    109:'Ответ немусульманину на салям',
+    110:'При крике петуха и крике осла',
+    111:'При лае собак ночью',
+    116:'Такбир у Чёрного камня',
+    117:'Между йеменским углом и Чёрным камнем',
+    118:'На холмах Сафа и Марва',
+    120:'В аль-Маш‘ар аль-Харам',
+    130:'Достоинство поминания Аллаха',
+    131:'Как Пророк ﷺ прославлял Аллаха',
+  };
+  function azkarChapterTitle(z){
+    const db = z && z._db ? z._db : {};
+    const display = db.display || {};
+    const chapterId = Number(display.source_chapter_id || 0);
+    if(HISNUL_CHAPTER_TITLE_OVERRIDES[chapterId]) return HISNUL_CHAPTER_TITLE_OVERRIDES[chapterId];
+    return String(display.source_chapter_title_ru || '').replace(/\s+/g, ' ').trim();
+  }
+  function azkarItemTitle(z, fallbackTitle){
+    const db = z && z._db ? z._db : {};
+    const clean = text => String(text || '').replace(/:\s*\d+$/u, '').replace(/\s+/g, ' ').trim();
+    const chapter = clean(azkarChapterTitle(z));
+    if(chapter) return chapter;
+    const fallback = clean(fallbackTitle);
+    const shortTitle = clean(db.short_title_ru);
+    if(shortTitle && shortTitle !== fallback) return shortTitle;
+    const title = clean(db.title_ru);
+    if(title && title !== fallback) return title;
+    const sourceSession = clean((db.display || {}).source_session_title);
+    if(sourceSession && sourceSession !== fallback) return sourceSession;
+    return fallback;
+  }
+  function azkarCategoryGroupTitle(z, fallbackTitle){
+    const clean = text => String(text || '').replace(/:\s*\d+$/u, '').replace(/\s+/g, ' ').trim();
+    const fallback = clean(fallbackTitle);
+    const chapter = clean(azkarChapterTitle(z));
+    if(chapter) return chapter;
+    return azkarItemTitle(z, fallback);
+  }
   function renderAzkarLibrary(query){
     const body = document.getElementById('azkarLibraryBody');
     const stat = document.getElementById('azkarDbStat');
@@ -3171,15 +3262,34 @@ https://azkar.nurtech.dev/app`);
       go('reading');
       return;
     }
+    const categoryGroupCounts = new Map();
+    if(catId){
+      CURRENT_ITEMS.forEach(z=>{
+        const group = azkarCategoryGroupTitle(z, data.title);
+        if(group) categoryGroupCounts.set(group, (categoryGroupCounts.get(group) || 0) + 1);
+      });
+    }
+    let lastCategoryGroup = '';
     CURRENT_ITEMS.forEach((z, idx)=>{
       const progressKey = z._session || key;
       const target = effectiveTarget(progressKey, z);
       const note = z.targetHint ? `<div class="cnote">${z.targetHint}</div>` : '';
       const saved = savedCount(progressKey, z);
       const dbTitle = z._db && (z._db.title_ru || z._db.short_title_ru) ? String(z._db.title_ru || z._db.short_title_ru) : '';
-      const chapterTitle = z._db && z._db.display && z._db.display.source_chapter_title_ru ? String(z._db.display.source_chapter_title_ru) : '';
-      const cleanTitle = dbTitle.replace(/:\s*\d+$/u, '').trim();
+      const chapterTitle = azkarChapterTitle(z);
+      const cleanTitle = dbTitle ? azkarItemTitle(z, data.title) : '';
       const titleHtml = cleanTitle ? `<div class="zikr-title">${azkarEsc(cleanTitle)}${chapterTitle && chapterTitle !== cleanTitle ? `<span class="muted">${azkarEsc(chapterTitle)}</span>` : ''}</div>` : '';
+      if(catId){
+        const groupTitle = azkarCategoryGroupTitle(z, data.title);
+        if(groupTitle && groupTitle !== lastCategoryGroup){
+          lastCategoryGroup = groupTitle;
+          const count = categoryGroupCounts.get(groupTitle) || 1;
+          const section = document.createElement('div');
+          section.className = 'zikr-section';
+          section.innerHTML = `<span>${azkarEsc(groupTitle)}<small>${count} ${plural(count,'азкар','азкара','азкаров')}</small></span>`;
+          list.appendChild(section);
+        }
+      }
       const card = document.createElement('div'); card.className = 'zikr'; card.dataset.i = idx; card.dataset.id = z._id; card.dataset.session = progressKey;
       const counter = `<button class="tasbih${target===1 ? ' single' : ''}" data-target="${target}" data-cur="${Math.min(saved, target)}" aria-label="Счётчик повторений">
           <span class="count"><b class="js-cur">0</b><small>/${target}</small></span>
