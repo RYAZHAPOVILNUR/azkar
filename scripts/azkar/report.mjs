@@ -29,7 +29,8 @@ function countBy(itemsList, getter) {
 const byStatus = countBy(items, item => item.status);
 const byCategory = countBy(items, item => item.category_ids);
 const byCollection = countBy(items, item => item.collection_ids);
-const noAudio = items.filter(item => item.audio?.status !== 'ready').length;
+const byAudio = countBy(items, item => item.audio?.status || 'missing');
+const audioAvailable = items.filter(item => ['ready', 'source_url'].includes(item.audio?.status)).length;
 const exportable = items.filter(item => !['excluded_weak', 'copyright_blocked', 'needs_translation_review'].includes(item.status));
 
 const lines = [
@@ -43,7 +44,7 @@ const lines = [
   `- Exported to Mini App: ${exportable.length}`,
   `- Categories: ${categories.length}`,
   `- Collections: ${collections.length}`,
-  `- Items without audio: ${noAudio}`,
+  `- Items with audio available: ${audioAvailable}`,
   `- Duplicate candidate groups: ${duplicates.length}`,
   '',
   '## Status',
@@ -58,6 +59,10 @@ const lines = [
   '',
   ...byCollection.map(([id, count]) => `- ${id}: ${count}`),
   '',
+  '## Audio',
+  '',
+  ...byAudio.map(([id, count]) => `- ${id}: ${count}`),
+  '',
   ...(hisnulImport ? [
     '## Hisnul Muslim import',
     '',
@@ -71,6 +76,7 @@ const lines = [
   ] : []),
   '## Next review work',
   '',
+  '- Use `node scripts/azkar/export-review-queue.mjs` to generate `review-queue.csv/json` for the 248 cards that still need source review.',
   '- Manually review `needs_source_review` Hisnul Muslim cards before moving any item to `verified`.',
   '- Keep the PDF-derived `needs_source_review` layer marked as review-needed until source refs/grades are checked item by item.',
   '- Add exact hadith source metadata and copyright status per imported item.',

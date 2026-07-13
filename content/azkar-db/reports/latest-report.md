@@ -1,6 +1,6 @@
 # Azkar DB report
 
-Generated: 2026-07-13T13:01:07.600Z
+Generated: 2026-07-13T13:42:55.653Z
 
 ## Summary
 
@@ -8,7 +8,7 @@ Generated: 2026-07-13T13:01:07.600Z
 - Exported to Mini App: 331
 - Categories: 14
 - Collections: 7
-- Items without audio: 331
+- Items with audio available: 248
 - Duplicate candidate groups: 17
 
 ## Status
@@ -41,6 +41,11 @@ Generated: 2026-07-13T13:01:07.600Z
 - sleep-core: 17
 - after-prayer-core: 15
 
+## Audio
+
+- source_url: 248
+- missing: 83
+
 ## Hisnul Muslim import
 
 - Source chapters: 132
@@ -52,6 +57,7 @@ Generated: 2026-07-13T13:01:07.600Z
 
 ## Next review work
 
+- Use `node scripts/azkar/export-review-queue.mjs` to generate `review-queue.csv/json` for the 248 cards that still need source review.
 - Manually review `needs_source_review` Hisnul Muslim cards before moving any item to `verified`.
 - Keep the PDF-derived `needs_source_review` layer marked as review-needed until source refs/grades are checked item by item.
 - Add exact hadith source metadata and copyright status per imported item.
