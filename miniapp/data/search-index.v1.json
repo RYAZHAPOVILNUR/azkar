@@ -4,7 +4,8 @@
     "session": "morning",
     "category_ids": [
       "morning",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -30,7 +31,8 @@
     "session": "morning",
     "category_ids": [
       "morning",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -56,7 +58,8 @@
     "session": "morning",
     "category_ids": [
       "morning",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -108,7 +111,10 @@
     "session": "morning",
     "category_ids": [
       "morning",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -121,7 +127,9 @@
     "session": "morning",
     "category_ids": [
       "morning",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -134,7 +142,10 @@
     "session": "morning",
     "category_ids": [
       "morning",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -147,7 +158,10 @@
     "session": "morning",
     "category_ids": [
       "morning",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -160,7 +174,8 @@
     "session": "morning",
     "category_ids": [
       "morning",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -199,7 +214,9 @@
     "session": "morning",
     "category_ids": [
       "morning",
-      "daily"
+      "daily",
+      "protection",
+      "anxiety"
     ],
     "collection_ids": [
       "current-core",
@@ -251,7 +268,8 @@
     "session": "morning",
     "category_ids": [
       "morning",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -290,7 +308,8 @@
     "session": "evening",
     "category_ids": [
       "evening",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -316,7 +335,8 @@
     "session": "evening",
     "category_ids": [
       "evening",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -329,7 +349,8 @@
     "session": "evening",
     "category_ids": [
       "evening",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -342,7 +363,8 @@
     "session": "evening",
     "category_ids": [
       "evening",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -355,7 +377,8 @@
     "session": "evening",
     "category_ids": [
       "evening",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -381,7 +404,10 @@
     "session": "evening",
     "category_ids": [
       "evening",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -394,7 +420,8 @@
     "session": "evening",
     "category_ids": [
       "evening",
-      "daily"
+      "daily",
+      "quran_dua"
     ],
     "collection_ids": [
       "current-core",
@@ -407,7 +434,10 @@
     "session": "evening",
     "category_ids": [
       "evening",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -420,7 +450,10 @@
     "session": "evening",
     "category_ids": [
       "evening",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -459,7 +492,9 @@
     "session": "evening",
     "category_ids": [
       "evening",
-      "daily"
+      "daily",
+      "protection",
+      "anxiety"
     ],
     "collection_ids": [
       "current-core",
@@ -677,7 +712,9 @@
     "category_ids": [
       "after_prayer",
       "prayer",
-      "daily"
+      "daily",
+      "quran_dua",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -691,7 +728,8 @@
     "category_ids": [
       "after_prayer",
       "prayer",
-      "daily"
+      "daily",
+      "quran_dua"
     ],
     "collection_ids": [
       "current-core",
@@ -705,7 +743,10 @@
     "category_ids": [
       "after_prayer",
       "prayer",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -719,7 +760,10 @@
     "category_ids": [
       "after_prayer",
       "prayer",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -760,7 +804,10 @@
     "session": "sleep",
     "category_ids": [
       "sleep",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -773,7 +820,8 @@
     "session": "sleep",
     "category_ids": [
       "sleep",
-      "daily"
+      "daily",
+      "quran_dua"
     ],
     "collection_ids": [
       "current-core",
@@ -786,7 +834,10 @@
     "session": "sleep",
     "category_ids": [
       "sleep",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -799,7 +850,10 @@
     "session": "sleep",
     "category_ids": [
       "sleep",
-      "daily"
+      "daily",
+      "quran_dua",
+      "protection",
+      "ruqyah"
     ],
     "collection_ids": [
       "current-core",
@@ -812,7 +866,8 @@
     "session": "sleep",
     "category_ids": [
       "sleep",
-      "daily"
+      "daily",
+      "quran_dua"
     ],
     "collection_ids": [
       "current-core",
@@ -838,7 +893,8 @@
     "session": "sleep",
     "category_ids": [
       "sleep",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -851,7 +907,8 @@
     "session": "sleep",
     "category_ids": [
       "sleep",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -877,7 +934,8 @@
     "session": "sleep",
     "category_ids": [
       "sleep",
-      "daily"
+      "daily",
+      "quran_dua"
     ],
     "collection_ids": [
       "current-core",
@@ -903,7 +961,8 @@
     "session": "sleep",
     "category_ids": [
       "sleep",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -916,7 +975,8 @@
     "session": "sleep",
     "category_ids": [
       "sleep",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
@@ -968,12 +1028,121 @@
     "session": "sleep",
     "category_ids": [
       "sleep",
-      "daily"
+      "daily",
+      "protection"
     ],
     "collection_ids": [
       "current-core",
       "sleep-core"
     ],
     "text": "поминания перед сном: 17 перед сном с именем аллаха я положил свой бок. о аллах, прости мой грех, отгони моего шайтана, освободи меня от залога, утяжели мои весы и помести меня в высшее собрание. бисмилляхи вада‘ту джанби, аллахумма-гфир ли занби, ва ахси’ шайтани, ва фуккя рихани, ва саккыль мизани, вадж‘альны фи-н-надиййи-ль-а‘ля абу дауд 5054 · сахих sleep защита بسم الله وضعت جنبي، اللهم اغفر لي ذنبي، واخسئ شيطاني، وفك رهاني، وثقل ميزاني، واجعلني في الندي الاعلي"
+  },
+  {
+    "id": "mosque-enter-001",
+    "session": "mosque",
+    "category_ids": [
+      "mosque",
+      "daily"
+    ],
+    "collection_ids": [
+      "hisnul-muslim"
+    ],
+    "text": "при входе в мечеть вход в мечеть о аллах, открой для меня врата твоей милости. аллахумма-фтах ли абваба рахматик муслим 713 мечеть вход милость اللهم افتح لي ابواب رحمتك"
+  },
+  {
+    "id": "mosque-exit-001",
+    "session": "mosque",
+    "category_ids": [
+      "mosque",
+      "daily"
+    ],
+    "collection_ids": [
+      "hisnul-muslim"
+    ],
+    "text": "при выходе из мечети выход из мечети о аллах, поистине, я прошу у тебя твоей милости. аллахумма инни ас'алюка мин фадлик муслим 713 мечеть выход милость اللهم اني اسالك من فضلك"
+  },
+  {
+    "id": "home-leave-001",
+    "session": "home",
+    "category_ids": [
+      "home",
+      "daily",
+      "protection"
+    ],
+    "collection_ids": [
+      "hisnul-muslim"
+    ],
+    "text": "при выходе из дома выход из дома с именем аллаха. я уповаю на аллаха. нет силы и мощи ни у кого, кроме аллаха. бисмиллях, таваккальту 'аля-ллах, ва ля хауля ва ля куввата илля биллях абу дауд 5095; тирмизи 3426 · сахих дом выход упование защита بسم الله توكلت علي الله ولا حول ولا قوه الا بالله"
+  },
+  {
+    "id": "food-start-001",
+    "session": "food",
+    "category_ids": [
+      "food",
+      "daily"
+    ],
+    "collection_ids": [
+      "hisnul-muslim"
+    ],
+    "text": "перед едой перед едой с именем аллаха. бисмиллях аль-бухари 5376; муслим 2022 еда питье بسم الله"
+  },
+  {
+    "id": "food-forget-001",
+    "session": "food",
+    "category_ids": [
+      "food",
+      "daily"
+    ],
+    "collection_ids": [
+      "hisnul-muslim"
+    ],
+    "text": "если забыл сказать в начале еды если забыл с именем аллаха в начале и в конце этого. бисмилляхи фи аввалихи ва ахирих абу дауд 3767; тирмизи 1858 · сахих еда забывчивость بسم الله في اوله واخره"
+  },
+  {
+    "id": "food-finish-001",
+    "session": "food",
+    "category_ids": [
+      "food",
+      "daily"
+    ],
+    "collection_ids": [
+      "hisnul-muslim"
+    ],
+    "text": "после еды после еды хвала аллаху, который накормил меня этим и даровал мне это без силы и мощи с моей стороны. аль-хамду лилляхи-ллязи ат'амани хаза ва разаканихи мин гайри хаулин минни ва ля кувва абу дауд 4023; тирмизи 3458 · хасан еда благодарность الحمد لله الذي اطعمني هذا ورزقنيه من غير حول مني ولا قوه"
+  },
+  {
+    "id": "travel-start-001",
+    "session": "travel",
+    "category_ids": [
+      "travel"
+    ],
+    "collection_ids": [
+      "hisnul-muslim"
+    ],
+    "text": "дуа в путешествии путешествие аллах велик, аллах велик, аллах велик. пречист тот, кто подчинил нам это, ведь сами мы не смогли бы этого сделать, и поистине, к нашему господу мы вернемся. о аллах, просим у тебя в этом путешествии благочестия, богобоязненности и дел, которыми ты доволен. о аллах, облегчи нам это путешествие и сократи его дальность. о аллах, ты — спутник в пути и хранитель семьи. о аллах, прибегаю к тебе от трудностей пути, печального вида и плохого возвращения к имуществу и семье. аллаху акбар, аллаху акбар, аллаху акбар. субхана-ллязи саххара ляна хаза ва ма кунна ляху мукринин, ва инна иля раббина ля-мункалибун... муслим 1342 путешествие дорога الله اكبر الله اكبر الله اكبر سبحان الذي سخر لنا هذا وما كنا له مقرنين وانا الي ربنا لمنقلبون اللهم انا نسالك في سفرنا هذا البر والتقوي ومن العمل ما ترضي اللهم هون علينا سفرنا هذا واطو عنا بعده اللهم انت الصاحب في السفر والخليفه في الاهل اللهم اني اعوذ بك من وعثاء السفر وكابه المنظر وسوء المنقلب في المال والاهل"
+  },
+  {
+    "id": "anxiety-distress-001",
+    "session": "anxiety",
+    "category_ids": [
+      "anxiety",
+      "protection"
+    ],
+    "collection_ids": [
+      "hisnul-muslim"
+    ],
+    "text": "при тревоге и трудности тревога нет божества, кроме аллаха, великого, кроткого. нет божества, кроме аллаха, господа великого трона. нет божества, кроме аллаха, господа небес, господа земли и господа благородного трона. ля иляха илля-ллаху-ль-'азыму-ль-халим. ля иляха илля-ллаху раббу-ль-'арши-ль-'азым. ля иляха илля-ллаху раббу-с-самавати ва раббу-ль-арды ва раббу-ль-'арши-ль-карим аль-бухари 6346; муслим 2730 тревога печаль трудность لا اله الا الله العظيم الحليم لا اله الا الله رب العرش العظيم لا اله الا الله رب السماوات ورب الارض ورب العرش الكريم"
+  },
+  {
+    "id": "ruqyah-sick-001",
+    "session": "ruqyah",
+    "category_ids": [
+      "ruqyah",
+      "protection"
+    ],
+    "collection_ids": [
+      "hisnul-muslim"
+    ],
+    "text": "при болезни рукъя о аллах, господь людей, удали беду, исцели, ведь ты — исцеляющий. нет исцеления, кроме твоего исцеления, исцеления, после которого не остается болезни. аллахумма рабба-н-нас, азхиби-ль-ба'с, ишфи анта-ш-шафи, ля шифа'а илля шифа'ук, шифа'ан ля югадиру сакама аль-бухари 5743; муслим 2191 рукъя болезнь лечение اللهم رب الناس اذهب الباس اشف انت الشافي لا شفاء الا شفاؤك شفاء لا يغادر سقما"
   }
 ]

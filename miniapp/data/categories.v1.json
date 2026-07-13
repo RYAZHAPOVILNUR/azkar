@@ -63,7 +63,7 @@
     "subtitle_ru": "Коранические дуа и аяты, которые используются в поминании",
     "icon": "book",
     "tone": "blue",
-    "status": "planned",
+    "status": "active",
     "sort": 70,
     "review_note": "Заполнять только после сверки текста и перевода."
   },
@@ -73,7 +73,7 @@
     "subtitle_ru": "Поминания защиты от вреда и шайтана",
     "icon": "shield",
     "tone": "teal",
-    "status": "planned",
+    "status": "active",
     "sort": 80,
     "review_note": "Импортировать из проверенных сборников с оценкой хадисов."
   },
@@ -83,7 +83,7 @@
     "subtitle_ru": "Вход, выход и поведение в мечети",
     "icon": "mosque",
     "tone": "emerald",
-    "status": "planned",
+    "status": "active",
     "sort": 90
   },
   {
@@ -92,7 +92,7 @@
     "subtitle_ru": "Вход, выход и семейные ситуации",
     "icon": "home",
     "tone": "warm",
-    "status": "planned",
+    "status": "active",
     "sort": 100
   },
   {
@@ -101,7 +101,7 @@
     "subtitle_ru": "Перед едой, после еды и для гостя",
     "icon": "utensils",
     "tone": "amber",
-    "status": "planned",
+    "status": "active",
     "sort": 110
   },
   {
@@ -110,7 +110,7 @@
     "subtitle_ru": "Дорога, транспорт и возвращение домой",
     "icon": "map",
     "tone": "blue",
-    "status": "planned",
+    "status": "active",
     "sort": 120
   },
   {
@@ -119,7 +119,7 @@
     "subtitle_ru": "Поминания при страхе, грусти и трудности",
     "icon": "heart",
     "tone": "rose",
-    "status": "planned",
+    "status": "active",
     "sort": 130
   },
   {
@@ -128,7 +128,7 @@
     "subtitle_ru": "Дуа и аяты для лечения по Сунне",
     "icon": "sparkles",
     "tone": "teal",
-    "status": "planned",
+    "status": "active",
     "sort": 140,
     "review_note": "Без народных практик и слабых текстов."
   }

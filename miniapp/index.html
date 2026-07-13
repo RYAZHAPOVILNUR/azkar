@@ -2661,6 +2661,7 @@
   }
   function orderedItems(key){
     if(key === 'favorites') return favoriteItems();
+    if(String(key || '').startsWith('category:')) return azkarCategoryItems(String(key).slice(9));
     const items = ((AZKAR[key] && AZKAR[key].items) || []).map((z, idx)=>({ ...z, _idx:idx, _id:itemId(key,z), _session:key }));
     let order=[]; try{ order=JSON.parse(localStorage.getItem(orderKey(key))||'[]'); }catch(e){}
     const rank = new Map(order.map((id,i)=>[id,i]));
@@ -2696,6 +2697,14 @@
     });
     return counts;
   }
+  function azkarCategoryById(id){
+    return (AZKAR_META.categories || []).find(c => c.id === id) || null;
+  }
+  function azkarCategoryItems(id){
+    return allAzkarItems()
+      .filter(z => ((z._db && z._db.category_ids) || [z._session]).includes(id))
+      .map((z, idx)=>({ ...z, _idx:idx }));
+  }
   function renderAzkarLibrary(query){
     const body = document.getElementById('azkarLibraryBody');
     const stat = document.getElementById('azkarDbStat');
@@ -2705,7 +2714,7 @@
     const verified = allItems.filter(z => !z._db || z._db.status === 'verified').length;
     const planned = (AZKAR_META.categories || []).filter(c => c.status === 'planned').length;
     if(stat){
-      stat.innerHTML = `<span><b>${allItems.length}</b> азкаров</span><span><b>${verified}</b> проверено</span><span><b>${planned}</b> разделов в плане</span>${AZKAR_META.loadedFromJson ? '<span>JSON-база активна</span>' : '<span>fallback из HTML</span>'}`;
+      stat.innerHTML = `<span><b>${allItems.length}</b> азкаров</span><span><b>${verified}</b> проверено</span><span><b>${planned}</b> в очереди</span>${AZKAR_META.loadedFromJson ? '<span>JSON-база активна</span>' : '<span>fallback из HTML</span>'}`;
     }
     if(q){
       const source = AZKAR_META.search && AZKAR_META.search.length
@@ -2729,12 +2738,13 @@
     body.innerHTML = `<div class="azlib-section-title">Разделы</div><div class="azlib-grid">${cats.map(cat=>{
       const key = cat.session_key || cat.id;
       const count = counts[cat.id] || counts[key] || ((AZKAR[key] && AZKAR[key].items) || []).length || 0;
-      const active = count > 0 && AZKAR[key];
-      return `<button class="azlib-cat ${active ? '' : 'is-planned'}" type="button" ${active ? `onclick="openReading('${azkarEsc(key)}', {resume:true})"` : 'aria-disabled="true"'}>
+      const active = count > 0 && (AZKAR[key] || cat.id);
+      const openKey = AZKAR[key] ? key : `category:${cat.id}`;
+      return `<button class="azlib-cat ${active ? '' : 'is-planned'}" type="button" ${active ? `onclick="openReading('${azkarEsc(openKey)}', {resume:true})"` : 'aria-disabled="true"'}>
         <span class="ic">${azkarIconSvg(cat.icon)}</span>
         <span class="t">${azkarEsc(cat.title_ru)}</span>
         <span class="s">${azkarEsc(cat.subtitle_ru || (active ? 'Открыть раздел' : 'Запланировано к сверке'))}</span>
-        <span class="count">${active ? `${count} ${plural(count,'азкар','азкара','азкаров')}` : 'в плане'}</span>
+        <span class="count">${active ? `${count} ${plural(count,'азкар','азкара','азкаров')}` : 'скоро'}</span>
       </button>`;
     }).join('')}</div>`;
   }
@@ -3122,7 +3132,9 @@ https://azkar.nurtech.dev/app`);
   function openReading(key, opts){
     opts = opts || {};
     CURRENT_KEY = key;
-    const data = key === 'favorites' ? { title:'Избранное' } : AZKAR[key];
+    const catId = String(key || '').startsWith('category:') ? String(key).slice(9) : '';
+    const cat = catId ? azkarCategoryById(catId) : null;
+    const data = key === 'favorites' ? { title:'Избранное' } : cat ? { title:cat.title_ru } : AZKAR[key];
     if(!data){ openAzkarLibrary(); return; }
     document.getElementById('rTitle').textContent = data.title;
     const rHint = document.getElementById('rHint');
@@ -3132,6 +3144,13 @@ https://azkar.nurtech.dev/app`);
     CURRENT_ITEMS = orderedItems(key);
     if(key === 'favorites' && !CURRENT_ITEMS.length){
       list.innerHTML = '<div class="empty-state">Здесь будут зикры, которые ты отметишь закладкой. Открой любой раздел и нажми значок закладки на нужной карточке.</div>';
+      applyLearnMode();
+      updateProgress(true);
+      go('reading');
+      return;
+    }
+    if(catId && !CURRENT_ITEMS.length){
+      list.innerHTML = '<div class="empty-state">Этот раздел уже есть в структуре базы, но тексты ещё не прошли проверку.</div>';
       applyLearnMode();
       updateProgress(true);
       go('reading');
@@ -3503,7 +3522,7 @@ https://azkar.nurtech.dev/app`);
     if(typeof renderQuranHome==='function') renderQuranHome();
   }
   function openComplete(key){
-    if(!key || key === 'favorites') return;
+    if(!key || key === 'favorites' || String(key).startsWith('category:')) return;
     const seenKey = completionKey(key);
     if(localStorage.getItem(seenKey) === '1') return;
     localStorage.setItem(seenKey, '1');
@@ -3817,7 +3836,7 @@ https://azkar.nurtech.dev/app`);
   function loadHistory(){ try{ return JSON.parse(localStorage.getItem('azkar_history') || '{}'); }catch(e){ return {}; } }
   function saveHistory(h){ try{ localStorage.setItem('azkar_history', JSON.stringify(h)); }catch(e){} }
   function recordHistory(key, completed=false){
-    if(!key || key === 'favorites') return;
+    if(!key || key === 'favorites' || String(key).startsWith('category:')) return;
     const h = loadHistory();
     const d = PROG.date || todayStr();
     const day = h[d] || { sessions:{} };

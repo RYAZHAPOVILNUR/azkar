@@ -117,6 +117,32 @@ function tagsFor(session, item) {
   return Array.from(tags);
 }
 
+function categoryIdsFor(session, item) {
+  const meta = SESSION_META[session] || { category_ids: [session] };
+  const cats = new Set(meta.category_ids || [session]);
+  const ar = item.ar || '';
+  const text = `${item.tr || ''} ${item.tl || ''} ${item.src || ''}`.toLowerCase();
+  if (
+    ar.includes('اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ') ||
+    ar.includes('قُلْ هُوَ اللَّهُ أَحَدٌ') ||
+    ar.includes('قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ') ||
+    ar.includes('قُلْ أَعُوذُ بِرَبِّ النَّاسِ') ||
+    ar.includes('آمَنَ الرَّسُولُ') ||
+    ar.includes('قُلْ يَا أَيُّهَا الْكَافِرُونَ')
+  ) cats.add('quran_dua');
+  if (
+    ar.includes('أَعُوذُ') ||
+    ar.includes('الشَّيْطَان') ||
+    ar.includes('قُلْ أَعُوذُ') ||
+    text.includes('защит') ||
+    text.includes('шайтан') ||
+    text.includes('вред')
+  ) cats.add('protection');
+  if (ar.includes('قُلْ أَعُوذُ') || ar.includes('اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ')) cats.add('ruqyah');
+  if (text.includes('тревог') || text.includes('печал') || text.includes('страх')) cats.add('anxiety');
+  return Array.from(cats);
+}
+
 const html = fs.readFileSync(htmlPath, 'utf8');
 const objectLiteral = extractObjectLiteral(html, 'AZKAR');
 const legacyAzkar = vm.runInNewContext(`(${objectLiteral})`, {}, { timeout: 2000 });
@@ -140,7 +166,7 @@ for (const [session, data] of Object.entries(legacyAzkar)) {
       title_ru: `${meta.title_ru}: ${item.n || idx + 1}`,
       short_title_ru: meta.short_title_ru,
       session,
-      category_ids: meta.category_ids,
+      category_ids: categoryIdsFor(session, item),
       collection_ids: meta.collection_ids,
       tags: tagsFor(session, item),
       arabic: item.ar || '',
@@ -178,5 +204,11 @@ for (const [session, data] of Object.entries(legacyAzkar)) {
 }
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
+const manualPath = path.join(root, 'content/azkar-db/raw/manual/verified-extra.json');
+if (fs.existsSync(manualPath)) {
+  const manualItems = JSON.parse(fs.readFileSync(manualPath, 'utf8'));
+  if (!Array.isArray(manualItems)) throw new Error('manual/verified-extra.json must be an array');
+  items.push(...manualItems);
+}
 fs.writeFileSync(outPath, `${JSON.stringify(items, null, 2)}\n`);
 console.log(`Imported ${items.length} azkar items -> ${path.relative(root, outPath)}`);
