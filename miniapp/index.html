@@ -430,11 +430,14 @@
   .times-grid .tcell.now { background: var(--accent-soft); }
   .times-grid .tcell.now .tv, .times-grid .tcell.now .tn { color: var(--accent-deep); }
   .nextp { display:inline-flex; align-items:center; gap:6px; color: var(--accent-deep); font-weight:600; }
-  .head-prayer .nextp { max-width:100%; justify-content:center; border-radius:999px; padding:8px 10px;
+  .head-prayer .nextp { width:min(156px, 100%); max-width:100%; justify-content:flex-start; border-radius:999px; padding:8px 10px;
     border:1px solid var(--glass-brd); background:var(--glass); box-shadow:inset 0 1px 0 var(--glass-hi);
-    font-size:12.5px; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    font-size:12.5px; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }
   .head-prayer .nextp svg { flex:0 0 auto; width:13px; height:13px; }
   .head-prayer .nextp span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  .head-prayer .nextp #nextPrayerName { flex:1 1 auto; max-width:62px; }
+  .head-prayer .nextp #nextPrayerText { flex:0 0 66px; text-align:right; }
 
   .back { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; cursor:pointer;
     background: var(--glass); border:1px solid var(--glass-brd); color: var(--ink);
@@ -3777,17 +3780,30 @@ https://azkar.nurtech.dev/app`);
 
   function renderMadhab(){ document.querySelectorAll('#madhabSeg button').forEach(b=>b.classList.toggle('on', b.dataset.madhab===madhab)); }
 
+  let nextPrayerUi = '';
+  function prayerCountdownText(msLeft){
+    const mins = Math.max(1, Math.ceil(msLeft / 60000));
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `через ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  }
   function updateNextPrayer(t){
     const now = Date.now();
-    let next = PRAYERS.map(([k,n])=>({n, ts:new Date(t[k]).getTime()})).find(p=>p.ts>now);
+    let next = PRAYERS
+      .map(([k,n])=>({ n, ts:new Date(t[k]).getTime() }))
+      .filter(p=>Number.isFinite(p.ts))
+      .find(p=>p.ts>now);
     const line = document.getElementById('nextPrayerLine'), nameEl = document.getElementById('nextPrayerName'), txt = document.getElementById('nextPrayerText');
     if(!next && t.fajr) next = { n:'Фаджр', ts:new Date(t.fajr).getTime()+86400000 };
     if(!next) return;
-    const mins = Math.max(0, Math.ceil((next.ts-now)/60000));
-    const h = Math.floor(mins/60), m = mins%60;
-    if(nameEl) nameEl.textContent = next.n;
-    txt.textContent = `через ${h ? h+' ч ' : ''}${m ? m+' мин' : (h ? '' : 'меньше минуты')}`.trim();
-    line.style.display = '';
+    const rest = prayerCountdownText(next.ts - now);
+    const state = `${next.n}|${rest}`;
+    if(state !== nextPrayerUi){
+      nextPrayerUi = state;
+      if(nameEl) nameEl.textContent = next.n;
+      if(txt) txt.textContent = rest;
+    }
+    if(line) line.style.display = '';
   }
   function updateSessionTimeHints(t){
     const now = Date.now();
