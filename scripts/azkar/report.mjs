@@ -16,6 +16,10 @@ let hisnulImport = null;
 try {
   hisnulImport = JSON.parse(fs.readFileSync(path.join(root, 'content/azkar-db/reports/hisnul-muslim-import-report.json'), 'utf8'));
 } catch (_e) {}
+let hisnulAudit = null;
+try {
+  hisnulAudit = JSON.parse(fs.readFileSync(path.join(root, 'content/azkar-db/reports/hisnul-automated-audit.json'), 'utf8')).summary;
+} catch (_e) {}
 
 function countBy(itemsList, getter) {
   const map = new Map();
@@ -72,6 +76,16 @@ const lines = [
     `- Skipped as duplicates: ${hisnulImport.skipped_duplicate_items}`,
     `- Added to Mini App now: ${hisnulImport.ru_translations_found_for_imported}`,
     `- Waiting for Russian translation/review: ${hisnulImport.missing_ru_translation_for_imported}`,
+    '',
+  ] : []),
+  ...(hisnulAudit ? [
+    '## Hisnul Muslim automated audit',
+    '',
+    `- Hisnul items audited: ${hisnulAudit.total_hisnul_items}`,
+    `- Machine matched raw import: ${hisnulAudit.machine_matched_raw_not_scholarly_verified}`,
+    `- Needs manual review after machine checks: ${hisnulAudit.needs_manual_review}`,
+    '',
+    'Important: machine match is not the same as final scholarly verification.',
     '',
   ] : []),
   '## Next review work',

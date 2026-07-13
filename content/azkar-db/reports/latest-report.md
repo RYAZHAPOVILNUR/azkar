@@ -1,6 +1,6 @@
 # Azkar DB report
 
-Generated: 2026-07-13T13:42:55.653Z
+Generated: 2026-07-13T14:42:38.371Z
 
 ## Summary
 
@@ -54,6 +54,14 @@ Generated: 2026-07-13T13:42:55.653Z
 - Skipped as duplicates: 18
 - Added to Mini App now: 248
 - Waiting for Russian translation/review: 0
+
+## Hisnul Muslim automated audit
+
+- Hisnul items audited: 248
+- Machine matched raw import: 248
+- Needs manual review after machine checks: 0
+
+Important: machine match is not the same as final scholarly verification.
 
 ## Next review work
 
