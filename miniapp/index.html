@@ -647,7 +647,7 @@
   .sura .snr { font-size:15px; font-weight:650; color:var(--ink); letter-spacing:-.01em; }
   .sura .snm { font-size:12px; color:var(--ink-faint); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .sura .smeta { font-size:11.5px; color:var(--ink-faint); margin-top:2px; }
-  .sura .sar { flex:0 0 auto; font-family:'AzkarMushaf','AzkarNaskh',serif; font-size:23px; line-height:1.75; color:var(--ink); direction:rtl; font-weight:400; -webkit-font-feature-settings:"liga","calt"; font-feature-settings:"liga","calt"; }
+  .sura .sar { flex:0 0 auto; max-width:42%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:'KFGQPC','AzkarMushaf',serif; font-size:22px; line-height:1.9; color:var(--ink-soft); direction:rtl; font-weight:400; }
 
   /* reader */
   .qr-head { position:sticky; top:0; z-index:6; background:color-mix(in srgb, var(--bg) 92%, var(--surface)); backdrop-filter:blur(12px) saturate(130%);
@@ -4324,7 +4324,7 @@ https://azkar.nurtech.dev/app`);
       +'<span class="sn"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="9" y="9" width="22" height="22" rx="4" transform="rotate(45 20 20)"/></svg><b>'+su.n+'</b></span>'
       +'<span class="sbody"><span class="stitle"><span class="snr">'+escHtml(su.nr)+'</span><span class="snm">'+escHtml(su.nm||'')+'</span></span>'
       +'<span class="smeta">'+su.c+' '+qPlural(su.c,'аят','аята','аятов')+' · '+escHtml(su.t)+'</span></span>'
-      +'<span class="sar">'+escHtml(su.na||'')+'</span></div>';
+      +'<span class="sar">'+escHtml((su.na||'').replace('سُورَةُ ','').replace(/^سُورَةُ\s*/,''))+'</span></div>';
   }
   function renderSuraRows(list){ const el=document.getElementById('suraList'); if(el) el.innerHTML = list.map(suraRow).join(''); }
   function renderSuraList(idx){ renderSuraRows(idx); }
