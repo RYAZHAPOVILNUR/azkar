@@ -577,6 +577,40 @@
   .quran-card .qc-title { font-size:16px; font-weight:700; color:var(--ink); letter-spacing:-.01em; }
   .quran-card .qc-sub { font-size:12.5px; color:var(--ink-faint); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .quran-card .qc-go { flex:0 0 auto; color:var(--ink-faint); }
+  .az-library-card { margin-top:-6px; border-color:color-mix(in srgb, var(--accent) 30%, var(--line)); }
+  .az-library-card .qc-ic { background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 22%, var(--surface)), color-mix(in srgb, var(--accent-deep) 16%, var(--surface-2))); color:var(--accent-deep); }
+  .azlib { padding:4px 16px 26px; }
+  .azlib-hero { padding:18px; border:1px solid var(--line); border-radius:24px; background:
+    radial-gradient(circle at 18% 10%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 30%),
+    linear-gradient(135deg, color-mix(in srgb, var(--surface) 92%, var(--accent-soft)), var(--surface));
+    box-shadow:var(--shadow-soft); margin-bottom:14px; }
+  .azlib-hero .k { color:var(--accent-deep); font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; margin-bottom:7px; }
+  .azlib-hero h2 { margin:0; color:var(--ink); font-size:24px; line-height:1.05; letter-spacing:-.03em; }
+  .azlib-hero p { margin:9px 0 0; color:var(--ink-soft); font-size:14px; line-height:1.5; }
+  .azlib-search { display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:18px; background:var(--surface); padding:0 13px; height:52px; margin-bottom:12px; }
+  .azlib-search svg { flex:0 0 auto; color:var(--ink-faint); }
+  .azlib-search input { width:100%; border:0; outline:0; background:transparent; color:var(--ink); font:inherit; font-size:15px; }
+  .azlib-search input::placeholder { color:var(--ink-faint); }
+  .azlib-stat { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px; }
+  .azlib-stat span { display:inline-flex; align-items:center; gap:6px; min-height:30px; padding:6px 10px; border-radius:999px; background:var(--surface-2); color:var(--ink-soft); font-size:12.5px; font-weight:650; }
+  .azlib-stat b { color:var(--ink); }
+  .azlib-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .azlib-cat, .azlib-result { border:1px solid var(--line); background:var(--surface); border-radius:20px; padding:14px; text-align:left; color:var(--ink); font:inherit; cursor:pointer; box-shadow:var(--shadow-soft); }
+  .azlib-cat:active, .azlib-result:active { transform:scale(.985); }
+  .azlib-cat.is-planned { opacity:.64; cursor:default; box-shadow:none; }
+  .azlib-cat .ic { width:38px; height:38px; border-radius:14px; display:grid; place-items:center; margin-bottom:12px; color:var(--accent-deep); background:color-mix(in srgb, var(--accent) 16%, var(--surface-2)); }
+  .azlib-cat .t { font-size:15.5px; font-weight:780; color:var(--ink); line-height:1.16; }
+  .azlib-cat .s { font-size:12px; color:var(--ink-faint); line-height:1.35; margin-top:5px; }
+  .azlib-cat .count { display:inline-flex; margin-top:11px; min-height:24px; align-items:center; border-radius:999px; padding:4px 8px; background:var(--surface-2); color:var(--ink-soft); font-size:11.5px; font-weight:750; }
+  .azlib-results { display:flex; flex-direction:column; gap:10px; }
+  .azlib-result { padding:14px 15px; }
+  .azlib-result .topline { display:flex; align-items:center; gap:8px; color:var(--accent-deep); font-size:12px; font-weight:800; margin-bottom:7px; }
+  .azlib-result .ar { direction:rtl; text-align:right; font-family:var(--arabic-font); font-size:24px; line-height:1.75; color:var(--ink); margin:3px 0 8px; }
+  .azlib-result .tr { color:var(--ink-soft); font-size:13.5px; line-height:1.45; }
+  .azlib-result .src { color:var(--ink-faint); font-size:12px; margin-top:8px; }
+  .azlib-section-title { font-size:13px; color:var(--ink-faint); font-weight:750; letter-spacing:.04em; text-transform:uppercase; margin:18px 2px 10px; }
+  .azlib-empty { padding:24px 16px; border:1px dashed var(--line); border-radius:18px; color:var(--ink-faint); text-align:center; font-size:14px; line-height:1.45; }
+  @media (max-width:380px){ .azlib-grid { grid-template-columns:1fr; } .azlib-hero h2 { font-size:22px; } }
 
   #quran, #quranReader { padding-bottom:36px; }
   .q-continue { display:flex; align-items:center; gap:11px; width:100%; text-align:left; padding:13px 15px; margin:2px 0 14px;
@@ -989,6 +1023,15 @@
       <span class="qc-go"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></span>
     </button>
 
+    <button type="button" class="quran-card az-library-card" onclick="openAzkarLibrary()">
+      <span class="qc-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h6l2 2h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 11h8M8 15h5"/></svg></span>
+      <span class="qc-body">
+        <span class="qc-title">Библиотека азкаров</span>
+        <span class="qc-sub" id="azkarLibraryCount">Категории, поиск и источники</span>
+      </span>
+      <span class="qc-go"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></span>
+    </button>
+
     <div class="sessions">
       <div class="session" data-session="morning" onclick="openReading('morning', {resume:true})">
         <div class="art" data-img="morning"></div>
@@ -1055,6 +1098,30 @@
       <div class="home-insight" id="homeInsight">
         <span id="weekInsight">За неделю пока нет истории</span>
       </div>
+    </div>
+  </section>
+
+  <!-- AZKAR LIBRARY -->
+  <section class="screen" id="azkarLibrary">
+    <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
+      <div class="row">
+        <button class="back" onclick="back({visual:true})" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px">Библиотека азкаров</div></div>
+        <button class="iconbtn" onclick="document.getElementById('azkarSearchInput').focus()" title="Поиск" aria-label="Поиск"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+      </div>
+    </div>
+    <div class="azlib">
+      <div class="azlib-hero">
+        <div class="k">Azkar DB</div>
+        <h2>Проверяемая база поминаний</h2>
+        <p>Текущие азкары уже вынесены в JSON. Новые книги будут попадать сюда только через импорт, статусы проверки и источники.</p>
+      </div>
+      <label class="azlib-search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="azkarSearchInput" type="search" inputmode="search" placeholder="Поиск: сон, защита, Бухари..." oninput="renderAzkarLibrary(this.value)">
+      </label>
+      <div class="azlib-stat" id="azkarDbStat"></div>
+      <div id="azkarLibraryBody"></div>
     </div>
   </section>
 
@@ -1630,7 +1697,7 @@
 
   /* Тексты — из книги шейха Мухаммада ибн Саида Расляна «أذكار الصباح والمساء من صحيح السنة المطهرة».
      Раздел «после намаза» — из достоверной Сунны (Сахих Муслим и др.). */
-  const AZKAR = {
+  let AZKAR = {
     morning: { title:"Утренние поминания", kicker:"Утро · أذكار الصباح", items:[
       { n:1, target:1, ar:"أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ",
         tl:"Асбахна ва асбаха-ль-мульку лиллях, валь-хамду лиллях, ля иляха илля-Ллаху вахдаху ля шарика лях, ляху-ль-мульку ва ляху-ль-хамд, ва хува ‘аля кулли шайъин кадир. Рабби асъалюкя хайра ма фи хаза-ль-йауми ва хайра ма ба‘даху, ва а‘узу бикя мин шарри ма фи хаза-ль-йауми ва шарри ма ба‘даху",
@@ -1862,6 +1929,71 @@
         tr:"С именем Аллаха я положил свой бок. О Аллах, прости мой грех, отгони моего шайтана, освободи меня от залога, утяжели мои весы и помести меня в высшее собрание.", src:"Абу Дауд 5054 · сахих" },
     ]},
   };
+
+  let AZKAR_META = { manifest:null, categories:[], collections:[], search:[], ready:false, error:null, loadedFromJson:false };
+  function azkarEsc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function azkarNorm(s){
+    return String(s || '').toLowerCase()
+      .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g,'')
+      .replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/ё/g,'е')
+      .replace(/\s+/g,' ').trim();
+  }
+  async function azkarFetchJson(url){
+    const res = await fetch(url, { cache:'no-cache' });
+    if(!res.ok) throw new Error(url + ' ' + res.status);
+    return res.json();
+  }
+  function azkarLegacyItem(item, idx){
+    const legacy = item.legacy || {};
+    return {
+      id:item.id,
+      n:legacy.n || (item.display && item.display.number) || idx + 1,
+      target:legacy.target || item.repeat || 1,
+      targetHint:legacy.targetHint || item.repeat_hint || '',
+      afterTargets:legacy.afterTargets || null,
+      ar:legacy.ar || item.arabic || '',
+      tl:legacy.tl || item.translit_ru || '',
+      tr:legacy.tr || item.translation_ru || '',
+      src:legacy.src || item.source_text || '',
+      _db:item
+    };
+  }
+  function hydrateAzkarSessions(items, categories){
+    const byCat = new Map((categories || []).map(c => [c.id, c]));
+    const sessions = {};
+    (items || []).forEach((item, idx)=>{
+      const key = item.session || (item.category_ids || [])[0];
+      if(!key) return;
+      if(!sessions[key]){
+        const cat = byCat.get(key) || byCat.get((item.category_ids || [])[0]) || {};
+        sessions[key] = {
+          title: cat.title_ru || item.short_title_ru || item.title_ru || key,
+          kicker: cat.subtitle_ru || 'Достоверные поминания',
+          items: []
+        };
+      }
+      sessions[key].items.push(azkarLegacyItem(item, idx));
+    });
+    Object.values(sessions).forEach(session => session.items.sort((a,b)=>(a.n || 0) - (b.n || 0)));
+    return sessions;
+  }
+  async function loadAzkarDb(){
+    try{
+      const manifest = await azkarFetchJson('data/manifest.json');
+      const [items, categories, collections, search] = await Promise.all([
+        azkarFetchJson('data/' + manifest.files.azkar),
+        azkarFetchJson('data/' + manifest.files.categories),
+        azkarFetchJson('data/' + manifest.files.collections),
+        azkarFetchJson('data/' + manifest.files.search)
+      ]);
+      const sessions = hydrateAzkarSessions(items, categories);
+      AZKAR = { ...AZKAR, ...sessions };
+      AZKAR_META = { manifest, categories, collections, search, ready:true, error:null, loadedFromJson:true };
+    }catch(e){
+      AZKAR_META = { ...AZKAR_META, ready:true, error:e, loadedFromJson:false };
+      console.warn('Azkar JSON DB fallback:', e);
+    }
+  }
 
   const SHARH_SOURCE_NOTE = "Ориентиры для шарха: Абдурраззак аль-Бадр, «Фикх аль-ад‘ия ва-ль-азкар» и шархи к «аль-Калим ат-таййиб»; Ибн Баз, «Тухфат аль-ахйар»; Халид ас-Сабт, «Ма‘ани аль-азкар»; шархи ан-Навави, Ибн Хаджара и Ибн ‘Усаймина к соответствующим хадисам.";
   function cleanSharh(s){ return String(s || '').trim().replace(/\n[ \t]+/g, '\n'); }
@@ -2507,6 +2639,7 @@
   let completeItems = [];
   function saveProgress(){ try{ localStorage.setItem('azkar_progress', JSON.stringify(PROG)); }catch(e){} }
   function itemId(key, z){ return z.id || `${key}-${z.n}`; }
+  function azkarSessionKeys(){ return Object.keys(AZKAR).filter(key => AZKAR[key] && Array.isArray(AZKAR[key].items)); }
   function orderKey(key){ return `azkar_order_${key}`; }
   function loadFavoriteIds(){ try{ return JSON.parse(localStorage.getItem('azkar_favorites') || '[]'); }catch(e){ return []; } }
   function saveFavoriteIds(ids){ try{ localStorage.setItem('azkar_favorites', JSON.stringify(Array.from(new Set(ids)))); }catch(e){} }
@@ -2520,7 +2653,7 @@
     return on;
   }
   function allAzkarItems(){
-    return SESSION_KEYS.flatMap(key => (AZKAR[key].items || []).map((z, idx)=>({ ...z, _idx:idx, _id:itemId(key,z), _session:key })));
+    return azkarSessionKeys().flatMap(key => ((AZKAR[key] && AZKAR[key].items) || []).map((z, idx)=>({ ...z, _idx:idx, _id:itemId(key,z), _session:key })));
   }
   function favoriteItems(){
     const byId = new Map(allAzkarItems().map(z=>[z._id,z]));
@@ -2528,7 +2661,7 @@
   }
   function orderedItems(key){
     if(key === 'favorites') return favoriteItems();
-    const items = (AZKAR[key].items || []).map((z, idx)=>({ ...z, _idx:idx, _id:itemId(key,z), _session:key }));
+    const items = ((AZKAR[key] && AZKAR[key].items) || []).map((z, idx)=>({ ...z, _idx:idx, _id:itemId(key,z), _session:key }));
     let order=[]; try{ order=JSON.parse(localStorage.getItem(orderKey(key))||'[]'); }catch(e){}
     const rank = new Map(order.map((id,i)=>[id,i]));
     return items.sort((a,b)=>{
@@ -2536,6 +2669,89 @@
       const br = rank.has(b._id) ? rank.get(b._id) : 9999 + b._idx;
       return ar - br;
     });
+  }
+  function azkarIconSvg(icon){
+    const icons = {
+      sunrise:'<path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 2v7"/><path d="M2 18h20"/><path d="m4.9 10.9 1.4 1.4"/><path d="m19.1 10.9-1.4 1.4"/>',
+      moon:'<path d="M20 13.5A7.5 7.5 0 1 1 10.5 4a5.8 5.8 0 0 0 9.5 9.5z"/>',
+      mosque:'<path d="M6 21V11a6 6 0 0 1 12 0v10"/><path d="M4 21h16"/><path d="M12 11v4"/>',
+      bed:'<path d="M4 12V6"/><path d="M4 18v-3h16v3"/><path d="M20 15v-3a3 3 0 0 0-3-3H4"/><path d="M8 9V7a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2"/>',
+      book:'<path d="M12 6.5C10.5 5 8 4.5 5 4.8A1 1 0 0 0 4 5.8v11.4a1 1 0 0 0 1.1 1c2.8-.3 5.2.2 6.6 1.6.8.7 1.8.7 2.6 0 1.4-1.4 3.8-1.9 6.6-1.6a1 1 0 0 0 1.1-1V5.8a1 1 0 0 0-1-1c-3-.3-5.5.2-7 1.7z"/><path d="M12 6.5v12.9"/>',
+      shield:'<path d="M12 3l7 3v5c0 5-3.4 8.5-7 10-3.6-1.5-7-5-7-10V6z"/>',
+      home:'<path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/><path d="M10 20v-6h4v6"/>',
+      calendar:'<path d="M7 3v4M17 3v4"/><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16"/>',
+      heart:'<path d="M20.8 8.6a5.2 5.2 0 0 0-8.8-3.7 5.2 5.2 0 0 0-8.8 3.7c0 5.4 8.8 10.4 8.8 10.4s8.8-5 8.8-10.4z"/>',
+      map:'<path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3z"/><path d="M9 3v15M15 6v15"/>',
+      utensils:'<path d="M4 3v8a3 3 0 0 0 3 3v7"/><path d="M7 3v18"/><path d="M10 3v8a3 3 0 0 1-3 3"/><path d="M17 3v18"/><path d="M14 3h6v8a3 3 0 0 1-3 3"/>',
+      prayer:'<path d="M12 4a4 4 0 0 1 4 4v2h2v10H6V10h2V8a4 4 0 0 1 4-4z"/><path d="M10 10V8a2 2 0 1 1 4 0v2"/>',
+      sparkles:'<path d="M12 3l1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>'
+    };
+    return `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icons[icon] || icons.book}</svg>`;
+  }
+  function azkarCountsByCategory(){
+    const counts = {};
+    allAzkarItems().forEach(z=>{
+      const cats = (z._db && z._db.category_ids) || [z._session];
+      cats.forEach(id => counts[id] = (counts[id] || 0) + 1);
+    });
+    return counts;
+  }
+  function renderAzkarLibrary(query){
+    const body = document.getElementById('azkarLibraryBody');
+    const stat = document.getElementById('azkarDbStat');
+    if(!body) return;
+    const q = azkarNorm(query != null ? query : (document.getElementById('azkarSearchInput') || {}).value);
+    const allItems = allAzkarItems();
+    const verified = allItems.filter(z => !z._db || z._db.status === 'verified').length;
+    const planned = (AZKAR_META.categories || []).filter(c => c.status === 'planned').length;
+    if(stat){
+      stat.innerHTML = `<span><b>${allItems.length}</b> азкаров</span><span><b>${verified}</b> проверено</span><span><b>${planned}</b> разделов в плане</span>${AZKAR_META.loadedFromJson ? '<span>JSON-база активна</span>' : '<span>fallback из HTML</span>'}`;
+    }
+    if(q){
+      const source = AZKAR_META.search && AZKAR_META.search.length
+        ? AZKAR_META.search
+        : allItems.map(z => ({ id:z._id, text:azkarNorm([z.ar,z.tl,z.tr,z.src,z._session].join(' ')) }));
+      const ids = new Set(source.filter(row => (row.text || '').includes(q)).map(row => row.id));
+      const results = allItems.filter(z => ids.has(z._id)).slice(0, 30);
+      body.innerHTML = `<div class="azlib-section-title">Найдено: ${results.length}</div><div class="azlib-results">${results.map(z => `
+        <button class="azlib-result" type="button" onclick="openReading('${azkarEsc(z._session)}', {resume:false}); setTimeout(()=>scrollReadingToId('${azkarEsc(z._id)}'), 80)">
+          <div class="topline">${azkarEsc((AZKAR[z._session] || {}).title || SESSION_TITLES[z._session] || z._session)} · ×${effectiveTarget(z._session, z)}</div>
+          <div class="ar">${azkarEsc(z.ar)}</div>
+          <div class="tr">${azkarEsc(z.tr)}</div>
+          <div class="src">${azkarEsc(z.src)}</div>
+        </button>`).join('') || '<div class="azlib-empty">Ничего не найдено. Попробуй другое слово или источник.</div>'}</div>`;
+      return;
+    }
+    const counts = azkarCountsByCategory();
+    const cats = (AZKAR_META.categories && AZKAR_META.categories.length)
+      ? AZKAR_META.categories.slice().sort((a,b)=>(a.sort||999)-(b.sort||999))
+      : SESSION_KEYS.map((key,i)=>({ id:key, session_key:key, title_ru:SESSION_TITLES[key], subtitle_ru:'Текущий раздел', icon:'book', status:'active', sort:i }));
+    body.innerHTML = `<div class="azlib-section-title">Разделы</div><div class="azlib-grid">${cats.map(cat=>{
+      const key = cat.session_key || cat.id;
+      const count = counts[cat.id] || counts[key] || ((AZKAR[key] && AZKAR[key].items) || []).length || 0;
+      const active = count > 0 && AZKAR[key];
+      return `<button class="azlib-cat ${active ? '' : 'is-planned'}" type="button" ${active ? `onclick="openReading('${azkarEsc(key)}', {resume:true})"` : 'aria-disabled="true"'}>
+        <span class="ic">${azkarIconSvg(cat.icon)}</span>
+        <span class="t">${azkarEsc(cat.title_ru)}</span>
+        <span class="s">${azkarEsc(cat.subtitle_ru || (active ? 'Открыть раздел' : 'Запланировано к сверке'))}</span>
+        <span class="count">${active ? `${count} ${plural(count,'азкар','азкара','азкаров')}` : 'в плане'}</span>
+      </button>`;
+    }).join('')}</div>`;
+  }
+  function openAzkarLibrary(){
+    renderAzkarLibrary('');
+    const input = document.getElementById('azkarSearchInput');
+    if(input) input.value = '';
+    go('azkarLibrary');
+  }
+  function scrollReadingToId(id){
+    const esc = window.CSS && CSS.escape ? CSS.escape(id) : String(id).replace(/["\\]/g, '\\$&');
+    const el = document.querySelector(`#zikrList .zikr[data-id="${esc}"]`);
+    if(!el) return;
+    const rhead = document.querySelector('.rhead');
+    const top = el.getBoundingClientRect().top + window.scrollY - ((rhead ? rhead.offsetHeight : 60) + 12);
+    window.scrollTo({ top, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    el.classList.remove('ro-flash'); void el.offsetWidth; el.classList.add('ro-flash');
   }
   function saveOrder(key){
     const ids = Array.from(document.querySelectorAll('#zikrList .zikr[data-id]')).map(el=>el.dataset.id);
@@ -2907,6 +3123,7 @@ https://azkar.nurtech.dev/app`);
     opts = opts || {};
     CURRENT_KEY = key;
     const data = key === 'favorites' ? { title:'Избранное' } : AZKAR[key];
+    if(!data){ openAzkarLibrary(); return; }
     document.getElementById('rTitle').textContent = data.title;
     const rHint = document.getElementById('rHint');
     if(rHint){ if(!localStorage.getItem('azkar_taphint_seen')){ rHint.textContent='Тапни или потяни счётчик'; localStorage.setItem('azkar_taphint_seen','1'); } else rHint.textContent=''; }
@@ -3015,6 +3232,7 @@ https://azkar.nurtech.dev/app`);
         card.classList.toggle('done', cur>=target);
       }
       function persist(cur){
+        if(!PROG[progressKey]) PROG[progressKey] = {};
         PROG[progressKey][id] = cur;
         saveProgress();
         recordHistory(progressKey, cur >= target);
@@ -3285,12 +3503,12 @@ https://azkar.nurtech.dev/app`);
     if(typeof renderQuranHome==='function') renderQuranHome();
   }
   function openComplete(key){
-    if(!SESSION_KEYS.includes(key)) return;
+    if(!key || key === 'favorites') return;
     const seenKey = completionKey(key);
     if(localStorage.getItem(seenKey) === '1') return;
     localStorage.setItem(seenKey, '1');
     completeItems = CURRENT_ITEMS.slice();
-    document.getElementById('completeTitle').textContent = `${SESSION_TITLES[key]} завершены`;
+    document.getElementById('completeTitle').textContent = `${SESSION_TITLES[key] || (AZKAR[key] && AZKAR[key].title) || 'Поминания'} завершены`;
     document.getElementById('completeSub').textContent = 'Пусть эти слова останутся в сердце после чтения.';
     recordHistory(key, true);
     tgHaptic('medium');
@@ -3599,7 +3817,7 @@ https://azkar.nurtech.dev/app`);
   function loadHistory(){ try{ return JSON.parse(localStorage.getItem('azkar_history') || '{}'); }catch(e){ return {}; } }
   function saveHistory(h){ try{ localStorage.setItem('azkar_history', JSON.stringify(h)); }catch(e){} }
   function recordHistory(key, completed=false){
-    if(!SESSION_KEYS.includes(key)) return;
+    if(!key || key === 'favorites') return;
     const h = loadHistory();
     const d = PROG.date || todayStr();
     const day = h[d] || { sessions:{} };
@@ -3656,7 +3874,7 @@ https://azkar.nurtech.dev/app`);
   function updateHomeProgress(){
     let azkarToday=0, totalAzkar=0, anyStarted=false;
     SESSION_KEYS.forEach(key=>{
-      const items=AZKAR[key].items, total=items.length; let done=0;
+      const items=((AZKAR[key] && AZKAR[key].items) || []), total=items.length; let done=0;
       items.forEach((z,i)=>{
         const id = itemId(key,z);
         const count = ((PROG[key] && (PROG[key][id] ?? PROG[key][i])) || 0);
@@ -3691,6 +3909,11 @@ https://azkar.nurtech.dev/app`);
       if(favBar) favBar.style.width = favs.length ? (favDone / favs.length * 100) + '%' : '0%';
     }
     updateSoftStats();
+    const lib = document.getElementById('azkarLibraryCount');
+    if(lib){
+      const total = allAzkarItems().length;
+      lib.textContent = `${total} ${plural(total,'азкар','азкара','азкаров')} · поиск и источники`;
+    }
   }
 
   function savedBool(key, fallback = true){
@@ -4987,6 +5210,9 @@ https://azkar.nurtech.dev/app`);
     const d=document.getElementById('qiblaDial'); if(d) d.classList.remove('aligned'); }
 
   applyTheme();
-  cloudInit();   // подтянуть прогресс/порядок/настройки из TG CloudStorage (если новее) + засеять облако
-  renderQuranHome();
+  loadAzkarDb().finally(function(){
+    cloudInit();   // подтянуть прогресс/порядок/настройки из TG CloudStorage (если новее) + засеять облако
+    renderQuranHome();
+    updateHomeProgress();
+  });
 </script>

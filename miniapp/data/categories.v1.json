@@ -1,0 +1,135 @@
+[
+  {
+    "id": "morning",
+    "title_ru": "Утро",
+    "subtitle_ru": "Утренние поминания из текущей проверенной базы",
+    "icon": "sunrise",
+    "tone": "dawn",
+    "status": "active",
+    "session_key": "morning",
+    "sort": 10
+  },
+  {
+    "id": "evening",
+    "title_ru": "Вечер",
+    "subtitle_ru": "Вечерние поминания из текущей проверенной базы",
+    "icon": "moon",
+    "tone": "night",
+    "status": "active",
+    "session_key": "evening",
+    "sort": 20
+  },
+  {
+    "id": "after_prayer",
+    "title_ru": "После намаза",
+    "subtitle_ru": "Поминания после обязательной молитвы",
+    "icon": "mosque",
+    "tone": "emerald",
+    "status": "active",
+    "session_key": "after",
+    "sort": 30
+  },
+  {
+    "id": "sleep",
+    "title_ru": "Перед сном",
+    "subtitle_ru": "Поминания перед сном",
+    "icon": "bed",
+    "tone": "indigo",
+    "status": "active",
+    "session_key": "sleep",
+    "sort": 40
+  },
+  {
+    "id": "daily",
+    "title_ru": "Каждый день",
+    "subtitle_ru": "Повторяющиеся ежедневные поминания",
+    "icon": "calendar",
+    "tone": "sage",
+    "status": "active",
+    "sort": 50
+  },
+  {
+    "id": "prayer",
+    "title_ru": "Намаз",
+    "subtitle_ru": "Поминания, связанные с молитвой",
+    "icon": "prayer",
+    "tone": "emerald",
+    "status": "active",
+    "sort": 60
+  },
+  {
+    "id": "quran_dua",
+    "title_ru": "Коран и дуа",
+    "subtitle_ru": "Коранические дуа и аяты, которые используются в поминании",
+    "icon": "book",
+    "tone": "blue",
+    "status": "planned",
+    "sort": 70,
+    "review_note": "Заполнять только после сверки текста и перевода."
+  },
+  {
+    "id": "protection",
+    "title_ru": "Защита",
+    "subtitle_ru": "Поминания защиты от вреда и шайтана",
+    "icon": "shield",
+    "tone": "teal",
+    "status": "planned",
+    "sort": 80,
+    "review_note": "Импортировать из проверенных сборников с оценкой хадисов."
+  },
+  {
+    "id": "mosque",
+    "title_ru": "Мечеть",
+    "subtitle_ru": "Вход, выход и поведение в мечети",
+    "icon": "mosque",
+    "tone": "emerald",
+    "status": "planned",
+    "sort": 90
+  },
+  {
+    "id": "home",
+    "title_ru": "Дом",
+    "subtitle_ru": "Вход, выход и семейные ситуации",
+    "icon": "home",
+    "tone": "warm",
+    "status": "planned",
+    "sort": 100
+  },
+  {
+    "id": "food",
+    "title_ru": "Еда и питьё",
+    "subtitle_ru": "Перед едой, после еды и для гостя",
+    "icon": "utensils",
+    "tone": "amber",
+    "status": "planned",
+    "sort": 110
+  },
+  {
+    "id": "travel",
+    "title_ru": "Путешествие",
+    "subtitle_ru": "Дорога, транспорт и возвращение домой",
+    "icon": "map",
+    "tone": "blue",
+    "status": "planned",
+    "sort": 120
+  },
+  {
+    "id": "anxiety",
+    "title_ru": "Тревога и печаль",
+    "subtitle_ru": "Поминания при страхе, грусти и трудности",
+    "icon": "heart",
+    "tone": "rose",
+    "status": "planned",
+    "sort": 130
+  },
+  {
+    "id": "ruqyah",
+    "title_ru": "Рукъя",
+    "subtitle_ru": "Дуа и аяты для лечения по Сунне",
+    "icon": "sparkles",
+    "tone": "teal",
+    "status": "planned",
+    "sort": 140,
+    "review_note": "Без народных практик и слабых текстов."
+  }
+]

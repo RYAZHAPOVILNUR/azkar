@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://azkar.nurtech.dev/schema/collection.schema.json",
+  "title": "Azkar collection",
+  "type": "object",
+  "required": ["id", "title_ru", "status", "sort"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+    "title_ru": { "type": "string" },
+    "title_ar": { "type": "string" },
+    "author_ru": { "type": "string" },
+    "author_ar": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["active", "planned", "source_only", "copyright_blocked"]
+    },
+    "copyright_note": { "type": "string" },
+    "sort": { "type": "integer" },
+    "review_note": { "type": "string" }
+  }
+}

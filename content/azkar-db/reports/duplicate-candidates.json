@@ -1,0 +1,302 @@
+[
+  {
+    "arabic_search": "اللهم انت ربي لا اله الا انت، خلقتني وانا عبدك، وانا علي عهدك ووعدك ما استطعت، اعوذ بك من شر ما صنعت، ابوء لك بنعمتك علي، وابوء بذنبي، فاغفر لي، فانه لا يغفر الذنوب الا انت",
+    "items": [
+      {
+        "id": "morning-3",
+        "session": "morning",
+        "source_text": "Аль-Бухари 6306 · сахих"
+      },
+      {
+        "id": "evening-3",
+        "session": "evening",
+        "source_text": "Аль-Бухари 6306 · сахих"
+      }
+    ]
+  },
+  {
+    "arabic_search": "بسم الله الذي لا يضر مع اسمه شيء في الارض ولا في السماء وهو السميع العليم",
+    "items": [
+      {
+        "id": "morning-5",
+        "session": "morning",
+        "source_text": "Абу Дауд 5088, Тирмизи 3388 · сахих"
+      },
+      {
+        "id": "evening-5",
+        "session": "evening",
+        "source_text": "Абу Дауд 5088, Тирмизи 3388 · сахих"
+      }
+    ]
+  },
+  {
+    "arabic_search": "يا حي يا قيوم برحمتك استغيث، اصلح لي شاني كله، ولا تكلني الي نفسي طرفه عين ابدا",
+    "items": [
+      {
+        "id": "morning-7",
+        "session": "morning",
+        "source_text": "Аль-Хаким · хасан"
+      },
+      {
+        "id": "evening-7",
+        "session": "evening",
+        "source_text": "Аль-Хаким · хасан"
+      }
+    ]
+  },
+  {
+    "arabic_search": "لا اله الا الله وحده لا شريك له، له الملك وله الحمد، يحيي ويميت، وهو علي كل شيء قدير",
+    "items": [
+      {
+        "id": "morning-8",
+        "session": "morning",
+        "source_text": "Ахмад, Ат-Табарани · сахих"
+      },
+      {
+        "id": "after-14",
+        "session": "after",
+        "source_text": "Тирмизи 3474 · сахих"
+      }
+    ]
+  },
+  {
+    "arabic_search": "الله لا اله الا هو الحي القيوم، لا تاخذه سنه ولا نوم، له ما في السماوات وما في الارض، من ذا الذي يشفع عنده الا باذنه، يعلم ما بين ايديهم وما خلفهم، ولا يحيطون بشيء من علمه الا بما شاء، وسع كرسيه السماوات والارض، ولا يئوده حفظهما، وهو العلي العظيم",
+    "items": [
+      {
+        "id": "morning-9",
+        "session": "morning",
+        "source_text": "Ан-Насаи, аль-Хаким · сахих"
+      },
+      {
+        "id": "evening-8",
+        "session": "evening",
+        "source_text": "Ан-Насаи, аль-Хаким · сахих"
+      },
+      {
+        "id": "after-10",
+        "session": "after",
+        "source_text": "Ан-Насаи · сахих"
+      },
+      {
+        "id": "sleep-1",
+        "session": "sleep",
+        "source_text": "Аль-Бухари 2311 · сахих"
+      }
+    ]
+  },
+  {
+    "arabic_search": "قل هو الله احد الله الصمد لم يلد ولم يولد ولم يكن له كفوا احد",
+    "items": [
+      {
+        "id": "morning-10",
+        "session": "morning",
+        "source_text": "Абу Дауд 5082, Тирмизи 3575 · сахих"
+      },
+      {
+        "id": "evening-9",
+        "session": "evening",
+        "source_text": "Абу Дауд 5082, Тирмизи 3575 · сахих"
+      },
+      {
+        "id": "after-11",
+        "session": "after",
+        "source_text": "Абу Дауд, Тирмизи · сахих"
+      },
+      {
+        "id": "sleep-2",
+        "session": "sleep",
+        "source_text": "Аль-Бухари 5017 · сахих"
+      }
+    ]
+  },
+  {
+    "arabic_search": "قل اعوذ برب الفلق من شر ما خلق ومن شر غاسق اذا وقب ومن شر النفاثات في العقد ومن شر حاسد اذا حسد",
+    "items": [
+      {
+        "id": "morning-11",
+        "session": "morning",
+        "source_text": "Абу Дауд 5082, Тирмизи 3575 · сахих"
+      },
+      {
+        "id": "evening-10",
+        "session": "evening",
+        "source_text": "Абу Дауд 5082, Тирмизи 3575 · сахих"
+      },
+      {
+        "id": "after-12",
+        "session": "after",
+        "source_text": "Абу Дауд, Тирмизи · сахих"
+      },
+      {
+        "id": "sleep-3",
+        "session": "sleep",
+        "source_text": "Аль-Бухари 5017 · сахих"
+      }
+    ]
+  },
+  {
+    "arabic_search": "قل اعوذ برب الناس ملك الناس اله الناس من شر الوسواس الخناس الذي يوسوس في صدور الناس من الجنه والناس",
+    "items": [
+      {
+        "id": "morning-12",
+        "session": "morning",
+        "source_text": "Абу Дауд 5082, Тирмизи 3575 · сахих"
+      },
+      {
+        "id": "evening-11",
+        "session": "evening",
+        "source_text": "Абу Дауд 5082, Тирмизи 3575 · сахих"
+      },
+      {
+        "id": "after-13",
+        "session": "after",
+        "source_text": "Абу Дауд, Тирмизи · сахих"
+      },
+      {
+        "id": "sleep-4",
+        "session": "sleep",
+        "source_text": "Аль-Бухари 5017 · сахих"
+      }
+    ]
+  },
+  {
+    "arabic_search": "حسبي الله لا اله الا هو عليه توكلت وهو رب العرش العظيم",
+    "items": [
+      {
+        "id": "morning-15",
+        "session": "morning",
+        "source_text": "Абу Дауд 5081 · хасан"
+      },
+      {
+        "id": "evening-13",
+        "session": "evening",
+        "source_text": "Абу Дауд 5081 · хасан"
+      }
+    ]
+  },
+  {
+    "arabic_search": "اللهم اني اسالك العفو والعافيه في الدنيا والاخره، اللهم اني اسالك العفو والعافيه في ديني ودنياي واهلي ومالي، اللهم استر عوراتي وامن روعاتي، اللهم احفظني من بين يدي ومن خلفي وعن يميني وعن شمالي ومن فوقي، واعوذ بعظمتك ان اغتال من تحتي",
+    "items": [
+      {
+        "id": "morning-16",
+        "session": "morning",
+        "source_text": "Абу Дауд 5074, Ибн Маджа 3871 · сахих"
+      },
+      {
+        "id": "evening-14",
+        "session": "evening",
+        "source_text": "Абу Дауд 5074, Ибн Маджа 3871 · сахих"
+      }
+    ]
+  },
+  {
+    "arabic_search": "اللهم عافني في بدني، اللهم عافني في سمعي، اللهم عافني في بصري، لا اله الا انت",
+    "items": [
+      {
+        "id": "morning-18",
+        "session": "morning",
+        "source_text": "Абу Дауд 5090 · хасан"
+      },
+      {
+        "id": "evening-16",
+        "session": "evening",
+        "source_text": "Абу Дауд 5090 · хасан"
+      }
+    ]
+  },
+  {
+    "arabic_search": "سبحان الله وبحمده عدد خلقه، ورضا نفسه، وزنه عرشه، ومداد كلماته",
+    "items": [
+      {
+        "id": "morning-19",
+        "session": "morning",
+        "source_text": "Муслим 2726 · сахих"
+      },
+      {
+        "id": "evening-17",
+        "session": "evening",
+        "source_text": "Муслим 2726 · сахих"
+      }
+    ]
+  },
+  {
+    "arabic_search": "لا اله الا الله وحده لا شريك له، له الملك وله الحمد، وهو علي كل شيء قدير",
+    "items": [
+      {
+        "id": "morning-20",
+        "session": "morning",
+        "source_text": "Аль-Бухари 6403, Муслим 2691"
+      },
+      {
+        "id": "evening-18",
+        "session": "evening",
+        "source_text": "Аль-Бухари 6403, Муслим 2691"
+      },
+      {
+        "id": "after-9",
+        "session": "after",
+        "source_text": "Муслим 597"
+      }
+    ]
+  },
+  {
+    "arabic_search": "استغفر الله واتوب اليه",
+    "items": [
+      {
+        "id": "morning-21",
+        "session": "morning",
+        "source_text": "Аль-Бухари 6307, Муслим 2702"
+      },
+      {
+        "id": "evening-19",
+        "session": "evening",
+        "source_text": "Аль-Бухари 6307, Муслим 2702"
+      }
+    ]
+  },
+  {
+    "arabic_search": "سبحان الله",
+    "items": [
+      {
+        "id": "after-6",
+        "session": "after",
+        "source_text": "Муслим 597"
+      },
+      {
+        "id": "sleep-14",
+        "session": "sleep",
+        "source_text": "Аль-Бухари 6318, Муслим 2727"
+      }
+    ]
+  },
+  {
+    "arabic_search": "الحمد لله",
+    "items": [
+      {
+        "id": "after-7",
+        "session": "after",
+        "source_text": "Муслим 597"
+      },
+      {
+        "id": "sleep-15",
+        "session": "sleep",
+        "source_text": "Аль-Бухари 6318, Муслим 2727"
+      }
+    ]
+  },
+  {
+    "arabic_search": "الله اكبر",
+    "items": [
+      {
+        "id": "after-8",
+        "session": "after",
+        "source_text": "Муслим 597"
+      },
+      {
+        "id": "sleep-16",
+        "session": "sleep",
+        "source_text": "Аль-Бухари 6318, Муслим 2727"
+      }
+    ]
+  }
+]

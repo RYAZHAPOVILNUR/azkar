@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "generated_at": "2026-07-13T11:51:25.800Z",
+  "item_count": 74,
+  "verified_count": 74,
+  "files": {
+    "azkar": "azkar.v1.json",
+    "categories": "categories.v1.json",
+    "collections": "collections.v1.json",
+    "search": "search-index.v1.json"
+  }
+}

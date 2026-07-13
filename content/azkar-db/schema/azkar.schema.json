@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://azkar.nurtech.dev/schema/azkar.schema.json",
+  "title": "Azkar item",
+  "type": "object",
+  "required": [
+    "id",
+    "status",
+    "title_ru",
+    "category_ids",
+    "collection_ids",
+    "arabic",
+    "translation_ru",
+    "repeat",
+    "source_text",
+    "timing"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+    "slug": { "type": "string" },
+    "legacy_id": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "needs_review",
+        "needs_arabic_review",
+        "needs_translation_review",
+        "needs_source_review",
+        "duplicate_candidate",
+        "excluded_weak",
+        "copyright_blocked"
+      ]
+    },
+    "title_ru": { "type": "string" },
+    "short_title_ru": { "type": "string" },
+    "session": { "type": "string" },
+    "category_ids": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "collection_ids": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "arabic": { "type": "string" },
+    "arabic_search": { "type": "string" },
+    "translit_ru": { "type": "string" },
+    "translation_ru": { "type": "string" },
+    "repeat": { "type": "integer", "minimum": 1 },
+    "repeat_hint": { "type": "string" },
+    "source_text": { "type": "string" },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["raw"],
+        "properties": {
+          "raw": { "type": "string" },
+          "collection": { "type": "string" },
+          "reference": { "type": "string" },
+          "grade": { "type": "string" }
+        }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string" },
+        "session": { "type": "string" },
+        "event": { "type": "string" }
+      }
+    },
+    "display": { "type": "object" },
+    "audio": { "type": "object" },
+    "review": { "type": "object" },
+    "legacy": { "type": "object" }
+  }
+}

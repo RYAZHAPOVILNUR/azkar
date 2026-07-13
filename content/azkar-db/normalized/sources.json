@@ -1,0 +1,35 @@
+[
+  {
+    "id": "raslan-source-pdf",
+    "title_ru": "أذكار الصباح والمساء من صحيح السنة المطهرة",
+    "title_ar": "أذكار الصباح والمساء من صحيح السنة المطهرة",
+    "type": "local_pdf",
+    "status": "active",
+    "url": "content/raslan-source.pdf",
+    "license_note": "Внутренний источник проекта; при публичном расширении проверять права на полный текст."
+  },
+  {
+    "id": "hadeethenc",
+    "title_ru": "HadeethEnc",
+    "type": "api_or_dataset",
+    "status": "planned",
+    "url": "https://hadeethenc.com",
+    "review_note": "Можно использовать для сверки хадисов, но каждый текст импортировать как needs_review."
+  },
+  {
+    "id": "quranenc",
+    "title_ru": "QuranEnc",
+    "type": "api_or_dataset",
+    "status": "planned",
+    "url": "https://quranenc.com",
+    "review_note": "Использовать для переводов смыслов аятов только с сохранением атрибуции."
+  },
+  {
+    "id": "sunnah-com",
+    "title_ru": "Sunnah.com API",
+    "type": "api",
+    "status": "planned",
+    "url": "https://sunnah.com/developers",
+    "review_note": "Дополнительная сверка; нужен ключ API."
+  }
+]
