@@ -4692,7 +4692,7 @@ https://azkar.nurtech.dev/app`);
       const c = document.getElementById('ftCounter'); if(c) c.classList.remove('done');
       renderFree(); saveFree(); tgHaptic('light');
     });
-    document.querySelectorAll('#ftDhikr .ft-d').forEach(b=> b.addEventListener('click', ()=>{ FT.dhikr = +b.dataset.i; renderFree(); saveFree(); tgHaptic('light'); }));
+    document.querySelectorAll('#ftDhikr .ft-d').forEach(b=> b.addEventListener('click', ()=>{ FT.dhikr = +b.dataset.i; FT.count = 0; const c=document.getElementById('ftCounter'); if(c) c.classList.remove('done'); renderFree(); saveFree(); tgHaptic('light'); }));
   })();
 
   /* ===================== КОРАН: читалка + таджвид + статистика ===================== */
