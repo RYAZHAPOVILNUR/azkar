@@ -2048,7 +2048,9 @@
   function azkarLegacyItem(item, idx){
     const legacy = item.legacy || {};
     const audio = item.audio || {};
-    const audioUrl = audio.url ? String(audio.url).replace(/^http:\/\//i, 'https://') : '';
+    let audioUrl = audio.url ? String(audio.url).replace(/^http:\/\//i, 'https://') : '';
+    const audioProxyMatch = audioUrl.match(/hisnmuslim\.com\/audio\/ar\/(\d+)\.mp3/i);
+    if (audioProxyMatch) audioUrl = '/api/azkar-audio/' + audioProxyMatch[1];
     return {
       id:item.id,
       n:legacy.n || (item.display && item.display.number) || idx + 1,

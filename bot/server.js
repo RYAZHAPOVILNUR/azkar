@@ -15,6 +15,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const https = require('https');
 const cron = require('node-cron');
 const { spawn } = require('child_process');
 
@@ -503,6 +504,33 @@ app.get('/api/radio/status', (req, res) => {
     pot: !!POT_PROVIDER_URL,
     stations: radioStationsStatus(),
   });
+});
+
+// Аудио аскаров: same-origin прокси к hisnmuslim (Telegram WKWebView не тянет чужой домен напрямую).
+app.get('/api/azkar-audio/:n', (req, res) => {
+  const n = String(req.params.n || '').replace(/[^0-9]/g, '');
+  if (!n) { res.status(400).end(); return; }
+  const headers = { 'User-Agent': 'Mozilla/5.0', Accept: '*/*' };
+  if (req.headers.range) headers.Range = req.headers.range;
+  const up = https.request(
+    { host: 'www.hisnmuslim.com', path: '/audio/ar/' + n + '.mp3', method: 'GET', headers },
+    (r) => {
+      const h = {
+        'Content-Type': 'audio/mpeg',
+        'Accept-Ranges': 'bytes',
+        'Cache-Control': 'public, max-age=604800',
+        'Access-Control-Allow-Origin': '*',
+      };
+      if (r.headers['content-length']) h['Content-Length'] = r.headers['content-length'];
+      if (r.headers['content-range']) h['Content-Range'] = r.headers['content-range'];
+      res.writeHead(r.statusCode || 200, h);
+      r.pipe(res);
+    }
+  );
+  up.on('error', () => { try { res.status(502).end(); } catch {} });
+  up.setTimeout(20000, () => { try { up.destroy(); } catch {} });
+  req.on('close', () => { try { up.destroy(); } catch {} });
+  up.end();
 });
 
 // Mini App живёт под /app, лендинг — на корне. API и health объявлены выше.
