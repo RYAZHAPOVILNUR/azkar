@@ -273,8 +273,24 @@ app.post('/api/hifz', (req, res) => {
   res.json({ ok: true });
 });
 
-// ---------- радио: аудио из YouTube-лайва (один общий ffmpeg раздаёт mp3 всем) ----------
+// ---------- радио: один общий ffmpeg раздаёт mp3 всем ----------
+// Сначала используем прямые MP3-потоки Корана: они не зависят от YouTube-кук и антибота.
+// YouTube-лайв остаётся последним fallback-источником, если прямые потоки недоступны.
 const RADIO_URL = process.env.RADIO_URL || 'https://www.youtube.com/@bmagrifa/live';
+const DEFAULT_RADIO_STREAMS = [
+  'http://66.45.232.131:9994/stream',
+  'http://192.99.170.8:5550/stream',
+  'http://66.45.232.131:9992/stream',
+  'http://66.45.232.131:9990/stream',
+];
+function splitEnvList(v) {
+  return String(v || '').split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+}
+function isYoutubeUrl(url) { return /(^|\/\/)(www\.)?(youtube\.com|youtu\.be)\b/i.test(String(url || '')); }
+const RADIO_SOURCES = (splitEnvList(process.env.RADIO_STREAMS).length ? splitEnvList(process.env.RADIO_STREAMS) : DEFAULT_RADIO_STREAMS)
+  .concat(splitEnvList(process.env.RADIO_EXTRA_STREAMS))
+  .concat(RADIO_URL ? [RADIO_URL] : [])
+  .filter((url, idx, arr) => arr.indexOf(url) === idx);
 // PO-token провайдер (bgutil) — обход антибот-проверки YouTube с дата-центрового IP.
 // Пустая строка POT_PROVIDER_URL отключает провайдер (например, при переходе на куки).
 const POT_PROVIDER_URL = ('POT_PROVIDER_URL' in process.env) ? process.env.POT_PROVIDER_URL : 'http://bgutil-provider:4416';
@@ -283,34 +299,34 @@ const POT_PROVIDER_URL = ('POT_PROVIDER_URL' in process.env) ? process.env.POT_P
 // Файл лежит в томе данных (переживает пересборку, НЕ в образе/гите). Положить: /opt/azkar -> volume.
 const YT_COOKIES = process.env.YT_COOKIES || path.join(__dirname, 'data', 'cookies.txt');
 function radioHasCookies() { try { return !!YT_COOKIES && fs.existsSync(YT_COOKIES); } catch { return false; } }
-function ytdlpArgs() {
+function ytdlpArgs(url = RADIO_URL) {
   // --js-runtimes node: включить node как JS-раннер для решения n-challenge (deno по умолчанию,
   // но его нет в alpine; node>=22 в образе поддерживается). yt-dlp-ejs даёт solver-скрипты.
   const a = ['-f', 'bestaudio/best', '-g', '--no-warnings', '--no-playlist', '--js-runtimes', 'node'];
   if (radioHasCookies()) a.push('--cookies', YT_COOKIES);
   if (POT_PROVIDER_URL) a.push('--extractor-args', 'youtubepot-bgutilhttp:base_url=' + POT_PROVIDER_URL);
-  a.push(RADIO_URL);
+  a.push(url);
   return a;
 }
-const radio = { proc: null, clients: new Set(), tail: [], starting: false, idleTimer: null, lastOk: 0, failCount: 0 };
+const radio = { proc: null, clients: new Set(), tail: [], starting: false, idleTimer: null, lastOk: 0, failCount: 0, source: '' };
 // yt-dlp при успешном резолве ПЕРЕЗАПИСЫВАЕТ cookies.txt свежими (ротированными) куками — так
 // сессия YouTube живёт, пока эфир регулярно резолвится. Держим бэкап, чтобы битый прогон не затёр рабочие.
 const YT_COOKIES_BAK = YT_COOKIES + '.bak';
 function cookieBackup() { try { if (radioHasCookies()) fs.copyFileSync(YT_COOKIES, YT_COOKIES_BAK); } catch {} }
 function cookieRestore() { try { if (fs.existsSync(YT_COOKIES_BAK)) fs.copyFileSync(YT_COOKIES_BAK, YT_COOKIES); } catch {} }
-// алерт владельцу (опц., env RADIO_ALERT_CHAT_ID): эфир не поднимается — вероятно, протухли куки
+// алерт владельцу (опц., env RADIO_ALERT_CHAT_ID): все источники эфира не поднимаются
 const RADIO_ALERT_CHAT_ID = process.env.RADIO_ALERT_CHAT_ID || '';
 let _radioAlertedAt = 0;
 function radioAlert(err) {
   if (!RADIO_ALERT_CHAT_ID || !TOKEN) return;
   const now = Date.now(); if (now - _radioAlertedAt < 6 * 3600 * 1000) return; _radioAlertedAt = now;   // не спамить (≤1/6ч)
-  const text = '⚠️ Радио: не удаётся поднять эфир (вероятно, протухли YouTube-куки — обнови cookies.txt).\n' + String((err && err.message) || err).slice(0, 200);
+  const text = '⚠️ Радио: не удаётся поднять эфир ни с одного источника.\n' + String((err && err.message) || err).slice(0, 200);
   try { fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: RADIO_ALERT_CHAT_ID, text }) }).catch(() => {}); } catch {}
 }
-function radioResolve() {
+function radioResolve(url = RADIO_URL) {
   return new Promise((resolve, reject) => {
     if (radioHasCookies()) cookieBackup();
-    const yt = spawn('yt-dlp', ytdlpArgs());
+    const yt = spawn('yt-dlp', ytdlpArgs(url));
     let out = '', err = '';
     yt.stdout.on('data', (d) => (out += d));
     yt.stderr.on('data', (d) => (err += d));
@@ -322,33 +338,99 @@ function radioResolve() {
   });
 }
 // несколько попыток с backoff — переживать разовые сбои резолва/сети
-async function radioResolveRetry(tries) {
+async function radioResolveRetry(tries, url = RADIO_URL) {
   let lastErr;
   for (let i = 0; i < tries; i++) {
-    try { return await radioResolve(); }
+    try { return await radioResolve(url); }
     catch (e) { lastErr = e; if (i < tries - 1) await new Promise((r) => setTimeout(r, 1500 * (i + 1))); }
   }
   throw lastErr;
+}
+function radioWriteChunk(chunk) {
+  radio.tail.push(chunk);
+  let total = radio.tail.reduce((s, c) => s + c.length, 0);
+  while (total > 96 * 1024 && radio.tail.length > 1) total -= radio.tail.shift().length;
+  for (const res of radio.clients) { try { res.write(chunk); } catch {} }
+}
+async function radioSourceUrl(source) {
+  if (isYoutubeUrl(source)) return radioResolveRetry(2, source);
+  return source;
+}
+function radioSpawn(sourceLabel, url) {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let stderr = '';
+    let noAudioTimer = null;
+    const ff = spawn('ffmpeg', [
+      '-hide_banner', '-loglevel', 'error',
+      '-rw_timeout', '12000000',
+      '-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '5',
+      '-i', url,
+      '-vn', '-c:a', 'libmp3lame', '-b:a', '64k', '-f', 'mp3', 'pipe:1'
+    ]);
+    function fail(err) {
+      if (settled) return;
+      settled = true;
+      if (noAudioTimer) clearTimeout(noAudioTimer);
+      try { ff.kill('SIGKILL'); } catch {}
+      reject(err);
+    }
+    noAudioTimer = setTimeout(() => fail(new Error('ffmpeg no audio from ' + sourceLabel)), 12000);
+    ff.stdout.on('data', (chunk) => {
+      radioWriteChunk(chunk);
+      if (!settled) {
+        settled = true;
+        if (noAudioTimer) clearTimeout(noAudioTimer);
+        radio.proc = ff;
+        radio.source = sourceLabel;
+        radio.lastOk = Date.now();
+        radio.failCount = 0;
+        console.log('[radio] source ok:', sourceLabel);
+        resolve(ff);
+      }
+    });
+    ff.stderr.on('data', (d) => { stderr = (stderr + d.toString()).slice(-800); });
+    ff.on('close', (code) => {
+      if (!settled) {
+        fail(new Error('ffmpeg close ' + code + ' from ' + sourceLabel + ': ' + stderr.slice(-180)));
+        return;
+      }
+      if (radio.proc === ff) {
+        radio.proc = null;
+        radio.tail = [];
+        radio.source = '';
+        if (radio.clients.size) setTimeout(() => radioStart(), 1200);
+      }
+    });
+    ff.on('error', (e) => {
+      if (!settled) fail(e);
+      else if (radio.proc === ff) { radio.proc = null; radio.tail = []; radio.source = ''; }
+    });
+  });
 }
 async function radioStart() {
   if (radio.proc || radio.starting) return;
   radio.starting = true;
   try {
-    const url = await radioResolveRetry(3);
-    const ff = spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '5', '-i', url, '-vn', '-c:a', 'libmp3lame', '-b:a', '64k', '-f', 'mp3', 'pipe:1']);
-    radio.proc = ff; radio.lastOk = Date.now(); radio.failCount = 0;
-    ff.stdout.on('data', (chunk) => {
-      radio.tail.push(chunk);
-      let total = radio.tail.reduce((s, c) => s + c.length, 0);
-      while (total > 96 * 1024 && radio.tail.length > 1) total -= radio.tail.shift().length;
-      for (const res of radio.clients) { try { res.write(chunk); } catch {} }
-    });
-    ff.stderr.on('data', () => {});
-    ff.on('close', () => { radio.proc = null; radio.tail = []; if (radio.clients.size) setTimeout(() => radioStart(), 1500); });
-    ff.on('error', () => { radio.proc = null; radio.tail = []; });
+    let lastErr = null;
+    for (const source of RADIO_SOURCES) {
+      const sourceLabel = isYoutubeUrl(source) ? 'youtube:' + source : source;
+      try {
+        const url = await radioSourceUrl(source);
+        await radioSpawn(sourceLabel, url);
+        return;
+      } catch (e) {
+        lastErr = e;
+        console.warn('[radio] source failed:', sourceLabel, e.message);
+        radio.proc = null;
+        radio.tail = [];
+        radio.source = '';
+      }
+    }
+    throw lastErr || new Error('no radio sources configured');
   } catch (e) {
     console.warn('[radio] не удалось запустить эфир:', e.message);
-    radio.proc = null; radio.tail = []; radio.failCount = (radio.failCount || 0) + 1; radioAlert(e);
+    radio.proc = null; radio.tail = []; radio.source = ''; radio.failCount = (radio.failCount || 0) + 1; radioAlert(e);
     for (const res of radio.clients) { try { res.end(); } catch {} }
     radio.clients.clear();
   } finally { radio.starting = false; }
@@ -356,7 +438,7 @@ async function radioStart() {
 function radioStopIfIdle() {
   if (radio.idleTimer) clearTimeout(radio.idleTimer);
   radio.idleTimer = setTimeout(() => {
-    if (radio.clients.size === 0 && radio.proc) { try { radio.proc.kill('SIGKILL'); } catch {} radio.proc = null; radio.tail = []; }
+    if (radio.clients.size === 0 && radio.proc) { try { radio.proc.kill('SIGKILL'); } catch {} radio.proc = null; radio.tail = []; radio.source = ''; }
   }, 20000);
 }
 // keep-alive кук: периодически тихо резолвим эфир, чтобы yt-dlp освежил куки (write-back) и сессия
@@ -364,8 +446,8 @@ function radioStopIfIdle() {
 const RADIO_KEEPALIVE_CRON = process.env.RADIO_KEEPALIVE_CRON || '17 */4 * * *';   // каждые 4 часа
 async function radioKeepAlive(reason) {
   if (!radioHasCookies() || radio.starting || radio.proc) return;
-  try { await radioResolve(); radio.lastOk = Date.now(); radio.failCount = 0; console.log('[radio] keep-alive ok (' + reason + '): куки освежены'); }
-  catch (e) { radio.failCount = (radio.failCount || 0) + 1; console.warn('[radio] keep-alive FAIL (' + reason + '):', e.message); radioAlert(e); }
+  try { await radioResolve(RADIO_URL); radio.lastOk = Date.now(); radio.failCount = 0; console.log('[radio] keep-alive ok (' + reason + '): куки освежены'); }
+  catch (e) { console.warn('[radio] keep-alive FAIL (' + reason + '):', e.message); }
 }
 try { cron.schedule(RADIO_KEEPALIVE_CRON, () => radioKeepAlive('cron'), { timezone: TZ }); }
 catch (e) { console.warn('[radio] keep-alive cron не запланирован:', e.message); }
@@ -378,7 +460,7 @@ app.get('/api/radio/stream', (req, res) => {
   radioStart();
   req.on('close', () => { radio.clients.delete(res); radioStopIfIdle(); });
 });
-app.get('/api/radio/status', (_req, res) => res.json({ live: !!radio.proc, listeners: radio.clients.size, cookies: radioHasCookies(), pot: !!POT_PROVIDER_URL, lastOk: radio.lastOk || 0, fails: radio.failCount || 0 }));
+app.get('/api/radio/status', (_req, res) => res.json({ live: !!radio.proc, listeners: radio.clients.size, source: radio.source || '', sources: RADIO_SOURCES.length, cookies: radioHasCookies(), pot: !!POT_PROVIDER_URL, lastOk: radio.lastOk || 0, fails: radio.failCount || 0 }));
 
 // Mini App живёт под /app, лендинг — на корне. API и health объявлены выше.
 app.use('/app', express.static(path.join(__dirname, '..', 'miniapp'), { extensions: ['html'], index: 'index.html' }));
