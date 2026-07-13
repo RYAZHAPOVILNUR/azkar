@@ -2695,16 +2695,29 @@
     const counts = {};
     allAzkarItems().forEach(z=>{
       const cats = (z._db && z._db.category_ids) || [z._session];
-      cats.forEach(id => counts[id] = (counts[id] || 0) + 1);
+      cats.forEach(id => {
+        if(azkarItemBelongsToCategory(z, id)) counts[id] = (counts[id] || 0) + 1;
+      });
     });
     return counts;
   }
   function azkarCategoryById(id){
     return (AZKAR_META.categories || []).find(c => c.id === id) || null;
   }
+  function azkarItemBelongsToCategory(z, id){
+    const cats = (z._db && z._db.category_ids) || [z._session];
+    if(!cats.includes(id)) return false;
+    const coreCategories = ['morning','evening','after_prayer','sleep'];
+    const coreSession = (z._db && z._db.session) || z._session || '';
+    const sessionCategory = coreSession === 'after' ? 'after_prayer' : coreSession;
+    const itemCoreCategories = coreCategories.filter(coreId => cats.includes(coreId));
+    if(coreCategories.includes(sessionCategory) && !itemCoreCategories.includes(sessionCategory)) itemCoreCategories.push(sessionCategory);
+    if(itemCoreCategories.length && !itemCoreCategories.includes(id)) return false;
+    return true;
+  }
   function azkarCategoryItems(id){
     return allAzkarItems()
-      .filter(z => ((z._db && z._db.category_ids) || [z._session]).includes(id))
+      .filter(z => azkarItemBelongsToCategory(z, id))
       .map((z, idx)=>({ ...z, _idx:idx }));
   }
   function renderAzkarLibrary(query){
@@ -2741,7 +2754,7 @@
       const key = cat.session_key || cat.id;
       const count = counts[cat.id] || counts[key] || ((AZKAR[key] && AZKAR[key].items) || []).length || 0;
       const active = count > 0 && (AZKAR[key] || cat.id);
-      const openKey = AZKAR[key] ? key : `category:${cat.id}`;
+      const openKey = cat.session_key ? key : `category:${cat.id}`;
       return `<button class="azlib-cat ${active ? '' : 'is-planned'}" type="button" ${active ? `onclick="openReading('${azkarEsc(openKey)}', {resume:true})"` : 'aria-disabled="true"'}>
         <span class="ic">${azkarIconSvg(cat.icon)}</span>
         <span class="t">${azkarEsc(cat.title_ru)}</span>
