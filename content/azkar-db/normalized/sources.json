@@ -1,5 +1,21 @@
 [
   {
+    "id": "hisnul-muslim-json",
+    "title_ru": "Hisnul Muslim JSON",
+    "type": "open_json_dataset",
+    "status": "raw_import",
+    "url": "https://github.com/wafaaelmaandy/Hisn-Muslim-Json",
+    "review_note": "Используется как сырой машинный источник арабского текста, повторов и аудио. Перед переводом карточек в verified требуется ручная сверка."
+  },
+  {
+    "id": "hisnul-muslim-ru-pdf-islamland",
+    "title_ru": "Крепость мусульманина, русский PDF",
+    "type": "public_pdf",
+    "status": "raw_import",
+    "url": "https://www.islamland.com/uploads/books/ru_Hisn_Almuslim.pdf",
+    "review_note": "Используется для чернового сопоставления русских переводов. Перед verified требуется проверка текста, источника хадиса и прав на перевод."
+  },
+  {
     "id": "raslan-source-pdf",
     "title_ru": "أذكار الصباح والمساء من صحيح السنة المطهرة",
     "title_ar": "أذكار الصباح والمساء من صحيح السنة المطهرة",

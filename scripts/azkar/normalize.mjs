@@ -5,6 +5,7 @@ import path from 'node:path';
 const root = path.resolve(new URL('../..', import.meta.url).pathname);
 const steps = [
   ['import-current.mjs'],
+  ['import-hisnul-muslim.mjs'],
   ['validate.mjs'],
   ['detect-duplicates.mjs'],
   ['report.mjs'],

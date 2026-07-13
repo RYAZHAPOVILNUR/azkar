@@ -12,6 +12,10 @@ let duplicates = [];
 try {
   duplicates = JSON.parse(fs.readFileSync(path.join(root, 'content/azkar-db/reports/duplicate-candidates.json'), 'utf8'));
 } catch (_e) {}
+let hisnulImport = null;
+try {
+  hisnulImport = JSON.parse(fs.readFileSync(path.join(root, 'content/azkar-db/reports/hisnul-muslim-import-report.json'), 'utf8'));
+} catch (_e) {}
 
 function countBy(itemsList, getter) {
   const map = new Map();
@@ -26,6 +30,7 @@ const byStatus = countBy(items, item => item.status);
 const byCategory = countBy(items, item => item.category_ids);
 const byCollection = countBy(items, item => item.collection_ids);
 const noAudio = items.filter(item => item.audio?.status !== 'ready').length;
+const exportable = items.filter(item => !['excluded_weak', 'copyright_blocked', 'needs_translation_review'].includes(item.status));
 
 const lines = [
   '# Azkar DB report',
@@ -35,6 +40,7 @@ const lines = [
   '## Summary',
   '',
   `- Items: ${items.length}`,
+  `- Exported to Mini App: ${exportable.length}`,
   `- Categories: ${categories.length}`,
   `- Collections: ${collections.length}`,
   `- Items without audio: ${noAudio}`,
@@ -52,12 +58,23 @@ const lines = [
   '',
   ...byCollection.map(([id, count]) => `- ${id}: ${count}`),
   '',
+  ...(hisnulImport ? [
+    '## Hisnul Muslim import',
+    '',
+    `- Source chapters: ${hisnulImport.source_chapters}`,
+    `- Source items: ${hisnulImport.source_items}`,
+    `- Added to normalized DB: ${hisnulImport.imported_items}`,
+    `- Skipped as duplicates: ${hisnulImport.skipped_duplicate_items}`,
+    `- Added to Mini App now: ${hisnulImport.ru_translations_found_for_imported}`,
+    `- Waiting for Russian translation/review: ${hisnulImport.missing_ru_translation_for_imported}`,
+    '',
+  ] : []),
   '## Next review work',
   '',
-  '- Import Hisnul Muslim categories into `needs_review` only.',
-  '- Add exact source metadata and copyright status per collection.',
-  '- Add reviewer initials/date before moving new items to `verified`.',
-  '- Keep weak/suspect narrations in `reviewed/excluded.json`, not in the main export.',
+  '- Manually review `needs_source_review` Hisnul Muslim cards before moving any item to `verified`.',
+  '- Add Russian translations for `needs_translation_review`; these are kept out of Mini App export until reviewed.',
+  '- Add exact hadith source metadata and copyright status per imported item.',
+  '- Keep weak/suspect narrations in `reviewed/excluded.json`, not in the Mini App export.',
   '',
 ];
 

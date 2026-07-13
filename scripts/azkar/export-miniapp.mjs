@@ -25,7 +25,11 @@ function normalizeSearch(text) {
 const allItems = readJson('azkar.all.json');
 const categories = readJson('categories.json');
 const collections = readJson('collections.json');
-const exportableItems = allItems.filter(item => !['excluded_weak', 'copyright_blocked'].includes(item.status));
+const exportableItems = allItems.filter(item => ![
+  'excluded_weak',
+  'copyright_blocked',
+  'needs_translation_review',
+].includes(item.status));
 const search = exportableItems.map(item => ({
   id: item.id,
   session: item.session,

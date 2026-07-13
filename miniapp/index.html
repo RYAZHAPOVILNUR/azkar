@@ -282,6 +282,8 @@
   .foot-link { color: var(--accent-deep); text-decoration:none; }
   .foot-link:active { opacity:.7; }
 
+  .zikr-title { margin:16px 2px 8px; color:var(--accent-deep); font-size:15px; line-height:1.35; font-weight:800; }
+  .zikr-title .muted { display:block; margin-top:3px; color:var(--ink-faint); font-size:12px; font-weight:650; }
   .arabic { font-family: var(--ar-font), var(--ar); direction:rtl; text-align:right; color: var(--ink);
     font-size: var(--ar-size); line-height:2.3; margin:4px 2px 2px; cursor:pointer; }
   .list[data-learn="check"] .translate { display:none !important; }
@@ -3161,6 +3163,10 @@ https://azkar.nurtech.dev/app`);
       const target = effectiveTarget(progressKey, z);
       const note = z.targetHint ? `<div class="cnote">${z.targetHint}</div>` : '';
       const saved = savedCount(progressKey, z);
+      const dbTitle = z._db && (z._db.title_ru || z._db.short_title_ru) ? String(z._db.title_ru || z._db.short_title_ru) : '';
+      const chapterTitle = z._db && z._db.display && z._db.display.source_chapter_title_ru ? String(z._db.display.source_chapter_title_ru) : '';
+      const cleanTitle = dbTitle.replace(/:\s*\d+$/u, '').trim();
+      const titleHtml = cleanTitle ? `<div class="zikr-title">${azkarEsc(cleanTitle)}${chapterTitle && chapterTitle !== cleanTitle ? `<span class="muted">${azkarEsc(chapterTitle)}</span>` : ''}</div>` : '';
       const card = document.createElement('div'); card.className = 'zikr'; card.dataset.i = idx; card.dataset.id = z._id; card.dataset.session = progressKey;
       const counter = `<button class="tasbih${target===1 ? ' single' : ''}" data-target="${target}" data-cur="${Math.min(saved, target)}" aria-label="Счётчик повторений">
           <span class="count"><b class="js-cur">0</b><small>/${target}</small></span>
@@ -3180,6 +3186,7 @@ https://azkar.nurtech.dev/app`);
             <button type="button" class="ro-btn ro-down" aria-label="Переместить ниже"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10l6 6 6-6"/></svg></button>
           </div>
         </div>
+        ${titleHtml}
         <div class="arabic">${z.ar}</div>
         <div class="translit js-translit">${z.tl}</div>
         <div class="divider"></div>
