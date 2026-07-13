@@ -300,6 +300,8 @@
   .zikr-section small { display:inline-block; margin-left:6px; color:var(--ink-faint); font-size:11px; font-weight:750; white-space:nowrap; }
   .arabic { font-family: var(--ar-font), var(--ar); direction:rtl; text-align:right; color: var(--ink);
     font-size: var(--ar-size); line-height:2.3; margin:4px 2px 2px; cursor:pointer; }
+  .ayah-num { display:inline-grid; place-items:center; width:1.9em; height:1.9em; margin:0 .16em; border:1.5px solid currentColor; border-radius:50%;
+    font-family:var(--sans); font-size:.36em; font-weight:850; line-height:1; vertical-align:.34em; color:var(--accent-deep); direction:ltr; unicode-bidi:isolate; }
   .list[data-learn="check"] .translate { display:none !important; }
   .list[data-learn="memory"] .translit, .list[data-learn="memory"] .translate { display:none !important; }
   .list[data-learn="memory"] .arabic { color:transparent; text-shadow:0 0 11px color-mix(in srgb, var(--ink) 72%, transparent); }
@@ -1142,16 +1144,10 @@
       </div>
     </div>
     <div class="azlib">
-      <div class="azlib-hero">
-        <div class="k">Azkar DB</div>
-        <h2>Проверяемая база поминаний</h2>
-        <p>Текущие азкары уже вынесены в JSON. Новые книги будут попадать сюда только через импорт, статусы проверки и источники.</p>
-      </div>
       <label class="azlib-search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         <input id="azkarSearchInput" type="search" inputmode="search" placeholder="Поиск: сон, защита, Бухари..." oninput="renderAzkarLibrary(this.value)">
       </label>
-      <div class="azlib-stat" id="azkarDbStat"></div>
       <div class="azlib-filters" id="azkarDbFilters"></div>
       <div id="azkarLibraryBody"></div>
     </div>
@@ -1500,7 +1496,7 @@
       <div class="m-ar" id="miAr"></div>
       <div class="m-sec"><div class="m-lbl">Перевод и достоинство</div><div class="m-txt soft" id="miTr"></div></div>
       <div class="m-sec"><div class="m-lbl">Источник</div><div class="m-src" id="miSrc"></div><div style="margin-top:8px"><span class="m-grade" id="miGrade"></span></div></div>
-      <button type="button" class="m-play" id="miAudio" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Слушать арабский</button>
+      <button type="button" class="m-play" id="miAudio" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Прослушать</button>
       <div class="m-audio-note" id="miAudioNote" hidden>Аудио взято из открытого источника импортированной книги. Текст всё равно требует сверки перед отметкой «проверено».</div>
       <button type="button" class="m-play" id="miShare"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>Поделиться зикром</button>
       <div class="m-sec" id="miSharhSec"><div class="m-lbl">Перевод смысла</div><div class="m-sharh-tabs" id="miSharhTabs"><button type="button" data-sharh-mode="brief">Кратко</button><button type="button" data-sharh-mode="deep">Подробно</button></div><div class="m-txt sharh" id="miSharh"></div><div class="m-note" id="miSharhSrc"></div></div>
@@ -1969,6 +1965,26 @@
   let ZIKR_AUDIO = null;
   let ZIKR_AUDIO_URL = '';
   function azkarEsc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function azkarQuranAyahStart(z){
+    const id = String((z && (z._id || z.id || z.legacy_id)) || '');
+    const text = String((z && (z.tr || z.translation_ru || z.src || '')) || '');
+    if(/2\s*:\s*285/u.test(text) || /baqara|baqarah|2-285/u.test(id)) return 285;
+    return 1;
+  }
+  function azkarArabicHtml(z){
+    const raw = String((z && z.ar) || '');
+    if(!raw.includes('۝')) return azkarEsc(raw);
+    let n = azkarQuranAyahStart(z);
+    const html = azkarEsc(raw).replace(/۝/g, () => `<span class="ayah-num">${n++}</span>`);
+    return /۝\s*$/u.test(raw) ? html : `${html} <span class="ayah-num">${n}</span>`;
+  }
+  function azkarArabicPlain(z){
+    const raw = String((z && z.ar) || '');
+    if(!raw.includes('۝')) return raw;
+    let n = azkarQuranAyahStart(z);
+    const text = raw.replace(/۝/g, () => `(${n++})`);
+    return /۝\s*$/u.test(raw) ? text : `${text} (${n})`;
+  }
   function azkarNorm(s){
     return String(s || '').toLowerCase()
       .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g,'')
@@ -2912,7 +2928,6 @@
   }
   function renderAzkarLibrary(query){
     const body = document.getElementById('azkarLibraryBody');
-    const stat = document.getElementById('azkarDbStat');
     const filtersEl = document.getElementById('azkarDbFilters');
     if(!body) return;
     const q = azkarNorm(query != null ? query : (document.getElementById('azkarSearchInput') || {}).value);
@@ -2920,17 +2935,11 @@
     const allItems = azkarReviewFilterItems(allItemsRaw);
     const verified = allItemsRaw.filter(z => !z._db || z._db.status === 'verified').length;
     const review = allItemsRaw.filter(z => z._db && z._db.status !== 'verified').length;
-    const audio = allItemsRaw.filter(azkarHasAudio).length;
-    const planned = (AZKAR_META.categories || []).filter(c => c.status === 'planned').length;
-    if(stat){
-      stat.innerHTML = `<span><b>${allItemsRaw.length}</b> азкаров</span><span><b>${verified}</b> проверено</span><span><b>${review}</b> на сверке</span><span><b>${audio}</b> с аудио</span><span><b>${planned}</b> в очереди</span>${AZKAR_META.loadedFromJson ? '<span>JSON-база активна</span>' : '<span>fallback из HTML</span>'}`;
-    }
     if(filtersEl){
       const filters = [
         ['all','Все',allItemsRaw.length],
         ['verified','Проверено',verified],
         ['review','На сверке',review],
-        ['audio','С аудио',audio],
       ];
       filtersEl.innerHTML = filters.map(([id,label,count]) => `<button type="button" class="azlib-filter ${AZKAR_LIBRARY_FILTER === id ? 'on' : ''}" onclick="AZKAR_LIBRARY_FILTER='${id}'; renderAzkarLibrary()">${label} · ${count}</button>`).join('');
     }
@@ -2943,7 +2952,7 @@
       body.innerHTML = `<div class="azlib-section-title">Найдено: ${results.length}</div><div class="azlib-results">${results.map(z => `
         <button class="azlib-result" type="button" onclick="openReading('${azkarEsc(z._session)}', {resume:false}); setTimeout(()=>scrollReadingToId('${azkarEsc(z._id)}'), 80)">
           <div class="topline">${azkarEsc((AZKAR[z._session] || {}).title || SESSION_TITLES[z._session] || z._session)} · ×${effectiveTarget(z._session, z)} · ${azkarEsc(azkarStatusLabel(z).text)}</div>
-          <div class="ar">${azkarEsc(z.ar)}</div>
+          <div class="ar">${azkarArabicHtml(z)}</div>
           <div class="tr">${azkarEsc(z.tr)}</div>
           <div class="src">${azkarEsc(z.src)}</div>
         </button>`).join('') || '<div class="azlib-empty">Ничего не найдено. Попробуй другое слово или источник.</div>'}</div>`;
@@ -3043,7 +3052,7 @@
   }
   function shareTextFor(z){
     const target = effectiveTarget(z._session || CURRENT_KEY || 'morning', z);
-    return cleanSharh(`${z.ar}
+    return cleanSharh(`${azkarArabicPlain(z)}
 
 ${z.tl || ''}
 
@@ -3395,8 +3404,8 @@ https://azkar.nurtech.dev/app`);
       const cleanTitle = dbTitle ? azkarItemTitle(z, data.title) : '';
       const titleHtml = cleanTitle ? `<div class="zikr-title">${azkarEsc(cleanTitle)}${chapterTitle && chapterTitle !== cleanTitle ? `<span class="muted">${azkarEsc(chapterTitle)}</span>` : ''}</div>` : '';
       const status = azkarStatusLabel(z);
-      const metaHtml = `<div class="zikr-meta"><span class="verify-pill ${status.cls}">${azkarEsc(status.text)}</span>${z.audioUrl ? '<span class="verify-pill audio">аудио</span>' : ''}</div>`;
-      const audioBtn = z.audioUrl ? `<button class="mini audio-btn js-audio" title="Слушать арабский" aria-label="Слушать арабский"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>` : '';
+      const metaHtml = `<div class="zikr-meta"><span class="verify-pill ${status.cls}">${azkarEsc(status.text)}</span></div>`;
+      const audioBtn = '';
       if(catId){
         const groupTitle = azkarCategoryGroupTitle(z, data.title);
         if(groupTitle && groupTitle !== lastCategoryGroup){
@@ -3430,7 +3439,7 @@ https://azkar.nurtech.dev/app`);
         </div>
         ${titleHtml}
         ${metaHtml}
-        <div class="arabic">${z.ar}</div>
+        <div class="arabic">${azkarArabicHtml(z)}</div>
         <div class="translit js-translit">${z.tl}</div>
         <div class="divider"></div>
         <div class="translate js-translate">${z.tr}</div>
@@ -3874,7 +3883,8 @@ https://azkar.nurtech.dev/app`);
     try {
       if(btn) btn.disabled = true; tgHaptic('light');
       const arF = (typeof arFont !== 'undefined' && arFont) ? arFont : 'AzkarNaskh';
-      try { await document.fonts.load('64px "'+arF+'"', z.ar||''); } catch(e){}
+      const arText = azkarArabicPlain(z);
+      try { await document.fonts.load('64px "'+arF+'"', arText); } catch(e){}
       const dark = (typeof effectiveDark === 'function') && effectiveDark();
       const col = dark
         ? { bg:'#14140F', card:'#1B1B14', line:'#322F27', ink:'#ECE8DB', soft:'#A49E8C', faint:'#766F5E', accent:'#ABAF95' }
@@ -3884,7 +3894,7 @@ https://azkar.nurtech.dev/app`);
       const AR_LH = 104, TL_LH = 50, TR_LH = 56;
       // измеряем строки
       const mc = document.createElement('canvas'), mx = mc.getContext('2d');
-      mx.font = '64px "'+arF+'"'; const arLines = wrapCanvasLines(mx, z.ar, contentW);
+      mx.font = '64px "'+arF+'"'; const arLines = wrapCanvasLines(mx, arText, contentW);
       mx.font = '500 34px '+SANS;   const tlLines = wrapCanvasLines(mx, z.tl, contentW);
       mx.font = '36px Georgia,serif'; const trLines = wrapCanvasLines(mx, z.tr, contentW);
       // раскладка (dry-run считает высоту, потом рисуем тем же порядком)
@@ -3967,7 +3977,7 @@ https://azkar.nurtech.dev/app`);
     modal.dataset.closing='';
     if(sheet){ sheet.style.animation=''; sheet.style.transition=''; sheet.style.transform=''; sheet.scrollTop=0; }
     document.getElementById('miBadge').textContent = z.n;
-    document.getElementById('miAr').textContent = z.ar;
+    document.getElementById('miAr').innerHTML = azkarArabicHtml(z);
     document.getElementById('miTr').textContent = z.tr;
     document.getElementById('miSrc').textContent = z.src;
     const gradeEl = document.getElementById('miGrade');
@@ -3977,11 +3987,11 @@ https://azkar.nurtech.dev/app`);
     const audioBtn = document.getElementById('miAudio');
     const audioNote = document.getElementById('miAudioNote');
     if(audioBtn){
-      audioBtn.hidden = !z.audioUrl;
+      audioBtn.hidden = true;
       audioBtn.classList.remove('is-playing');
-      audioBtn.onclick = z.audioUrl ? (()=> playZikrAudio(z, audioBtn)) : null;
+      audioBtn.onclick = null;
     }
-    if(audioNote) audioNote.hidden = !z.audioUrl || azkarIsVerified(z);
+    if(audioNote) audioNote.hidden = true;
     renderModalSharh();
     const refs = refsFor(z);
     const refsSec = document.getElementById('miRefsSec');
