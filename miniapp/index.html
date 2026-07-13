@@ -3,6 +3,8 @@
 <link rel="icon" type="image/png" href="assets/icon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
 <link rel="manifest" href="manifest.json">
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/amiri-quran.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/kfgqpc-hafs.woff2" crossorigin>
 <meta name="theme-color" content="#24292f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#F3F2EF" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -786,9 +788,21 @@
     font-family:'KFGQPC', var(--ar); padding:4px 2px 10px; }
   .q-flow .qcf-ayah { cursor:pointer; border-radius:6px; -webkit-tap-highlight-color:transparent; transition:background .15s; }
   .q-flow .qcf-ayah:active { background:var(--accent-soft); }
-  /* режим Страница — полностью без прокрутки */
-  body.q-page-lock { overflow:hidden; height:100vh; }
-  body.q-page-lock #quranReader .qwrap { overflow:hidden; }
+  /* режим Страница — экран-мусхаф без прокрутки */
+  body.q-page-lock { overflow:hidden; }
+  @media (orientation:portrait){
+    /* flex-колонка на весь экран: компактная шапка + страница flex:1 + низ/плеер, всё в safe-area */
+    body.q-page-lock #quranReader.active { position:fixed; inset:0; height:100dvh; display:flex; flex-direction:column;
+      padding-top:var(--tg-safe-top); padding-bottom:var(--tg-safe-bottom); box-sizing:border-box; }
+    body.q-page-lock #quranReader .qr-head { position:static; flex:0 0 auto; padding-top:6px; padding-bottom:2px; margin-bottom:0; }
+    body.q-page-lock #quranReader .qr-head .qr-ttl .s { display:none; }         /* компактная шапка — без подписи */
+    body.q-page-lock #quranReader .qwrap { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+    body.q-page-lock #quranReader #qrAyahs { flex:1 1 auto; min-height:0; overflow:hidden; display:flex; flex-direction:column; justify-content:center; }
+    body.q-page-lock #quranReader .qr-nav { flex:0 0 auto; margin-top:4px; }
+    /* плеер докуется в низ колонки (НЕ плавает поверх страницы) и заменяет навигацию */
+    body.q-page-lock #quranReader .q-player { position:static; left:auto; transform:none; bottom:auto; width:100%; margin:5px 0 0; box-shadow:0 -1px 10px rgba(0,0,0,.06); }
+    body.q-page-lock.q-player-on #quranReader .qr-nav { display:none; }
+  }
   /* режим Чтение: переводы под страницей */
   .qp-trans { direction:ltr; text-align:left; margin-top:18px; border-top:1px solid var(--line); padding-top:4px; }
   .qp-trans-h { font-size:11.5px; letter-spacing:.5px; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin:10px 0 10px; }
@@ -4445,7 +4459,7 @@ https://azkar.nurtech.dev/app`);
   let QA_CUR=null;
   function qAudioUrl(s,a){ return 'https://everyayah.com/data/'+QAUDIO.reciter+'/'+String(s).padStart(3,'0')+String(a).padStart(3,'0')+'.mp3'; }
   function qPlayAyah(s,a){ s=parseInt(s,10); a=parseInt(a,10); const el=qaEl(); if(!el) return; if(typeof stopRadio==='function') stopRadio(); QA_CUR={s:s,a:a}; el.src=qAudioUrl(s,a); el.play().catch(function(){});
-    const pl=document.getElementById('qPlayer'); if(pl) pl.hidden=false; qHighlightAyah(a); qAudioUpdateUI(); tgHaptic('light'); }
+    const pl=document.getElementById('qPlayer'); if(pl) pl.hidden=false; document.body.classList.add('q-player-on'); if(QPREFS.mode==='page') qpFit(); qHighlightAyah(a); qAudioUpdateUI(); tgHaptic('light'); }
   function qAudioUpdateUI(){ const pl=document.getElementById('qPlayer'); if(!pl||pl.hidden) return; const el=qaEl();
     const ic=document.getElementById('qpPlayIc'); if(ic) ic.innerHTML=(el && !el.paused && el.currentSrc) ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
     const t=document.getElementById('qpTtl'); if(t && QA_CUR) t.textContent=suraNameRu(QA_CUR.s)+' · аят '+QA_CUR.a;
@@ -4477,7 +4491,7 @@ https://azkar.nurtech.dev/app`);
     let s=QA_CUR.s, a=QA_CUR.a+1; const cnt=qSuraCountN(s);
     if(cnt && a>cnt){ if(s>=114){ qAudioStop(); return; } s++; a=1; if(QPREFS.mode!=='page'){ qOpenSura(s,1); setTimeout(function(){ qPlayAyah(s,1); }, 400); return; } }
     qPlayAyah(s,a); }
-  function qAudioStop(){ const el=qaEl(); if(el){ el.pause(); el.removeAttribute('src'); try{ el.load(); }catch(e){} } QA_CUR=null; const pl=document.getElementById('qPlayer'); if(pl) pl.hidden=true; qClearHighlight(); qAyahBtnsReset(); }
+  function qAudioStop(){ const el=qaEl(); if(el){ el.pause(); el.removeAttribute('src'); try{ el.load(); }catch(e){} } QA_CUR=null; const pl=document.getElementById('qPlayer'); if(pl) pl.hidden=true; document.body.classList.remove('q-player-on'); if(QPREFS.mode==='page') qpFit(); qClearHighlight(); qAyahBtnsReset(); }
   function qAudioToggleRepeat(){ QAUDIO.repeat=!QAUDIO.repeat; qAudioSave(); qAudioUpdateUI(); tgHaptic('light'); }
   function setReciter(id){ if(!QRECITERS.some(function(r){return r.id===id;})) return; QAUDIO.reciter=id; qAudioSave(); if(QA_CUR) qPlayAyah(QA_CUR.s, QA_CUR.a); qAudioUpdateUI(); tgHaptic('light'); if(QTAF.settings) renderReaderSettings(); }
   function qHighlightAyah(a){ qClearHighlight(); const el=document.querySelector('#qrAyahs .q-ayah[data-a="'+a+'"], #qrAyahs .qcf-ayah[data-a="'+a+'"]'); if(el){ el.classList.add('q-playing'); try{ el.scrollIntoView({ block:'center', behavior:'smooth' }); }catch(e){} } }
@@ -4629,11 +4643,10 @@ https://azkar.nurtech.dev/app`);
     page.style.setProperty('--qp-size', nf.toFixed(1)+'px');
     // режим Страница (портрет) — ужимаем по ВЫСОТЕ, чтобы страница влезала целиком без прокрутки; в ландшафте — крупно + прокрутка
     if(QPREFS.mode==='page' && !isLand) requestAnimationFrame(function(){
-      const navEl=document.querySelector('#quranReader .qr-nav');
-      const reserve = (navEl?navEl.offsetHeight:70) + 20;
-      const availH = window.innerHeight - page.getBoundingClientRect().top - reserve;
+      // flex-колонка уже вычла шапку/низ/плеер/safe-area — берём реальную высоту области страницы
+      const availH = cont.clientHeight - 6;
       const ph = page.getBoundingClientRect().height;
-      if(ph>availH && availH>120){ let nf2 = nf*(availH/ph); nf2=Math.max(9, nf2); if(nf2<nf-0.3) page.style.setProperty('--qp-size', nf2.toFixed(1)+'px'); }
+      if(availH>120 && ph>availH){ let nf2 = nf*(availH/ph); nf2=Math.max(9, nf2); if(nf2<nf-0.3) page.style.setProperty('--qp-size', nf2.toFixed(1)+'px'); }
     });
   }
   function qUpdatePageNav(p){
