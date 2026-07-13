@@ -619,12 +619,20 @@
   .azlib-filter.on { color:var(--accent-deep); background:var(--accent-soft); border-color:color-mix(in srgb, var(--accent) 34%, var(--line)); }
   .azlib-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .azlib-cat, .azlib-result { border:1px solid var(--line); background:var(--surface); border-radius:20px; padding:14px; text-align:left; color:var(--ink); font:inherit; cursor:pointer; box-shadow:var(--shadow-soft); }
+  .azlib-cat { position:relative; overflow:hidden; display:block; min-height:162px; isolation:isolate; }
+  .azlib-cat.has-bg { background-image:linear-gradient(180deg, rgba(9, 26, 23, .20), rgba(9, 26, 23, .72)), var(--cat-bg); background-size:cover; background-position:center; color:#fff; border-color:rgba(255,255,255,.16); }
+  .azlib-cat.has-bg:before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; background:radial-gradient(circle at 20% 10%, rgba(255,255,255,.18), transparent 34%), linear-gradient(135deg, rgba(125,148,113,.16), rgba(12,28,25,.18)); }
+  .azlib-cat.has-bg > * { position:relative; z-index:1; }
   .azlib-cat:active, .azlib-result:active { transform:scale(.985); }
   .azlib-cat.is-planned { opacity:.64; cursor:default; box-shadow:none; }
   .azlib-cat .ic { width:38px; height:38px; border-radius:14px; display:grid; place-items:center; margin-bottom:12px; color:var(--accent-deep); background:color-mix(in srgb, var(--accent) 16%, var(--surface-2)); }
-  .azlib-cat .t { font-size:15.5px; font-weight:780; color:var(--ink); line-height:1.16; }
-  .azlib-cat .s { font-size:12px; color:var(--ink-faint); line-height:1.35; margin-top:5px; }
+  .azlib-cat.has-bg .ic { color:#f7fff7; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.18); box-shadow:0 10px 24px rgba(0,0,0,.16); backdrop-filter:blur(8px); }
+  .azlib-cat .t { display:block; font-size:15.5px; font-weight:780; color:var(--ink); line-height:1.16; }
+  .azlib-cat .s { display:block; font-size:12px; color:var(--ink-faint); line-height:1.35; margin-top:5px; }
+  .azlib-cat.has-bg .t { color:#fff; text-shadow:0 2px 14px rgba(0,0,0,.32); }
+  .azlib-cat.has-bg .s { color:rgba(255,255,255,.84); text-shadow:0 1px 10px rgba(0,0,0,.28); }
   .azlib-cat .count { display:inline-flex; margin-top:11px; min-height:24px; align-items:center; border-radius:999px; padding:4px 8px; background:var(--surface-2); color:var(--ink-soft); font-size:11.5px; font-weight:750; }
+  .azlib-cat.has-bg .count { color:#fff; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.16); box-shadow:0 8px 18px rgba(0,0,0,.14); backdrop-filter:blur(8px); }
   .azlib-results { display:flex; flex-direction:column; gap:10px; }
   .azlib-result { padding:14px 15px; }
   .azlib-result .topline { display:flex; align-items:center; gap:8px; color:var(--accent-deep); font-size:12px; font-weight:800; margin-bottom:7px; }
@@ -2722,6 +2730,25 @@
     };
     return `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icons[icon] || icons.book}</svg>`;
   }
+  function azkarCategoryBg(id){
+    const map = {
+      morning:'cat-dawn.webp',
+      daily:'cat-dawn.webp',
+      evening:'cat-night.webp',
+      sleep:'cat-night.webp',
+      after_prayer:'cat-prayer.webp',
+      prayer:'cat-prayer.webp',
+      mosque:'cat-prayer.webp',
+      home:'cat-home.webp',
+      food:'cat-food.webp',
+      travel:'cat-travel.webp',
+      protection:'cat-protection.webp',
+      anxiety:'cat-protection.webp',
+      ruqyah:'cat-protection.webp',
+      quran_dua:'cat-quran.webp'
+    };
+    return map[id] ? `assets/category-bg/${map[id]}` : '';
+  }
   function azkarCountsByCategory(){
     const counts = {};
     azkarReviewFilterItems(allAzkarItems()).forEach(z=>{
@@ -2931,7 +2958,10 @@
       const count = counts[cat.id] || counts[key] || ((AZKAR[key] && AZKAR[key].items) || []).length || 0;
       const active = count > 0 && (AZKAR[key] || cat.id);
       const openKey = cat.session_key ? key : `category:${cat.id}`;
-      return `<button class="azlib-cat ${active ? '' : 'is-planned'}" type="button" ${active ? `onclick="openReading('${azkarEsc(openKey)}', {resume:true})"` : 'aria-disabled="true"'}>
+      const bg = azkarCategoryBg(cat.id || key);
+      const bgClass = bg ? ' has-bg' : '';
+      const bgStyle = bg ? ` style="--cat-bg:url('${azkarEsc(bg)}')"` : '';
+      return `<button class="azlib-cat${bgClass} ${active ? '' : 'is-planned'}" type="button"${bgStyle} ${active ? `onclick="openReading('${azkarEsc(openKey)}', {resume:true})"` : 'aria-disabled="true"'}>
         <span class="ic">${azkarIconSvg(cat.icon)}</span>
         <span class="t">${azkarEsc(cat.title_ru)}</span>
         <span class="s">${azkarEsc(cat.subtitle_ru || (active ? 'Открыть раздел' : 'Запланировано к сверке'))}</span>
