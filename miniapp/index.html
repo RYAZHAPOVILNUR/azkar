@@ -761,13 +761,13 @@
     box-shadow: inset 0 0 0 1px var(--line), 0 12px 34px rgba(0,0,0,.14); transition:box-shadow .2s; }
   .qibla-dial.aligned { box-shadow: inset 0 0 0 2px var(--accent), 0 0 30px color-mix(in srgb, var(--accent) 45%, transparent); }
   .qd-fixed { position:absolute; top:-9px; left:50%; transform:translateX(-50%); color:var(--accent); z-index:3; line-height:0; }
-  .qd-rose { position:absolute; inset:0; transition:transform .18s ease-out; will-change:transform; }
+  .qd-rose { position:absolute; inset:0; will-change:transform; }
   .qd-card { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:13px; font-weight:800; color:var(--ink-faint); }
   .qd-n { top:16px; color:var(--accent-deep); }
   .qd-s { top:auto; bottom:16px; }
   .qd-e { left:auto; right:16px; }
   .qd-w { left:16px; }
-  .qd-needle { position:absolute; inset:0; transition:transform .18s ease-out; will-change:transform; z-index:2; }
+  .qd-needle { position:absolute; inset:0; will-change:transform; z-index:2; }
   .qd-line { position:absolute; left:50%; top:12%; width:4px; height:38%; transform:translateX(-50%); border-radius:4px;
     background:linear-gradient(var(--accent), color-mix(in srgb, var(--accent) 25%, transparent)); }
   .qd-kaaba { position:absolute; left:50%; top:3%; transform:translateX(-50%); font-size:28px; line-height:1; filter:drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
@@ -4869,7 +4869,7 @@ https://azkar.nurtech.dev/app`);
 
   // ---- Кибла: направление на Каабу (азимут + живой компас) ----
   const KAABA = { lat:21.4225, lng:39.8262 };
-  const QIBLA = { lat:null, lng:null, bearing:0, dist:0, heading:null, rawHeading:null, listening:false, ev:null, fbTimer:null, raf:0, alignedHapt:false, lastStatus:'', lastStatusAt:0 };
+  const QIBLA = { lat:null, lng:null, bearing:0, dist:0, targetHeading:null, displayHeading:null, rawHeading:null, listening:false, ev:null, fbTimer:null, raf:0, animTs:0, alignedHapt:false, lastStatus:'', lastStatusAt:0 };
   function qiblaBearingDeg(lat,lng){ const r=Math.PI/180, f1=lat*r, f2=KAABA.lat*r, dl=(KAABA.lng-lng)*r;
     const y=Math.sin(dl), x=Math.cos(f1)*Math.tan(f2)-Math.sin(f1)*Math.cos(dl);
     return (Math.atan2(y,x)/r+360)%360; }
@@ -4878,13 +4878,14 @@ https://azkar.nurtech.dev/app`);
     return Math.round(2*R*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))); }
   function qiblaNormDeg(v){ return ((v%360)+360)%360; }
   function qiblaAngleDelta(to, from){ return ((to-from+540)%360)-180; }
-  function qiblaSmoothHeading(prev, next){
-    next=qiblaNormDeg(next);
-    if(prev==null) return next;
-    const d=qiblaAngleDelta(next, prev);
-    if(Math.abs(d)<0.7) return prev;
-    const k=Math.abs(d)>35 ? 0.34 : 0.18;
-    return qiblaNormDeg(prev+d*k);
+  function qiblaEaseHeading(current, target, dt){
+    if(current==null) return qiblaNormDeg(target);
+    const d=qiblaAngleDelta(target, current);
+    if(Math.abs(d)<0.25) return current;
+    const follow=1-Math.exp(-dt*9);
+    const maxStep=Math.max(1.2, 240*dt);
+    const step=Math.max(-maxStep, Math.min(maxStep, d*follow));
+    return qiblaNormDeg(current+step);
   }
   function openQibla(){ go('qibla'); qiblaInit(); }
   function qiblaSetStatus(s){ const el=document.getElementById('qiblaStatus'); if(el) el.textContent=s; }
@@ -4922,8 +4923,9 @@ https://azkar.nurtech.dev/app`);
     QIBLA.ev = ('ondeviceorientationabsolute' in window) ? 'deviceorientationabsolute' : 'deviceorientation';
     window.addEventListener(QIBLA.ev, qiblaOnOrient, true);
     qiblaSetStatus('Поверни телефон — 🕋 укажет на Каабу');
+    qiblaStartAnim();
     if(QIBLA.fbTimer) clearTimeout(QIBLA.fbTimer);
-    QIBLA.fbTimer=setTimeout(function(){ if(QIBLA.heading==null) qiblaNoCompass(); }, 3000); }
+    QIBLA.fbTimer=setTimeout(function(){ if(QIBLA.targetHeading==null) qiblaNoCompass(); }, 3000); }
   function qiblaNoCompass(msg){ const b=document.getElementById('qiblaEnable'); if(b) b.hidden=true;
     const h=document.getElementById('qiblaHint'); if(h) h.textContent='Компас недоступен. Направь верх телефона на '+Math.round(QIBLA.bearing)+'° от севера (сверься с компасом или солнцем).';
     qiblaSetStatus(msg||'Компас недоступен — ориентируйся по азимуту'); }
@@ -4932,18 +4934,31 @@ https://azkar.nurtech.dev/app`);
     else if(typeof e.alpha==='number' && !isNaN(e.alpha)) heading=(360-e.alpha)%360;                                  // Android absolute
     if(heading==null || isNaN(heading)) return;
     heading=qiblaNormDeg(heading);
-    const first = (QIBLA.heading==null);
+    const first = (QIBLA.targetHeading==null);
     if(QIBLA.fbTimer){ clearTimeout(QIBLA.fbTimer); QIBLA.fbTimer=null; }
     if(first){ const hn=document.getElementById('qiblaHint'); if(hn) hn.textContent='Держи телефон горизонтально. Если стрелку «уводит» — поводи телефоном «восьмёркой» для калибровки.';
       const b=document.getElementById('qiblaEnable'); if(b) b.hidden=true; }
     QIBLA.rawHeading=heading;
-    QIBLA.heading=qiblaSmoothHeading(QIBLA.heading, heading);
+    QIBLA.targetHeading=heading;
+    if(QIBLA.displayHeading==null) QIBLA.displayHeading=heading;
     if(typeof e.webkitCompassAccuracy==='number' && e.webkitCompassAccuracy>30){
       const hn=document.getElementById('qiblaHint'); if(hn) hn.textContent='Компас сейчас неточный. Подержи телефон ровно и поводи им «восьмёркой» для калибровки.';
     }
-    if(QIBLA.raf) return; QIBLA.raf=requestAnimationFrame(function(){ QIBLA.raf=0; qiblaRender(); }); }
+    qiblaStartAnim(); }
+  function qiblaStartAnim(){ if(!QIBLA.raf) QIBLA.raf=requestAnimationFrame(qiblaAnimate); }
+  function qiblaAnimate(ts){
+    QIBLA.raf=0;
+    const target=QIBLA.targetHeading;
+    if(target!=null){
+      const dt=QIBLA.animTs ? Math.min(0.08, Math.max(0.001, (ts-QIBLA.animTs)/1000)) : 0.016;
+      QIBLA.displayHeading=qiblaEaseHeading(QIBLA.displayHeading, target, dt);
+      QIBLA.animTs=ts;
+      qiblaRender();
+    }
+    if(QIBLA.listening) qiblaStartAnim();
+  }
   function qiblaRender(){ const rose=document.getElementById('qdRose'), needle=document.getElementById('qdNeedle'), dial=document.getElementById('qiblaDial');
-    const h=QIBLA.heading;
+    const h=QIBLA.displayHeading;
     if(h==null){ if(needle) needle.style.transform='rotate('+QIBLA.bearing+'deg)'; if(rose) rose.style.transform='rotate(0deg)'; return; }
     if(rose) rose.style.transform='rotate('+(-h)+'deg)';
     const delta=qiblaNormDeg(QIBLA.bearing-h);
@@ -4953,7 +4968,7 @@ https://azkar.nurtech.dev/app`);
     if(aligned){ qiblaSetStatusSoft('✓ Ты смотришь на киблу', true); if(!QIBLA.alignedHapt){ QIBLA.alignedHapt=true; tgHaptic('medium'); } }
     else { QIBLA.alignedHapt=false; qiblaSetStatusSoft('Поверни телефон к 🕋 · осталось '+Math.round(off)+'°'); } }
   function qiblaStop(){ if(QIBLA.ev){ window.removeEventListener(QIBLA.ev, qiblaOnOrient, true); QIBLA.ev=null; }
-    QIBLA.listening=false; QIBLA.heading=null; QIBLA.rawHeading=null; QIBLA.alignedHapt=false; QIBLA.lastStatus=''; QIBLA.lastStatusAt=0;
+    QIBLA.listening=false; QIBLA.targetHeading=null; QIBLA.displayHeading=null; QIBLA.rawHeading=null; QIBLA.animTs=0; QIBLA.alignedHapt=false; QIBLA.lastStatus=''; QIBLA.lastStatusAt=0;
     if(QIBLA.fbTimer){ clearTimeout(QIBLA.fbTimer); QIBLA.fbTimer=null; }
     if(QIBLA.raf){ cancelAnimationFrame(QIBLA.raf); QIBLA.raf=0; }
     const d=document.getElementById('qiblaDial'); if(d) d.classList.remove('aligned'); }
