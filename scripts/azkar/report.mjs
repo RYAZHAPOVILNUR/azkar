@@ -72,7 +72,7 @@ const lines = [
   '## Next review work',
   '',
   '- Manually review `needs_source_review` Hisnul Muslim cards before moving any item to `verified`.',
-  '- Add Russian translations for `needs_translation_review`; these are kept out of Mini App export until reviewed.',
+  '- Keep the PDF-derived `needs_source_review` layer marked as review-needed until source refs/grades are checked item by item.',
   '- Add exact hadith source metadata and copyright status per imported item.',
   '- Keep weak/suspect narrations in `reviewed/excluded.json`, not in the Mini App export.',
   '',

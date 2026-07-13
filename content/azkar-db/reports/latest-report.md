@@ -1,11 +1,11 @@
 # Azkar DB report
 
-Generated: 2026-07-13T12:27:29.430Z
+Generated: 2026-07-13T13:01:07.600Z
 
 ## Summary
 
 - Items: 331
-- Exported to Mini App: 270
+- Exported to Mini App: 331
 - Categories: 14
 - Collections: 7
 - Items without audio: 331
@@ -13,9 +13,8 @@ Generated: 2026-07-13T12:27:29.430Z
 
 ## Status
 
-- needs_source_review: 187
+- needs_source_review: 248
 - verified: 83
-- needs_translation_review: 61
 
 ## Categories
 
@@ -28,9 +27,9 @@ Generated: 2026-07-13T12:27:29.430Z
 - quran_dua: 33
 - anxiety: 22
 - ruqyah: 17
-- travel: 17
 - after_prayer: 15
-- food: 9
+- food: 14
+- travel: 10
 - mosque: 5
 - home: 3
 
@@ -48,12 +47,12 @@ Generated: 2026-07-13T12:27:29.430Z
 - Source items: 267
 - Added to normalized DB: 248
 - Skipped as duplicates: 18
-- Added to Mini App now: 187
-- Waiting for Russian translation/review: 61
+- Added to Mini App now: 248
+- Waiting for Russian translation/review: 0
 
 ## Next review work
 
 - Manually review `needs_source_review` Hisnul Muslim cards before moving any item to `verified`.
-- Add Russian translations for `needs_translation_review`; these are kept out of Mini App export until reviewed.
+- Keep the PDF-derived `needs_source_review` layer marked as review-needed until source refs/grades are checked item by item.
 - Add exact hadith source metadata and copyright status per imported item.
 - Keep weak/suspect narrations in `reviewed/excluded.json`, not in the Mini App export.

@@ -10,6 +10,11 @@ const basePath = path.join(root, 'content/azkar-db/normalized/azkar.all.json');
 const outPath = path.join(root, 'content/azkar-db/normalized/imports/hisnul-muslim.needs-review.json');
 const reportPath = path.join(root, 'content/azkar-db/reports/hisnul-muslim-import-report.json');
 
+const MANUAL_RU_TRANSLATIONS = {
+  184: 'Пусть разговляются у вас постящиеся, и пусть вкушают вашу еду праведные, и пусть благословляют вас ангелы!',
+  223: 'Сообщается, что Пророк ﷺ сказал: «Кто бы ни приветствовал меня, Аллах возвращает мне душу, чтобы я ответил на его приветствие».',
+};
+
 function fail(message) {
   console.error(message);
   process.exit(1);
@@ -90,11 +95,34 @@ function parseRussianHisnText(file) {
   });
 
   const translationsByItem = new Map();
+  function cleanRussianFallback(block, id) {
+    const out = [];
+    for (const rawLine of block.split(/\r?\n/)) {
+      let clean = rawLine.replace(/\f/g, '').trim();
+      if (!clean || /^\d+$/.test(clean)) continue;
+      if (/[\u0600-\u06FF]/.test(clean)) continue;
+      const chapter = clean.match(/^(\d{1,3})\.\s+(.+)$/u);
+      if (chapter && upperRatio(chapter[2]) > 0.5 && !chapter[2].trim().startsWith('"')) break;
+      const item = clean.match(/^(\d{1,3})(?:\.|:)\s*(.*)$/u);
+      if (item && Number(item[1]) === id) {
+        clean = item[2].trim();
+      }
+      if (/^["“][^"“”]+["”]$/u.test(clean)) continue;
+      if (!clean) continue;
+      out.push(clean);
+    }
+    return out.join(' ').replace(/\s+/g, ' ').trim();
+  }
+
   starts.forEach((start, idx) => {
     const end = idx + 1 < starts.length ? starts[idx + 1].index : lines.length;
     const block = lines.slice(start.index, end).join('\n');
     const at = block.indexOf('Перевод:');
-    if (at === -1) return;
+    if (at === -1) {
+      const fallback = cleanRussianFallback(block, start.id);
+      if (fallback) translationsByItem.set(start.id, fallback);
+      return;
+    }
     const out = [];
     for (const line of block.slice(at + 'Перевод:'.length).split(/\r?\n/)) {
       const clean = line.replace(/\f/g, '').trim();
@@ -105,6 +133,10 @@ function parseRussianHisnText(file) {
     }
     const translated = out.join(' ').replace(/\s+/g, ' ').trim();
     if (translated) translationsByItem.set(start.id, translated);
+  });
+
+  Object.entries(MANUAL_RU_TRANSLATIONS).forEach(([id, translation]) => {
+    translationsByItem.set(Number(id), translation);
   });
 
   return { titlesByChapter, translationsByItem };
@@ -118,8 +150,8 @@ function categoryIdsFor(chapterId, title, arabic) {
   if ((chapterId >= 15 && chapterId <= 33) || t.includes('молит') || t.includes('намаз') || t.includes('азан') || t.includes('витр')) cats.add('prayer');
   if ([12, 13, 14].includes(chapterId) || t.includes('мечет')) cats.add('mosque');
   if ([10, 11].includes(chapterId) || t.includes('дом')) cats.add('home');
-  if ((chapterId >= 73 && chapterId <= 77) || t.includes('еды') || t.includes('пить') || t.includes('плод')) cats.add('food');
-  if ((chapterId >= 89 && chapterId <= 105) || t.includes('путешеств') || t.includes('путник') || t.includes('дорог')) cats.add('travel');
+  if ((chapterId >= 68 && chapterId <= 76) || t.includes('еды') || t.includes('пить') || t.includes('плод') || t.includes('постящ') || t.includes('разгов')) cats.add('food');
+  if ((chapterId >= 95 && chapterId <= 97) || (chapterId >= 99 && chapterId <= 105) || t.includes('путешеств') || t.includes('путник') || t.includes('дорог')) cats.add('travel');
   if ((chapterId >= 34 && chapterId <= 42) || t.includes('страх') || t.includes('груст') || t.includes('скорб') || t.includes('тревог')) cats.add('anxiety');
   if (arabic.includes('أَعُوذُ') || arabic.includes('الشَّيْطَان') || arabic.includes('الشَّيْطَان') || t.includes('защит')) cats.add('protection');
   if (arabic.includes('قُلْ أَعُوذُ') || t.includes('болез') || t.includes('сглаз') || t.includes('леч')) cats.add('ruqyah');
