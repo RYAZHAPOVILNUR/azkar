@@ -274,40 +274,36 @@ app.post('/api/hifz', (req, res) => {
 });
 
 // ---------- радио: один общий ffmpeg раздаёт mp3 всем ----------
-// Арабский канал: прямые официальные Saudi Radio/SBA HLS-потоки.
-// Русский канал: старый эфир BM Agrifa через YouTube.
+// Радио: каждая станция выбирается отдельно. Старые channel=ar/ru оставлены как алиасы.
 const RADIO_URL = process.env.RADIO_URL || 'https://www.youtube.com/@bmagrifa/live';
-const DEFAULT_RADIO_AR_STREAMS = [
-  // Saudi Radio + / SBA: إذاعة القران الكريم
-  'https://live.kwikmotion.com/sbrksaquranradiolive/ksaquranradio/playlist.m3u8',
-  // Saudi Radio + / SBA: إذاعة نداء الإسلام
-  'https://live.kwikmotion.com/sbrksanedaradiolive/ksanedaradio/playlist.m3u8',
-  // MP3Quran/Qurango fallback: Quran radio
-  'https://Qurango.net/radio/tarateel',
-  'http://66.45.232.131:9994/stream',
-  'http://192.99.170.8:5550/stream',
-  'http://66.45.232.131:9992/stream',
-  'http://66.45.232.131:9990/stream',
+const RADIO_STATIONS = [
+  { id: 'saudi-quran', group: 'ar', title: 'إذاعة القرآن الكريم', subtitle: 'Saudi Radio / SBA', sources: ['https://live.kwikmotion.com/sbrksaquranradiolive/ksaquranradio/playlist.m3u8'] },
+  { id: 'saudi-nida', group: 'ar', title: 'إذاعة نداء الإسلام', subtitle: 'Saudi Radio / SBA', sources: ['https://live.kwikmotion.com/sbrksanedaradiolive/ksanedaradio/playlist.m3u8'] },
+  { id: 'qurango-tarateel', group: 'ar', title: 'Qurango Tarateel', subtitle: 'MP3Quran / Qurango', sources: ['https://Qurango.net/radio/tarateel'] },
+  { id: 'radio-quraan', group: 'ar', title: 'Radio Quraan', subtitle: 'radioquraan.com', sources: ['http://66.45.232.131:9994/stream'] },
+  { id: 'alseraj-radio', group: 'ar', title: 'Alseraj Radio', subtitle: 'alserajradio.com', sources: ['http://192.99.170.8:5550/stream'] },
+  { id: 'quran-tafsir', group: 'ar', title: 'Radio Quran Tafsir', subtitle: 'quranradiotafsir.com', sources: ['http://66.45.232.131:9992/stream'] },
+  { id: 'eman-city', group: 'ar', title: 'Eman City', subtitle: 'emancity.com', sources: ['http://66.45.232.131:9990/stream'] },
+  { id: 'bmagrifa-ru', group: 'ru', title: 'BM Agrifa', subtitle: 'Русский эфир YouTube', sources: [RADIO_URL].filter(Boolean) },
 ];
-const DEFAULT_RADIO_RU_STREAMS = [RADIO_URL].filter(Boolean);
 function splitEnvList(v) {
   return String(v || '').split(/[,\n]/).map(s => s.trim()).filter(Boolean);
 }
 function isYoutubeUrl(url) { return /(^|\/\/)(www\.)?(youtube\.com|youtu\.be)\b/i.test(String(url || '')); }
-function radioChannelId(value) {
-  const v = String(value || '').trim().toLowerCase();
-  return ['ru', 'rus', 'russian', 'рус', 'русский'].includes(v) ? 'ru' : 'ar';
-}
 function uniqList(list) { return list.filter((url, idx, arr) => url && arr.indexOf(url) === idx); }
-function radioSourcesFor(channel) {
-  const id = radioChannelId(channel);
-  const channelEnv = id === 'ru' ? splitEnvList(process.env.RADIO_RU_STREAMS) : splitEnvList(process.env.RADIO_AR_STREAMS);
-  const legacyEnv = splitEnvList(process.env.RADIO_STREAMS);
-  const base = channelEnv.length ? channelEnv : (legacyEnv.length ? legacyEnv : (id === 'ru' ? DEFAULT_RADIO_RU_STREAMS : DEFAULT_RADIO_AR_STREAMS));
-  return uniqList(base.concat(splitEnvList(process.env.RADIO_EXTRA_STREAMS)));
+function radioStationId(value) {
+  const v = String(value || '').trim().toLowerCase();
+  if (['ru', 'rus', 'russian', 'рус', 'русский'].includes(v)) return 'bmagrifa-ru';
+  if (['ar', 'arabic', 'арабский', 'араб'].includes(v)) return 'saudi-quran';
+  return RADIO_STATIONS.some(st => st.id === v) ? v : 'saudi-quran';
 }
-function radioChannelTitle(channel) {
-  return radioChannelId(channel) === 'ru' ? 'Русский' : 'العربية';
+function radioStation(id) {
+  const stationId = radioStationId(id);
+  return RADIO_STATIONS.find(st => st.id === stationId) || RADIO_STATIONS[0];
+}
+function radioSourcesFor(station) {
+  const st = radioStation(station);
+  return uniqList(st.sources.concat(splitEnvList(process.env.RADIO_EXTRA_STREAMS)));
 }
 // PO-token провайдер (bgutil) — обход антибот-проверки YouTube с дата-центрового IP.
 // Пустая строка POT_PROVIDER_URL отключает провайдер (например, при переходе на куки).
@@ -327,17 +323,20 @@ function ytdlpArgs(url = RADIO_URL) {
   return a;
 }
 const radios = new Map();
-function createRadioState(channel) {
-  const id = radioChannelId(channel);
-  return { channel: id, proc: null, clients: new Set(), tail: [], starting: false, idleTimer: null, lastOk: 0, failCount: 0, source: '', sources: radioSourcesFor(id) };
+function createRadioState(station) {
+  const st = radioStation(station);
+  return { station: st.id, group: st.group, title: st.title, subtitle: st.subtitle, proc: null, clients: new Set(), tail: [], starting: false, idleTimer: null, lastOk: 0, failCount: 0, source: '', sources: radioSourcesFor(st.id) };
 }
-function getRadio(channel) {
-  const id = radioChannelId(channel);
+function getRadio(station) {
+  const id = radioStationId(station);
   if (!radios.has(id)) radios.set(id, createRadioState(id));
   return radios.get(id);
 }
 function radioStatus(r) {
-  return { id: r.channel, title: radioChannelTitle(r.channel), live: !!r.proc, listeners: r.clients.size, source: r.source || '', sources: r.sources.length, lastOk: r.lastOk || 0, fails: r.failCount || 0 };
+  return { id: r.station, group: r.group, title: r.title, subtitle: r.subtitle, live: !!r.proc, listeners: r.clients.size, source: r.source || '', sources: r.sources.length, lastOk: r.lastOk || 0, fails: r.failCount || 0 };
+}
+function radioStationsStatus() {
+  return RADIO_STATIONS.map(st => radioStatus(getRadio(st.id)));
 }
 // yt-dlp при успешном резолве ПЕРЕЗАПИСЫВАЕТ cookies.txt свежими (ротированными) куками — так
 // сессия YouTube живёт, пока эфир регулярно резолвится. Держим бэкап, чтобы битый прогон не затёр рабочие.
@@ -415,7 +414,7 @@ function radioSpawn(r, sourceLabel, url) {
         r.source = sourceLabel;
         r.lastOk = Date.now();
         r.failCount = 0;
-        console.log('[radio] source ok:', r.channel, sourceLabel);
+        console.log('[radio] source ok:', r.station, sourceLabel);
         resolve(ff);
       }
     });
@@ -429,7 +428,7 @@ function radioSpawn(r, sourceLabel, url) {
         r.proc = null;
         r.tail = [];
         r.source = '';
-        if (r.clients.size) setTimeout(() => radioStart(r.channel), 1200);
+        if (r.clients.size) setTimeout(() => radioStart(r.station), 1200);
       }
     });
     ff.on('error', (e) => {
@@ -438,8 +437,8 @@ function radioSpawn(r, sourceLabel, url) {
     });
   });
 }
-async function radioStart(channel = 'ar') {
-  const r = getRadio(channel);
+async function radioStart(station = 'saudi-quran') {
+  const r = getRadio(station);
   if (r.proc || r.starting) return;
   r.starting = true;
   try {
@@ -452,7 +451,7 @@ async function radioStart(channel = 'ar') {
         return;
       } catch (e) {
         lastErr = e;
-        console.warn('[radio] source failed:', r.channel, sourceLabel, e.message);
+        console.warn('[radio] source failed:', r.station, sourceLabel, e.message);
         r.proc = null;
         r.tail = [];
         r.source = '';
@@ -460,7 +459,7 @@ async function radioStart(channel = 'ar') {
     }
     throw lastErr || new Error('no radio sources configured');
   } catch (e) {
-    console.warn('[radio] не удалось запустить эфир:', r.channel, e.message);
+    console.warn('[radio] не удалось запустить эфир:', r.station, e.message);
     r.proc = null; r.tail = []; r.source = ''; r.failCount = (r.failCount || 0) + 1; radioAlert(e);
     for (const res of r.clients) { try { res.end(); } catch {} }
     r.clients.clear();
@@ -476,7 +475,7 @@ function radioStopIfIdle(r) {
 // YouTube не протухла от простоя — работает и без слушателей. Только в простое (идёт эфир → куки и так свежие).
 const RADIO_KEEPALIVE_CRON = process.env.RADIO_KEEPALIVE_CRON || '17 */4 * * *';   // каждые 4 часа
 async function radioKeepAlive(reason) {
-  const ru = getRadio('ru');
+  const ru = getRadio('bmagrifa-ru');
   if (!radioHasCookies() || ru.starting || ru.proc) return;
   try { await radioResolve(RADIO_URL); ru.lastOk = Date.now(); ru.failCount = 0; console.log('[radio] keep-alive ok (' + reason + '): куки освежены'); }
   catch (e) { console.warn('[radio] keep-alive FAIL (' + reason + '):', e.message); }
@@ -485,27 +484,24 @@ try { cron.schedule(RADIO_KEEPALIVE_CRON, () => radioKeepAlive('cron'), { timezo
 catch (e) { console.warn('[radio] keep-alive cron не запланирован:', e.message); }
 setTimeout(() => radioKeepAlive('boot'), 60000);   // прогрев + самопроверка через минуту после старта
 app.get('/api/radio/stream', (req, res) => {
-  const channel = radioChannelId(req.query.channel);
-  const r = getRadio(channel);
+  const station = radioStationId(req.query.station || req.query.channel);
+  const r = getRadio(station);
   if (r.clients.size >= 30) return res.status(503).end('busy');
   res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-cache, no-store', 'Access-Control-Allow-Origin': '*' });
   r.clients.add(res);
   for (const c of r.tail) { try { res.write(c); } catch {} }
-  radioStart(channel);
+  radioStart(station);
   req.on('close', () => { r.clients.delete(res); radioStopIfIdle(r); });
 });
 app.get('/api/radio/status', (req, res) => {
-  const selected = radioChannelId(req.query.channel);
+  const selected = radioStationId(req.query.station || req.query.channel);
   const r = getRadio(selected);
   res.json({
     ...radioStatus(r),
     selected,
     cookies: radioHasCookies(),
     pot: !!POT_PROVIDER_URL,
-    channels: {
-      ar: radioStatus(getRadio('ar')),
-      ru: radioStatus(getRadio('ru')),
-    },
+    stations: radioStationsStatus(),
   });
 });
 
