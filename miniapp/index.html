@@ -5444,7 +5444,7 @@ https://azkar.nurtech.dev/app`);
     { id:'alseraj-radio', group:'ar', title:'Alseraj Radio', label:'Alseraj Radio', sub:'Quran stream' },
     { id:'quran-tafsir', group:'ar', title:'Radio Quran Tafsir', label:'Quran Tafsir', sub:'Коран и тафсир' },
     { id:'eman-city', group:'ar', title:'Eman City', label:'Eman City', sub:'Islamic / Quran stream' },
-    { id:'bmagrifa-ru', group:'ru', title:'BM Agrifa', label:'Русский эфир', sub:'Старый русский источник' },
+    { id:'bmagrifa-ru', group:'ru', title:'Русский эфир', label:'', sub:'Слушать на русском' },
   ];
   let RADIO_ON=false, RADIO_LOADING=false, RADIO_RETRY_TIMER=null, RADIO_RETRY_COUNT=0;
   function radioStationExists(id){ return RADIO_STATIONS.some(function(st){ return st.id === id; }); }
@@ -5461,8 +5461,8 @@ https://azkar.nurtech.dev/app`);
   function renderRadioChoices(){ const box=document.getElementById('radioChoiceList'); if(!box || box.dataset.ready) return; box.dataset.ready='1';
     box.innerHTML = RADIO_STATIONS.map(function(st){ return '<button type="button" class="radio-choice" data-radio-station="'+st.id+'">'
       + '<span class="rc-ic" aria-hidden="true">'+radioIconFor(st)+'</span>'
-      + '<span class="rc-main"><span class="rc-title">'+(st.group==='ar'?'<span class="ar">'+st.title+'</span>':'<span>'+st.title+'</span>')+'<span>'+st.label+'</span></span>'
-      + '<span class="rc-sub">'+st.sub+'</span></span><span class="rc-state">идёт</span></button>'; }).join('');
+      + '<span class="rc-main"><span class="rc-title">'+(st.group==='ar'?'<span class="ar">'+st.title+'</span>':'<span>'+st.title+'</span>')+(st.label?'<span>'+st.label+'</span>':'')+'</span>'
+      + (st.sub?'<span class="rc-sub">'+st.sub+'</span>':'')+'</span><span class="rc-state">идёт</span></button>'; }).join('');
     box.querySelectorAll('[data-radio-station]').forEach(function(btn){ btn.addEventListener('click', function(){ selectRadioStation(btn.getAttribute('data-radio-station')); }); });
   }
   function radioUI(){ const btn=document.getElementById('radioBtn'); if(!btn) return;

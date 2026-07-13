@@ -284,7 +284,7 @@ const RADIO_STATIONS = [
   { id: 'alseraj-radio', group: 'ar', title: 'Alseraj Radio', subtitle: 'alserajradio.com', sources: ['http://192.99.170.8:5550/stream'] },
   { id: 'quran-tafsir', group: 'ar', title: 'Radio Quran Tafsir', subtitle: 'quranradiotafsir.com', sources: ['http://66.45.232.131:9992/stream'] },
   { id: 'eman-city', group: 'ar', title: 'Eman City', subtitle: 'emancity.com', sources: ['http://66.45.232.131:9990/stream'] },
-  { id: 'bmagrifa-ru', group: 'ru', title: 'BM Agrifa', subtitle: 'Русский эфир YouTube', sources: [RADIO_URL].filter(Boolean) },
+  { id: 'bmagrifa-ru', group: 'ru', title: 'Русский эфир', subtitle: 'Слушать на русском', sources: [RADIO_URL].filter(Boolean) },
 ];
 function splitEnvList(v) {
   return String(v || '').split(/[,\n]/).map(s => s.trim()).filter(Boolean);
