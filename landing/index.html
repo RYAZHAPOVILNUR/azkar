@@ -267,7 +267,7 @@
           <h1>Утренние и вечерние поминания</h1>
           <p class="lead">Азкар помогает спокойно читать поминания из достоверной Сунны: арабский текст, транскрипция, перевод, источник и удобный счётчик-тасбих для повторений.</p>
           <div class="hero-actions">
-            <a class="cta" href="https://t.me/azkarnurtechbot">
+            <a class="cta" href="https://t.me/azkarnurtechbot" onclick="return openBot(event)">
               <span>Открыть в Telegram</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>
@@ -347,7 +347,7 @@
               <span class="step">3. Читай и отмечай</span>
             </div>
           </div>
-          <a class="cta" href="https://t.me/azkarnurtechbot">
+          <a class="cta" href="https://t.me/azkarnurtechbot" onclick="return openBot(event)">
             <span>Открыть в Telegram</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
@@ -364,6 +364,23 @@
   </div>
 
   <script>
+    // Открыть бота через приложение Telegram напрямую (tg://) — минуя веб-домен t.me,
+    // который у части операторов блокируется («не удаётся найти сервер»). Веб — как запасной.
+    function openBot(e){
+      try{ if(e) e.preventDefault(); }catch(_e){}
+      var app = 'tg://resolve?domain=azkarnurtechbot';
+      var web = 'https://t.me/azkarnurtechbot';
+      var t = Date.now();
+      var fell = false;
+      function toWeb(){ if(!fell){ fell = true; window.location.href = web; } }
+      // если приложение перехватило переход — вкладка уходит в фон, фолбэк не сработает
+      document.addEventListener('visibilitychange', function onHide(){
+        if(document.hidden){ fell = true; document.removeEventListener('visibilitychange', onHide); }
+      });
+      window.location.href = app;
+      setTimeout(function(){ if(Date.now() - t < 1600 && !document.hidden) toWeb(); }, 800);
+      return false;
+    }
     const root = document.documentElement;
     const saved = localStorage.getItem('azkar_landing_theme') || 'auto';
     let theme = saved;
