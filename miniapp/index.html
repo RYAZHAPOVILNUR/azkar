@@ -786,11 +786,34 @@
   .qp-paper .qp-surah:before, .qp-paper .qp-surah:after { background:#dcd6c6; }
   .qp-paper .qp-surah span { color:#575a48; border-color:#dcd6c6; }
   .qp-paper .qp-w:active { color:#8a6d1e; }
+  /* Тёмная тема + таджвид: страница на «бумаге» (цветной COLR-шрифт QCFT вшивает базу чёрным) */
+  :root[data-theme="dark"] .q-tajweed.q-pagemode .qp-page { background:#faf7ef; color:#1b1b1b; border-radius:14px; padding:16px 12px 20px; box-shadow:0 1px 4px rgba(0,0,0,.28); border:1px solid #e7e1d0; }
+  :root[data-theme="dark"] .q-tajweed.q-pagemode .qp-basmala { color:#1b1b1b; }
+  :root[data-theme="dark"] .q-tajweed.q-pagemode .qp-surah span { color:#575a48; border-color:#dcd6c6; }
+  :root[data-theme="dark"] .q-tajweed.q-pagemode .qp-w:active { color:#8a6d1e; }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme]) .q-tajweed.q-pagemode .qp-page { background:#faf7ef; color:#1b1b1b; border-radius:14px; padding:16px 12px 20px; box-shadow:0 1px 4px rgba(0,0,0,.28); border:1px solid #e7e1d0; }
+    :root:not([data-theme]) .q-tajweed.q-pagemode .qp-basmala { color:#1b1b1b; }
+    :root:not([data-theme]) .q-tajweed.q-pagemode .qp-surah span { color:#575a48; border-color:#dcd6c6; }
+    :root:not([data-theme]) .q-tajweed.q-pagemode .qp-w:active { color:#8a6d1e; }
+  }
   /* режим Чтение — аяты поштучно цветным пофайловым мединским */
   .q-reading .q-ayah { padding:16px 2px; border-bottom:1px solid color-mix(in srgb, var(--line) 60%, transparent); }
   .q-reading .qcf-ar { direction:rtl; text-align:center; font-size:var(--q-ar-size, 30px); line-height:2.0; color:var(--ink); cursor:pointer; padding:4px 2px; }
   .q-reading .qcf-ar.qp-paper { background:#fcfbf6; color:#1b1b1b; border-radius:14px; padding:14px 12px; border:1px solid #ece7d8; }
   .q-reading .q-tr { direction:ltr; text-align:left; font-size:15px; line-height:1.62; color:var(--ink-soft); margin-top:12px; }
+  /* Тёмная тема: цветной таджвид-мусхаф (COLR-шрифт QCFT) нарисован под светлый фон и вшивает базовые буквы чёрным.
+     На тёмном они тонут — поэтому показываем цветной арабский на тёплой «бумаге» (читаемо + цвета правил как задумано). */
+  :root[data-theme="dark"] .q-ayahs.q-tajweed.q-reading .qcf-ar,
+  :root[data-theme="dark"] .q-ayahs.q-tajweed.q-flow .qr-flow {
+    background:#faf7ef; color:#1b1b1b; border-radius:14px; padding:14px 14px; border:1px solid #e7e1d0; box-shadow:0 1px 4px rgba(0,0,0,.28); }
+  :root[data-theme="dark"] .q-ayahs.q-tajweed.q-flow .qcf-ayah:active { background:#efe9da; }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme]) .q-ayahs.q-tajweed.q-reading .qcf-ar,
+    :root:not([data-theme]) .q-ayahs.q-tajweed.q-flow .qr-flow {
+      background:#faf7ef; color:#1b1b1b; border-radius:14px; padding:14px 14px; border:1px solid #e7e1d0; box-shadow:0 1px 4px rgba(0,0,0,.28); }
+    :root:not([data-theme]) .q-ayahs.q-tajweed.q-flow .qcf-ayah:active { background:#efe9da; }
+  }
   .qcf-w { white-space:nowrap; -webkit-font-smoothing:antialiased; }
   /* аудио-плеер + подсветка играющего аята */
   .q-playing { background:color-mix(in srgb, var(--accent-soft) 65%, transparent); border-radius:12px; box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
@@ -4978,7 +5001,7 @@ https://azkar.nurtech.dev/app`);
       }
     }
     wrap.innerHTML=html;
-    wrap.className = 'q-ayahs' + (QPREFS.mode==='mushaf' ? ' q-flow' : ' q-reading') + (QHIDE && QPREFS.mode!=='mushaf' ? ' q-hide' : '');
+    wrap.className = 'q-ayahs' + (QPREFS.mode==='mushaf' ? ' q-flow' : ' q-reading') + (QHIDE && QPREFS.mode!=='mushaf' ? ' q-hide' : '') + (QPREFS.tj ? ' q-tajweed' : '');
     wrap.style.setProperty('--q-ar-size', QPREFS.fs+'px');
     qUpdateNav(su.n);
   }
@@ -5142,7 +5165,7 @@ https://azkar.nurtech.dev/app`);
     n=parseInt(n,10); if(!(n>=1&&n<=604)) return; opts=opts||{};
     QURAN.curPage=n; QURAN._lastA=0;
     const wrap=document.getElementById('qrAyahs');
-    wrap.className='q-ayahs q-pagemode'; wrap.innerHTML='<div class="qp-loading">Загрузка страницы…</div>';
+    wrap.className='q-ayahs q-pagemode'+(QPREFS.tj?' q-tajweed':''); wrap.innerHTML='<div class="qp-loading">Загрузка страницы…</div>';
     document.getElementById('qrBism').hidden=true;
     const needTr = QPREFS.mode==='reading';
     Promise.all([ qLoadPagesMeta().catch(function(){ return null; }), qLoadPage(n), needTr?qLoadPageTr(n):Promise.resolve(null) ]).then(function(res){
