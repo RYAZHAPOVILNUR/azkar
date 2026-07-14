@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "updatedesk:init": "node tools/updatedesk-init.mjs",
+    "updatedesk:note": "node tools/updatedesk-note.mjs"
+  }
+}
