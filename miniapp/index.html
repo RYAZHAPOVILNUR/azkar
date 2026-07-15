@@ -3,6 +3,7 @@
 <link rel="icon" type="image/png" href="assets/icon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
 <link rel="manifest" href="manifest.json">
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/noto-naskh.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/amiri-quran.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/kfgqpc-hafs.woff2" crossorigin>
 <meta name="theme-color" content="#24292f" media="(prefers-color-scheme: dark)">
@@ -12,11 +13,11 @@
 <meta name="apple-mobile-web-app-title" content="Азкар">
 <title>Азкар — утренние и вечерние поминания</title>
 <style>
-  @font-face { font-family:'AzkarNaskh'; src:url('assets/fonts/noto-naskh.woff2') format('woff2'); font-display:swap; }
-  @font-face { font-family:'AzkarSans'; src:url('assets/fonts/noto-sans-ar.woff2') format('woff2'); font-display:swap; }
-  @font-face { font-family:'AzkarAmiri'; src:url('assets/fonts/amiri.woff2') format('woff2'); font-display:swap; }
-  @font-face { font-family:'AzkarMushaf'; src:url('assets/fonts/amiri-quran.woff2') format('woff2'); font-display:swap; }
-  @font-face { font-family:'KFGQPC'; src:url('assets/fonts/kfgqpc-hafs.woff2') format('woff2'); font-display:swap; }
+  @font-face { font-family:'AzkarNaskh'; src:url('assets/fonts/noto-naskh.woff2') format('woff2'); font-display:block; }
+  @font-face { font-family:'AzkarSans'; src:url('assets/fonts/noto-sans-ar.woff2') format('woff2'); font-display:block; }
+  @font-face { font-family:'AzkarAmiri'; src:url('assets/fonts/amiri.woff2') format('woff2'); font-display:block; }
+  @font-face { font-family:'AzkarMushaf'; src:url('assets/fonts/amiri-quran.woff2') format('woff2'); font-display:block; }
+  @font-face { font-family:'KFGQPC'; src:url('assets/fonts/kfgqpc-hafs.woff2') format('woff2'); font-display:block; }
   :root {
     --bg: #FBFAF6;
     --bg-2: #F3F1E8;
@@ -103,7 +104,7 @@
   .statusbar .dots { display:flex; gap:6px; align-items:center; opacity:.8; }
 
   .screen { display:none; flex-direction:column; flex:1; width:100%; }
-  .screen.active { display:flex; animation: fade .3s ease; }
+  .screen.active { display:flex; }
   .screen.nav-under, .screen.nav-drag {
     display:flex; min-height:100%; background:var(--bg);
     will-change:transform; animation:none; overflow:hidden;
