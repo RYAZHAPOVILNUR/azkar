@@ -910,6 +910,11 @@
   .qi-status { font-size:13.5px; font-weight:600; color:var(--ink-soft); text-align:center; min-height:17px; }
   .qi-enable { border:0; border-radius:999px; padding:11px 22px; background:var(--accent); color:var(--surface); font:inherit; font-weight:700; font-size:14px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
   .qi-enable:active { background:var(--accent-deep); }
+  :root[data-theme="dark"] .qi-enable { color:var(--bg); }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme]) .qi-enable { color:var(--bg); } }
+  /* нет доступа к геолокации: прячем пустые «—» плитки/читаут, приглушаем циферблат, показываем CTA */
+  #qibla.noloc .qi-metrics, #qibla.noloc .qi-big { display:none; }
+  #qibla.noloc .qibla-dial { opacity:.45; }
   .qi-metrics { display:flex; gap:12px; width:100%; }
   .qi-m { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:12px 10px; border-radius:16px; background:var(--surface-2); }
   .qi-m b { font-size:20px; font-weight:800; color:var(--ink); }
@@ -1555,6 +1560,7 @@
         <div class="qi-big"><b id="qiblaOff">—</b><span id="qiblaOffL">до киблы</span></div>
         <div class="qi-status" id="qiblaStatus">Определяем направление…</div>
         <button type="button" class="qi-enable" id="qiblaEnable" hidden onclick="qiblaEnableCompass()">Включить компас</button>
+        <button type="button" class="qi-enable" id="qiblaLocBtn" hidden onclick="qiblaRefreshLoc()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Разрешить геолокацию</button>
         <div class="qi-metrics">
           <div class="qi-m"><b id="qiblaDeg">—</b><span>азимут от севера</span></div>
           <div class="qi-m"><b id="qiblaDist">—</b><span>до Мекки</span></div>
@@ -5658,9 +5664,13 @@ https://azkar.nurtech.dev/app`);
     navigator.geolocation.getCurrentPosition(function(pos){ const lat=+pos.coords.latitude.toFixed(4), lng=+pos.coords.longitude.toFixed(4);
       try{ localStorage.setItem('azkar_loc', JSON.stringify({ lat:lat, lng:lng })); }catch(e){}
       qiblaUseLoc(lat,lng);
-    }, function(){ qiblaSetStatus('Не удалось определить местоположение — доступ не разрешён'); }, { enableHighAccuracy:true, timeout:12000, maximumAge:600000 }); }
+    }, function(){ qiblaNoLoc(); }, { enableHighAccuracy:true, timeout:12000, maximumAge:600000 }); }
+  function qiblaNoLoc(){ const sec=document.getElementById('qibla'); if(sec) sec.classList.add('noloc');
+    qiblaSetStatus('Нет доступа к местоположению'); const b=document.getElementById('qiblaLocBtn'); if(b) b.hidden=false; }
+  function qiblaClearNoLoc(){ const sec=document.getElementById('qibla'); if(sec) sec.classList.remove('noloc');
+    const b=document.getElementById('qiblaLocBtn'); if(b) b.hidden=true; }
   function qiblaRefreshLoc(){ tgHaptic('light'); qiblaRequestLoc(); }
-  function qiblaUseLoc(lat,lng){ QIBLA.lat=lat; QIBLA.lng=lng; QIBLA.bearing=qiblaBearingDeg(lat,lng); QIBLA.dist=qiblaDistKm(lat,lng);
+  function qiblaUseLoc(lat,lng){ qiblaClearNoLoc(); QIBLA.lat=lat; QIBLA.lng=lng; QIBLA.bearing=qiblaBearingDeg(lat,lng); QIBLA.dist=qiblaDistKm(lat,lng);
     const dg=document.getElementById('qiblaDeg'); if(dg) dg.textContent=Math.round(QIBLA.bearing)+'°';
     const ds=document.getElementById('qiblaDist'); if(ds) ds.textContent=QIBLA.dist.toLocaleString('ru-RU')+' км';
     qiblaRender(); qiblaStartCompass(); }
