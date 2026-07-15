@@ -2117,10 +2117,17 @@
   // варианты в [ ... ] («а вечером скажи…»). Убираем демаркаторы и хвостовые заметки — оставляем сам зикр.
   function cleanAzkarArabic(s){
     s = String(s || '').trim();
-    if(s.startsWith('((')){
+    if(s.startsWith('((')){                    // двойная обёртка: текст до )) , хвостовые [ ] заметки отбрасываем
       s = s.slice(2);
       const close = s.indexOf('))');
       if(close >= 0) s = s.slice(0, close);
+      return s.trim();
+    }
+    if(s.startsWith('(')){                      // одиночная обёртка ( ... ) вокруг всего зикра (внутри бывают ﴿ ﴾)
+      let inner = s.slice(1).replace(/^\s*\.\s*/, '');
+      const close = inner.lastIndexOf(')');
+      if(close >= 0) inner = inner.slice(0, close);
+      return inner.trim();
     }
     return s.trim();
   }
