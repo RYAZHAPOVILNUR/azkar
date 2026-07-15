@@ -577,10 +577,10 @@
   .radio-now .rn-ic { width:46px; height:46px; border-radius:14px; flex:0 0 auto; display:grid; place-items:center; background:var(--surface); color:var(--accent-deep); position:relative; }
   .radio-now .rn-ic.live::after { content:""; position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; background:var(--good); box-shadow:0 0 0 0 color-mix(in srgb, var(--good) 60%, transparent); animation:rnPulse 1.6s infinite; }
   @keyframes rnPulse { 0%{ box-shadow:0 0 0 0 color-mix(in srgb, var(--good) 55%, transparent); } 70%{ box-shadow:0 0 0 7px transparent; } 100%{ box-shadow:0 0 0 0 transparent; } }
-  .radio-now .rn-main { flex:1; min-width:0; }
-  .radio-now .rn-title { font-size:15.5px; font-weight:800; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .radio-now .rn-main { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; }
+  .radio-now .rn-title { display:block; max-width:100%; font-size:15.5px; font-weight:800; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .radio-now .rn-title .ar { font-family:var(--ar-font),var(--ar); }
-  .radio-now .rn-sub { margin-top:2px; font-size:12.5px; color:var(--accent-deep); font-weight:600; }
+  .radio-now .rn-sub { display:block; margin-top:2px; font-size:12.5px; color:var(--accent-deep); font-weight:600; }
   .radio-now .rn-btn { width:44px; height:44px; border-radius:50%; border:0; flex:0 0 auto; display:grid; place-items:center; cursor:pointer; background:var(--accent); color:var(--surface); -webkit-tap-highlight-color:transparent; transition:transform .12s; }
   :root[data-theme="dark"] .radio-now .rn-btn { color:var(--bg); }
   @media (prefers-color-scheme: dark){ :root:not([data-theme]) .radio-now .rn-btn { color:var(--bg); } }
