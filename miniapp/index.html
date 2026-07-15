@@ -3268,7 +3268,7 @@ https://azkar.nurtech.dev/app`);
       src: shareZ.src || 'Достоверная Сунна',
     };
     let best = null;
-    for(let scale = 1; scale >= .18; scale -= .025){
+    for(let scale = 1; scale >= .45; scale -= .025){   // не мельче читаемого; если не влезло — холст вырастет (см. drawShareCanvas)
       const cfg = {
         arSize: Math.round(58 * scale),
         arLine: Math.round(78 * scale),
