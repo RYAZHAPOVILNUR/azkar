@@ -4235,26 +4235,15 @@ https://azkar.nurtech.dev/app`);
   function updateSoftStats(){
     const h = loadHistory();
     const days = lastDays(7);
-    const st = (typeof qStats==='function') ? qStats() : {days:{}};
     const today = todayStr();
-    // недельные метрики чтения
-    let weekAy=0, weekSec=0;
-    days.forEach(d=>{ const r=st.days && st.days[d]; if(r){ weekAy+=r.ay||0; weekSec+=r.sec||0; } });
-    const aEl=document.getElementById('htWeekAy'); if(aEl) aEl.textContent = weekAy;
-    const mEl=document.getElementById('htWeekMin'); if(mEl) mEl.innerHTML = Math.round(weekSec/60)+'<small> мин</small>';
-    const memEl=document.getElementById('htMem'); if(memEl && typeof qTotalMem==='function') memEl.textContent = qTotalMem();
-    // строка Корана
-    if(typeof qTotalRead==='function'){
-      const pct=Math.round(qTotalRead()/Q_TOTAL_AYAHS*100);
-      const pEl=document.getElementById('htQuranPct'); if(pEl) pEl.textContent = pct+'%';
-    }
-    // 7-дневные бары: высота ∝ минуты чтения; азкар-день гарантированно виден
+    let st = {days:{}}; try{ if(typeof qStats==='function') st = qStats() || st; }catch(e){}
+    // 7-дневные бары СНАЧАЛА (главный визуал; не зависит от хифз-модуля): высота ∝ минуты чтения, азкар-день виден
     const wrap=document.getElementById('htWeek');
     if(wrap){
       const vals = days.map(d=>{
         const sec = (st.days && st.days[d] && st.days[d].sec) || 0;
         const started = !!(h[d] && Object.values(h[d].sessions||{}).some(s=>s.started));
-        return { d, sec, started, val: sec>0 ? sec : (started ? 45 : 0) };
+        return { d, sec, val: sec>0 ? sec : (started ? 45 : 0) };
       });
       const max = Math.max(45, ...vals.map(v=>v.val));
       wrap.innerHTML = vals.map(v=>{
@@ -4264,6 +4253,14 @@ https://azkar.nurtech.dev/app`);
         return '<div class="'+cls+'"><i style="height:'+hgt+'px"></i><span>'+dow+'</span></div>';
       }).join('');
     }
+    // недельные метрики чтения
+    let weekAy=0, weekSec=0;
+    days.forEach(d=>{ const r=st.days && st.days[d]; if(r){ weekAy+=r.ay||0; weekSec+=r.sec||0; } });
+    const aEl=document.getElementById('htWeekAy'); if(aEl) aEl.textContent = weekAy;
+    const mEl=document.getElementById('htWeekMin'); if(mEl) mEl.innerHTML = Math.round(weekSec/60)+'<small> мин</small>';
+    // хифз/Коран — в try/catch, чтобы недоступность модуля не ломала блок
+    try{ const memEl=document.getElementById('htMem'); if(memEl && typeof qTotalMem==='function') memEl.textContent = qTotalMem(); }catch(e){}
+    try{ const pEl=document.getElementById('htQuranPct'); if(pEl && typeof qTotalRead==='function') pEl.textContent = Math.round(qTotalRead()/Q_TOTAL_AYAHS*100)+'%'; }catch(e){}
   }
 
   /* ---------- streak (дней подряд) ---------- */
