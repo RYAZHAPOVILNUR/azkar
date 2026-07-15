@@ -210,41 +210,51 @@
   .home-foot { text-align:center; font-size:12.5px; color:var(--ink-faint); padding:8px 20px 24px; }
   .home-foot b { color: var(--accent-deep); font-weight:700; }
 
-  .home-today { margin:16px 20px 4px; background:var(--surface); border:1px solid var(--line); border-radius:22px; padding:18px 16px; box-shadow:var(--shadow-card); }
+  .home-today { --ht-accent:#5E9C82; margin:16px 20px 4px; background:var(--surface); border:1px solid var(--line); border-radius:22px; padding:18px 16px; box-shadow:var(--shadow-card); }
+  :root[data-theme="dark"] .home-today { --ht-accent:#7CB79C; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme]) .home-today { --ht-accent:#7CB79C; } }
   .ht-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
   .ht-title { font-size:19px; font-weight:700; color:var(--ink); letter-spacing:-.3px; }
-  .ht-streak { display:inline-flex; align-items:center; gap:5px; background:color-mix(in srgb, var(--accent) 13%, var(--surface)); color:var(--accent-deep); border-radius:999px; padding:5px 11px; font-size:13px; font-weight:700; }
+  .ht-streak { display:inline-flex; align-items:center; gap:5px; background:color-mix(in srgb, var(--ht-accent) 15%, var(--surface)); color:color-mix(in srgb, var(--ht-accent) 72%, var(--ink)); border-radius:999px; padding:5px 11px; font-size:13px; font-weight:700; }
   .ht-streak[hidden] { display:none; }
   .ht-streak svg { width:14px; height:14px; }
-  .ht-main { display:flex; align-items:center; gap:18px; margin-bottom:16px; }
-  .ht-ring { position:relative; width:108px; height:108px; flex-shrink:0; }
-  .ht-ring svg { width:108px; height:108px; display:block; }
+  .ht-main { display:flex; align-items:center; gap:18px; }
+  .ht-ring { position:relative; width:104px; height:104px; flex-shrink:0; }
+  .ht-ring svg { width:104px; height:104px; display:block; }
   .ht-ring-track { fill:none; stroke:color-mix(in srgb, var(--ink) 8%, var(--surface)); stroke-width:11; }
-  .ht-ring-fill { fill:none; stroke:var(--good); stroke-width:11; stroke-linecap:round; stroke-dasharray:289; stroke-dashoffset:289; transition:stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1); }
+  .ht-ring-fill { fill:none; stroke:var(--ht-accent); stroke-width:11; stroke-linecap:round; stroke-dasharray:289; stroke-dashoffset:289; transition:stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1); }
   .ht-ring-c { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-  .ht-ring-num { font-size:26px; font-weight:800; color:var(--ink); letter-spacing:-.5px; line-height:1; font-variant-numeric:tabular-nums; }
+  .ht-ring-num { font-size:25px; font-weight:800; color:var(--ink); letter-spacing:-.5px; line-height:1; font-variant-numeric:tabular-nums; }
   .ht-ring-num small { font-size:15px; font-weight:600; color:var(--ink-faint); }
-  .ht-ring-lbl { font-size:11.5px; color:var(--ink-faint); margin-top:4px; }
+  .ht-ring-lbl { font-size:11px; color:var(--ink-faint); margin-top:4px; }
   .ht-highlights { flex:1; min-width:0; display:flex; flex-direction:column; }
-  .ht-hl { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid color-mix(in srgb, var(--line) 62%, transparent); }
+  .ht-hl { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid color-mix(in srgb, var(--line) 62%, transparent); }
   .ht-hl:last-child { border-bottom:0; }
-  .ht-hl > svg { width:18px; height:18px; color:var(--good); flex-shrink:0; }
+  .ht-hl > svg { width:18px; height:18px; color:var(--ht-accent); flex-shrink:0; }
   .ht-hl .ht-hl-t { flex:1; min-width:0; font-size:13.5px; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .ht-hl b { font-size:16px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
   .ht-hl b small { font-size:12px; font-weight:600; color:var(--ink-faint); }
-  .ht-week { display:flex; align-items:flex-end; justify-content:space-between; gap:6px; height:64px; padding:0 2px; }
+  .ht-cap { display:block; font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin:17px 2px 10px; }
+  .ht-week { display:flex; align-items:flex-end; justify-content:space-between; gap:6px; height:58px; padding:0 2px; }
   .ht-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
-  .ht-col i { display:block; width:100%; max-width:22px; height:10px; border-radius:6px; background:color-mix(in srgb, var(--ink) 9%, var(--surface)); transition:height .5s cubic-bezier(.2,.8,.2,1); }
-  .ht-col.on i { background:color-mix(in srgb, var(--good) 42%, var(--surface)); }
-  .ht-col.today i { background:var(--good); }
+  .ht-col i { display:block; width:100%; max-width:22px; height:8px; border-radius:6px; background:color-mix(in srgb, var(--ink) 9%, var(--surface)); transition:height .5s cubic-bezier(.2,.8,.2,1); }
+  .ht-col.on i { background:color-mix(in srgb, var(--ht-accent) 38%, var(--surface)); }
+  .ht-col.today i { background:var(--ht-accent); }
   .ht-col span { font-size:11px; color:var(--ink-faint); }
-  .ht-col.today span { color:var(--accent-deep); font-weight:700; }
-  .ht-foot { width:100%; margin-top:14px; background:none; border:none; border-top:1px solid color-mix(in srgb, var(--line) 62%, transparent); padding:13px 2px 0; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font:inherit; -webkit-tap-highlight-color:transparent; }
+  .ht-col.today span { color:color-mix(in srgb, var(--ht-accent) 68%, var(--ink)); font-weight:700; }
+  .ht-week-sum { text-align:center; font-size:11.5px; color:var(--ink-faint); margin-top:10px; }
+  .ht-week-sum b { color:var(--ink-soft); font-weight:700; }
+  .ht-foot { width:100%; margin-top:14px; background:none; border:none; border-top:1px solid color-mix(in srgb, var(--line) 62%, transparent); padding:13px 2px 0; display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; font:inherit; -webkit-tap-highlight-color:transparent; }
   .ht-foot:active { opacity:.6; }
-  .ht-foot .ht-foot-t { font-size:13px; color:var(--ink-soft); }
+  .ht-foot .ht-foot-t { font-size:13px; color:var(--ink-soft); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .ht-foot .ht-foot-t b { color:var(--ink); font-weight:700; }
   .ht-foot .ht-foot-go { display:inline-flex; align-items:center; gap:3px; font-size:12.5px; color:var(--ink-faint); flex-shrink:0; }
   .ht-foot .ht-foot-go svg { width:15px; height:15px; }
+  .ht-invite { display:none; align-items:center; gap:10px; margin-top:14px; padding-top:13px; border-top:1px solid color-mix(in srgb, var(--line) 62%, transparent); font-size:13.5px; color:var(--ink-soft); cursor:pointer; }
+  .ht-invite svg { width:17px; height:17px; color:var(--ht-accent); flex-shrink:0; }
+  .ht-invite .ht-inv-go { margin-left:auto; color:var(--ink-faint); flex-shrink:0; }
+  .home-today.ht-empty .ht-week-wrap, .home-today.ht-empty .ht-foot { display:none; }
+  .home-today.ht-empty .ht-invite { display:flex; }
 
   /* READING */
   /* liquid glass utility */
@@ -1196,16 +1206,24 @@
           </div>
         </div>
         <div class="ht-highlights">
-          <div class="ht-hl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.5 5 8 4.5 5 4.8A1 1 0 0 0 4 5.8v11.4a1 1 0 0 0 1.1 1c2.8-.3 5.2.2 6.6 1.6.8.7 1.8.7 2.6 0 1.4-1.4 3.8-1.9 6.6-1.6a1 1 0 0 0 1.1-1V5.8a1 1 0 0 0-1-1c-3-.3-5.5.2-7 1.7z"/><path d="M12 6.5v12.9"/></svg><span class="ht-hl-t">Аяты за неделю</span><b id="htWeekAy">0</b></div>
-          <div class="ht-hl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg><span class="ht-hl-t">Время</span><b id="htWeekMin">0<small> мин</small></b></div>
-          <div class="ht-hl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span class="ht-hl-t">Заучено аятов</span><b id="htMem">0</b></div>
+          <div class="ht-hl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.5 5 8 4.5 5 4.8A1 1 0 0 0 4 5.8v11.4a1 1 0 0 0 1.1 1c2.8-.3 5.2.2 6.6 1.6.8.7 1.8.7 2.6 0 1.4-1.4 3.8-1.9 6.6-1.6a1 1 0 0 0 1.1-1V5.8a1 1 0 0 0-1-1c-3-.3-5.5.2-7 1.7z"/><path d="M12 6.5v12.9"/></svg><span class="ht-hl-t">Аяты сегодня</span><b id="htTodayAy">0</b></div>
+          <div class="ht-hl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg><span class="ht-hl-t">Время сегодня</span><b id="htTodayMin">0<small> мин</small></b></div>
         </div>
       </div>
-      <div class="ht-week" id="htWeek"></div>
+      <div class="ht-week-wrap">
+        <span class="ht-cap">За неделю</span>
+        <div class="ht-week" id="htWeek"></div>
+        <div class="ht-week-sum" id="htWeekSum"></div>
+      </div>
       <button type="button" class="ht-foot" id="htFoot" onclick="openQuranMap()">
-        <span class="ht-foot-t">Коран прочитан на <b id="htQuranPct">0%</b></span>
-        <span class="ht-foot-go">Карта прогресса <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></span>
+        <span class="ht-foot-t">Коран прочитан на <b id="htQuranPct">0%</b> · заучено <b id="htMem">0</b></span>
+        <span class="ht-foot-go">Карта <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></span>
       </button>
+      <div class="ht-invite" id="htInvite" onclick="openReading('morning', {resume:true})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 2v7"/><path d="M2 18h20"/><path d="m4.9 10.9 1.4 1.4"/><path d="m19.1 10.9-1.4 1.4"/></svg>
+        <span>Начни день с утренних поминаний</span>
+        <svg class="ht-inv-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+      </div>
     </div>
   </section>
 
@@ -4253,14 +4271,30 @@ https://azkar.nurtech.dev/app`);
         return '<div class="'+cls+'"><i style="height:'+hgt+'px"></i><span>'+dow+'</span></div>';
       }).join('');
     }
-    // недельные метрики чтения
+    // ВЕРХ = сегодня: чтение за сегодня рядом с кольцом (кольцо = азкары за сегодня)
+    const todaySec=(st.days && st.days[today] && st.days[today].sec)||0;
+    const todayAy=(st.days && st.days[today] && st.days[today].ay)||0;
+    const tAy=document.getElementById('htTodayAy'); if(tAy) tAy.textContent = todayAy;
+    const tMin=document.getElementById('htTodayMin'); if(tMin) tMin.innerHTML = Math.round(todaySec/60)+'<small> мин</small>';
+    // СЕКЦИЯ = за неделю: итог под барами (подписывает, что бары — это чтение)
     let weekAy=0, weekSec=0;
     days.forEach(d=>{ const r=st.days && st.days[d]; if(r){ weekAy+=r.ay||0; weekSec+=r.sec||0; } });
-    const aEl=document.getElementById('htWeekAy'); if(aEl) aEl.textContent = weekAy;
-    const mEl=document.getElementById('htWeekMin'); if(mEl) mEl.innerHTML = Math.round(weekSec/60)+'<small> мин</small>';
-    // хифз/Коран — в try/catch, чтобы недоступность модуля не ломала блок
+    const sumEl=document.getElementById('htWeekSum');
+    if(sumEl) sumEl.innerHTML = (weekAy||weekSec)
+      ? '<b>'+weekAy+'</b> '+plural(weekAy,'аят','аята','аятов')+' · <b>'+Math.round(weekSec/60)+'</b> мин чтения'
+      : 'Открой Коран — появится история чтения';
+    // НИЗ = Коран (всё время): % + заучено, в try/catch
+    let quranRead=0;
+    try{ if(typeof qTotalRead==='function'){ quranRead=qTotalRead(); const pEl=document.getElementById('htQuranPct'); if(pEl) pEl.textContent = Math.round(quranRead/Q_TOTAL_AYAHS*100)+'%'; } }catch(e){}
     try{ const memEl=document.getElementById('htMem'); if(memEl && typeof qTotalMem==='function') memEl.textContent = qTotalMem(); }catch(e){}
-    try{ const pEl=document.getElementById('htQuranPct'); if(pEl && typeof qTotalRead==='function') pEl.textContent = Math.round(qTotalRead()/Q_TOTAL_AYAHS*100)+'%'; }catch(e){}
+    // пустое состояние: ничего ещё не отмечено — показываем приглашение вместо мёртвой сетки
+    const card=document.getElementById('homeToday');
+    if(card){
+      const azkarToday=parseInt((document.getElementById('htDone')||{}).textContent,10)||0;
+      const streakN=loadStreak().count||0;
+      const nothing = azkarToday===0 && weekSec===0 && todaySec===0 && streakN===0 && quranRead===0;
+      card.classList.toggle('ht-empty', nothing);
+    }
   }
 
   /* ---------- streak (дней подряд) ---------- */
