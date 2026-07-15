@@ -3268,7 +3268,7 @@ https://azkar.nurtech.dev/app`);
       src: shareZ.src || 'Достоверная Сунна',
     };
     let best = null;
-    for(let scale = 1; scale >= .45; scale -= .025){   // не мельче читаемого; если не влезло — холст вырастет (см. drawShareCanvas)
+    for(let scale = 1; scale >= .18; scale -= .025){
       const cfg = {
         arSize: Math.round(58 * scale),
         arLine: Math.round(78 * scale),
@@ -3302,12 +3302,9 @@ https://azkar.nurtech.dev/app`);
     }
     return best;
   }
-  const SHARE_BASE_H = 1920;
-  function drawShareCanvas(grownH){
+  function drawShareCanvas(){
     const canvas = document.getElementById('shareCanvas');
     if(!canvas || !shareZ) return;
-    canvas.height = grownH || SHARE_BASE_H;   // сброс к базовой, растим только под большой зикр
-    canvas.style.aspectRatio = canvas.width + ' / ' + canvas.height;   // превью держит реальные пропорции (в т.ч. выросшие)
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
     const theme = SHARE_THEMES[shareStyle.bg] || SHARE_THEMES.dawn;
@@ -3350,9 +3347,6 @@ https://azkar.nurtech.dev/app`);
     const footerY = cardY + cardH - 82;
     const availableH = footerY - contentTop - 46;
     const layout = shareLayout(ctx, maxW, availableH);
-    if(!grownH && layout.height > availableH){   // не влезло даже минимальным — вырастить холст и перерисовать один раз
-      return drawShareCanvas(SHARE_BASE_H + Math.ceil(layout.height - availableH) + 60);
-    }
     let y = contentTop + Math.max(0, Math.floor((availableH - layout.height) / 2));
     ctx.direction = 'rtl';
     ctx.textAlign = 'right';
