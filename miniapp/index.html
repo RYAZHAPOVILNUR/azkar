@@ -587,7 +587,7 @@
   .radio-now .rn-btn:active { transform:scale(.9); }
   .radio-now .rn-btn.rn-stop { background:var(--surface); color:var(--ink-soft); border:1px solid var(--line); }
   .share-preview { margin-top:12px; border-radius:22px; overflow:hidden; border:1px solid var(--line); background:var(--surface-2); box-shadow:var(--shadow-card); display:flex; justify-content:center; align-items:center; }
-  .share-preview canvas { width:auto; max-width:100%; height:min(56vh, 620px); display:block; aspect-ratio:9/16; }
+  .share-preview canvas { display:block; max-width:100%; max-height:min(56vh, 620px); }
   .share-tools { margin-top:14px; display:flex; flex-direction:column; gap:10px; }
   .share-bg-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
   .share-bg { height:42px; border-radius:14px; border:1px solid var(--line); cursor:pointer; position:relative; overflow:hidden; }
@@ -683,19 +683,19 @@
   .azlib-filter.on { color:var(--accent-deep); background:var(--accent-soft); border-color:color-mix(in srgb, var(--accent) 34%, var(--line)); }
   .azlib-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .azlib-cat, .azlib-result { border:1px solid var(--line); background:var(--surface); border-radius:20px; padding:14px; text-align:left; color:var(--ink); font:inherit; cursor:pointer; box-shadow:var(--shadow-soft); }
-  .azlib-cat { position:relative; overflow:hidden; display:block; min-height:162px; isolation:isolate; }
+  .azlib-cat { position:relative; overflow:hidden; display:block; min-height:118px; isolation:isolate; }
   .azlib-cat.has-bg { background-image:linear-gradient(180deg, rgba(9, 26, 23, .20), rgba(9, 26, 23, .72)), var(--cat-bg); background-size:cover; background-position:center; color:#fff; border-color:rgba(255,255,255,.16); }
   .azlib-cat.has-bg:before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; background:radial-gradient(circle at 20% 10%, rgba(255,255,255,.18), transparent 34%), linear-gradient(135deg, rgba(125,148,113,.16), rgba(12,28,25,.18)); }
   .azlib-cat.has-bg > * { position:relative; z-index:1; }
   .azlib-cat:active, .azlib-result:active { transform:scale(.985); }
   .azlib-cat.is-planned { opacity:.64; cursor:default; box-shadow:none; }
-  .azlib-cat .ic { width:38px; height:38px; border-radius:14px; display:grid; place-items:center; margin-bottom:12px; color:var(--accent-deep); background:color-mix(in srgb, var(--accent) 16%, var(--surface-2)); }
+  .azlib-cat .ic { width:34px; height:34px; border-radius:12px; display:grid; place-items:center; margin-bottom:8px; color:var(--accent-deep); background:color-mix(in srgb, var(--accent) 16%, var(--surface-2)); }
   .azlib-cat.has-bg .ic { color:#f7fff7; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.18); box-shadow:0 10px 24px rgba(0,0,0,.16); backdrop-filter:blur(8px); }
   .azlib-cat .t { display:block; font-size:15.5px; font-weight:780; color:var(--ink); line-height:1.16; }
   .azlib-cat .s { display:block; font-size:12px; color:var(--ink-faint); line-height:1.35; margin-top:5px; }
   .azlib-cat.has-bg .t { color:#fff; text-shadow:0 2px 14px rgba(0,0,0,.32); }
   .azlib-cat.has-bg .s { color:rgba(255,255,255,.84); text-shadow:0 1px 10px rgba(0,0,0,.28); }
-  .azlib-cat .count { display:inline-flex; margin-top:11px; min-height:24px; align-items:center; border-radius:999px; padding:4px 8px; background:var(--surface-2); color:var(--ink-soft); font-size:11.5px; font-weight:750; }
+  .azlib-cat .count { display:inline-flex; margin-top:8px; min-height:22px; align-items:center; border-radius:999px; padding:3px 8px; background:var(--surface-2); color:var(--ink-soft); font-size:11.5px; font-weight:750; }
   .azlib-cat.has-bg .count { color:#fff; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.16); box-shadow:0 8px 18px rgba(0,0,0,.14); backdrop-filter:blur(8px); }
   .azlib-results { display:flex; flex-direction:column; gap:10px; }
   .azlib-result { padding:14px 15px; }
@@ -3297,7 +3297,7 @@ https://azkar.nurtech.dev/app`);
       src: shareZ.src || 'Достоверная Сунна',
     };
     let best = null;
-    for(let scale = 1; scale >= .18; scale -= .025){
+    for(let scale = 1; scale >= .45; scale -= .025){   // не мельче читаемого; если не влезло — холст вырастет (drawShareCanvas)
       const cfg = {
         arSize: Math.round(58 * scale),
         arLine: Math.round(78 * scale),
@@ -3331,9 +3331,11 @@ https://azkar.nurtech.dev/app`);
     }
     return best;
   }
-  function drawShareCanvas(){
+  const SHARE_BASE_H = 1920;
+  function drawShareCanvas(grownH){
     const canvas = document.getElementById('shareCanvas');
     if(!canvas || !shareZ) return;
+    canvas.height = grownH || SHARE_BASE_H;   // сброс к базовой, растим только под большой зикр
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
     const theme = SHARE_THEMES[shareStyle.bg] || SHARE_THEMES.dawn;
@@ -3376,6 +3378,9 @@ https://azkar.nurtech.dev/app`);
     const footerY = cardY + cardH - 82;
     const availableH = footerY - contentTop - 46;
     const layout = shareLayout(ctx, maxW, availableH);
+    if(!grownH && layout.height > availableH){   // большой зикр не влез читаемым — вырастить холст и перерисовать один раз
+      return drawShareCanvas(SHARE_BASE_H + Math.ceil(layout.height - availableH) + 60);
+    }
     let y = contentTop + Math.max(0, Math.floor((availableH - layout.height) / 2));
     ctx.direction = 'rtl';
     ctx.textAlign = 'right';
