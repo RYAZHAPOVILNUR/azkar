@@ -571,7 +571,7 @@
   .radio-choice .rc-state { flex:0 0 auto; color:var(--accent-deep); font-size:12px; font-weight:800; opacity:0; }
   .radio-choice.on .rc-state { opacity:1; }
   .share-preview { margin-top:12px; border-radius:22px; overflow:hidden; border:1px solid var(--line); background:var(--surface-2); box-shadow:var(--shadow-card); display:flex; justify-content:center; align-items:center; }
-  .share-preview canvas { width:auto; height:auto; max-width:100%; max-height:min(56vh, 620px); display:block; }
+  .share-preview canvas { width:auto; max-width:100%; height:min(56vh, 620px); display:block; aspect-ratio:9/16; }
   .share-tools { margin-top:14px; display:flex; flex-direction:column; gap:10px; }
   .share-bg-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
   .share-bg { height:42px; border-radius:14px; border:1px solid var(--line); cursor:pointer; position:relative; overflow:hidden; }
@@ -3307,6 +3307,7 @@ https://azkar.nurtech.dev/app`);
     const canvas = document.getElementById('shareCanvas');
     if(!canvas || !shareZ) return;
     canvas.height = grownH || SHARE_BASE_H;   // сброс к базовой, растим только под большой зикр
+    canvas.style.aspectRatio = canvas.width + ' / ' + canvas.height;   // превью держит реальные пропорции (в т.ч. выросшие)
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
     const theme = SHARE_THEMES[shareStyle.bg] || SHARE_THEMES.dawn;
