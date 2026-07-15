@@ -263,9 +263,8 @@
     transition: transform .2s cubic-bezier(.2,.8,.2,1), opacity .18s ease, height .18s ease; }
   .zikr.done { border-color: color-mix(in srgb, var(--good) 42%, var(--line)); background: color-mix(in srgb, var(--good) 7%, var(--surface)); }
   .zikr .top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-  .badge { width:32px; height:32px; flex-shrink:0; display:grid; place-items:center; border-radius:50%;
-    background: var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 28%, transparent); }
-  .badge b { font-size:14px; font-weight:800; color: var(--accent-deep); font-variant-numeric:tabular-nums; }
+  .badge { flex-shrink:0; display:inline-flex; align-items:center; }
+  .badge b { font-size:13px; font-weight:600; color: var(--ink-faint); font-variant-numeric:tabular-nums; }
   .pill { font-size:12px; font-weight:700; color: var(--accent-deep);
     background: var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 28%, transparent);
     padding:3px 10px; border-radius:99px; font-variant-numeric:tabular-nums; white-space:nowrap; }
@@ -285,7 +284,7 @@
   .foot-link { color: var(--accent-deep); text-decoration:none; }
   .foot-link:active { opacity:.7; }
 
-  .zikr-title { margin:16px 2px 8px; color:var(--accent-deep); font-size:15px; line-height:1.35; font-weight:800; }
+  .zikr-title { margin:14px 2px 6px; color:var(--ink-soft); font-size:13px; line-height:1.3; font-weight:600; }
   .zikr-title .muted { display:block; margin-top:3px; color:var(--ink-faint); font-size:12px; font-weight:650; }
   .zikr-meta { display:flex; flex-wrap:wrap; gap:6px; margin:9px 2px 4px; }
   .verify-pill { display:inline-flex; align-items:center; gap:5px; min-height:24px; padding:4px 8px; border-radius:999px;
@@ -311,14 +310,14 @@
   .ayah .ar { font-family: var(--ar-font), var(--ar); }
   .translit { font-size:17px; color: var(--ink); margin-top:14px; line-height:1.68; font-weight:500; }
   .divider { height:1px; background: var(--line); margin:16px 2px; border:none; }
-  .translate { font-family: var(--serif); font-size:16px; color: var(--ink-soft); line-height:1.72; }
-  .src-row { display:flex; align-items:center; gap:8px; width:100%; margin-top:14px; padding:10px 12px; border:none; border-radius:12px;
-    background:var(--surface-2); color:var(--ink-soft); font:inherit; font-size:13px; font-weight:600; text-align:left; cursor:pointer;
-    -webkit-tap-highlight-color:transparent; transition:background .15s; }
-  .src-row:active { background:color-mix(in srgb, var(--accent) 8%, var(--surface-2)); }
-  .src-row .src-ic { width:16px; height:16px; flex-shrink:0; color:var(--ink-faint); }
-  .src-row .src-txt { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }
-  .src-row .src-chev { width:16px; height:16px; flex-shrink:0; color:var(--ink-faint); opacity:.7; }
+  .translate { font-family: var(--serif); font-size:16px; color: var(--ink-soft); line-height:1.72; margin-top:14px; }
+  .src-row { display:inline-flex; align-items:center; gap:5px; width:auto; max-width:100%; margin-top:14px; padding:2px 0; border:none; border-radius:0;
+    background:none; color:var(--ink-faint); font:inherit; font-size:12.5px; font-weight:500; text-align:left; cursor:pointer;
+    -webkit-tap-highlight-color:transparent; transition:opacity .15s; }
+  .src-row:active { opacity:.55; background:none; }
+  .src-row .src-ic { display:none; }
+  .src-row .src-txt { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .src-row .src-chev { width:13px; height:13px; flex-shrink:0; color:var(--ink-faint); opacity:.6; }
   .rmeta .rhint { color:var(--ink-faint); transition:opacity .3s; }
   .reorder-bar { display:flex; flex-direction:column; align-items:center; gap:10px; margin:6px auto 30px; }
   .reorder-toggle { display:block; padding:9px 18px; border-radius:999px; border:1px solid var(--line);
@@ -3465,7 +3464,8 @@ https://azkar.nurtech.dev/app`);
       const cleanTitle = dbTitle ? azkarItemTitle(z, data.title) : '';
       const titleHtml = cleanTitle ? `<div class="zikr-title">${azkarEsc(cleanTitle)}${chapterTitle && chapterTitle !== cleanTitle ? `<span class="muted">${azkarEsc(chapterTitle)}</span>` : ''}</div>` : '';
       const status = azkarStatusLabel(z);
-      const metaHtml = `<div class="zikr-meta"><span class="verify-pill ${status.cls}">${azkarEsc(status.text)}</span></div>`;
+      // «проверено» на каждой карточке — шум; плашку показываем только когда что-то на сверке
+      const metaHtml = azkarIsVerified(z) ? '' : `<div class="zikr-meta"><span class="verify-pill ${status.cls}">${azkarEsc(status.text)}</span></div>`;
       const audioBtn = azkarHasAudio(z)
         ? `<button class="mini audio-btn js-audio" title="Прослушать" aria-label="Прослушать аскар"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>`
         : '';
@@ -3489,12 +3489,10 @@ https://azkar.nurtech.dev/app`);
         <div class="top">
           <button class="mini drag-grip js-drag" title="Перетащить" aria-label="Перетащить зикр"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.6"/><circle cx="16" cy="6" r="1.6"/><circle cx="8" cy="12" r="1.6"/><circle cx="16" cy="12" r="1.6"/><circle cx="8" cy="18" r="1.6"/><circle cx="16" cy="18" r="1.6"/></svg></button>
           <div class="badge"><b>${z.n}</b></div>
-          <div class="pill">×${target}</div>
-          ${audioBtn}
-          <button class="mini fav-btn js-fav ${isFavorite(z._id) ? 'is-fav' : ''}" title="В избранное" aria-label="В избранное"><svg width="16" height="16" viewBox="0 0 24 24" fill="${isFavorite(z._id) ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
-          <button class="mini share-btn js-share" title="Поделиться" aria-label="Поделиться зикром"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg></button>
           <span class="ro-name"><span class="ro-name-txt">${shortLabel(z)}</span><svg class="ro-peek" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
           <div class="sp"></div>
+          ${audioBtn}
+          <button class="mini fav-btn js-fav ${isFavorite(z._id) ? 'is-fav' : ''}" title="В избранное" aria-label="В избранное"><svg width="16" height="16" viewBox="0 0 24 24" fill="${isFavorite(z._id) ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
           <div class="ro-move">
             <button type="button" class="ro-btn ro-up" aria-label="Переместить выше"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14l6-6 6 6"/></svg></button>
             <button type="button" class="ro-btn ro-down" aria-label="Переместить ниже"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10l6 6 6-6"/></svg></button>
@@ -3504,7 +3502,6 @@ https://azkar.nurtech.dev/app`);
         ${metaHtml}
         <div class="arabic">${azkarArabicHtml(z)}</div>
         <div class="translit js-translit">${z.tl}</div>
-        <div class="divider"></div>
         <div class="translate js-translate">${z.tr}</div>
         <button type="button" class="src-row js-src"><svg class="src-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 3v6h6"/></svg><span class="src-txt">${z.src}</span><svg class="src-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
         ${note}
@@ -3645,7 +3642,8 @@ https://azkar.nurtech.dev/app`);
         if(icon) icon.setAttribute('fill', nowFav ? 'currentColor' : 'none');
         tgHaptic('light');
       });
-      card.querySelector('.js-share').addEventListener('click', e=>{
+      const shareBtn = card.querySelector('.js-share');   // кнопки в шапке больше нет; шеринг — в карточке-детализации
+      if(shareBtn) shareBtn.addEventListener('click', e=>{
         e.stopPropagation();
         shareZikr(CURRENT_ITEMS.find(x=>x._id===card.dataset.id) || CURRENT_ITEMS[idx]);
       });
