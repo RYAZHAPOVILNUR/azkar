@@ -5685,8 +5685,8 @@ https://azkar.nurtech.dev/app`);
   function renderRadioChoices(){ const box=document.getElementById('radioChoiceList'); if(!box || box.dataset.ready) return; box.dataset.ready='1';
     box.innerHTML = RADIO_STATIONS.map(function(st){ return '<button type="button" class="radio-choice" data-radio-station="'+st.id+'">'
       + '<span class="rc-ic" aria-hidden="true">'+radioIconFor(st)+'</span>'
-      + '<span class="rc-main"><span class="rc-title">'+(st.group==='ar'?'<span class="ar">'+st.title+'</span>':'<span>'+st.title+'</span>')+(st.label?'<span>'+st.label+'</span>':'')+'</span>'
-      + (st.sub?'<span class="rc-sub">'+st.sub+'</span>':'')+'</span><span class="rc-state" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>'; }).join('');
+      + '<span class="rc-main"><span class="rc-title"><span>'+(st.label||st.title)+'</span></span>'
+      + (st.sub?'<span class="rc-sub">'+st.sub+'</span>':'')+'</span><span class="rc-state" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>'; }).join('');
     box.querySelectorAll('[data-radio-station]').forEach(function(btn){ btn.addEventListener('click', function(){ selectRadioStation(btn.getAttribute('data-radio-station')); }); });
   }
   function radioStatusText(){ if(RADIO_LOADING) return 'Подключение…'; if(RADIO_PAUSED) return 'На паузе'; return 'Прямой эфир'; }
@@ -5695,7 +5695,7 @@ https://azkar.nurtech.dev/app`);
     const st=radioStation(), playing=!RADIO_PAUSED && !RADIO_LOADING;
     box.innerHTML='<div class="radio-now">'
       + '<span class="rn-ic'+(playing?' live':'')+'">'+radioIconFor(st)+'</span>'
-      + '<span class="rn-main"><span class="rn-title">'+(st.group==='ar'?'<span class="ar">'+st.title+'</span> ':'')+(st.label||st.title||'')+'</span><span class="rn-sub">'+radioStatusText()+'</span></span>'
+      + '<span class="rn-main"><span class="rn-title">'+(st.label||st.title||'')+'</span><span class="rn-sub">'+radioStatusText()+'</span></span>'
       + '<button type="button" class="rn-btn" id="radioPlayBtn" aria-label="Пауза или продолжить">'+(RADIO_PAUSED?RN_PLAY:RN_PAUSE)+'</button>'
       + '<button type="button" class="rn-btn rn-stop" id="radioStopBtn2" aria-label="Выключить">'+RN_STOP+'</button>'
       + '</div>';
