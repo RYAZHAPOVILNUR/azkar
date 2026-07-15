@@ -568,8 +568,24 @@
   .radio-choice .rc-title { display:flex; align-items:center; gap:8px; font-size:16px; font-weight:800; }
   .radio-choice .rc-title .ar { font-family:var(--ar-font),var(--ar); direction:rtl; }
   .radio-choice .rc-sub { margin-top:4px; color:var(--ink-faint); font-size:13px; line-height:1.35; }
-  .radio-choice .rc-state { flex:0 0 auto; color:var(--accent-deep); font-size:12px; font-weight:800; opacity:0; }
+  .radio-choice .rc-state { flex:0 0 auto; color:var(--accent-deep); display:grid; place-items:center; opacity:0; transition:opacity .15s; }
   .radio-choice.on .rc-state { opacity:1; }
+  .radio-cap { font-size:11.5px; letter-spacing:.6px; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin:18px 2px 0; }
+  /* «Сейчас играет» */
+  .radio-now { display:flex; align-items:center; gap:12px; margin-top:14px; padding:13px 14px; border-radius:18px;
+    background:var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 32%, var(--line)); }
+  .radio-now .rn-ic { width:46px; height:46px; border-radius:14px; flex:0 0 auto; display:grid; place-items:center; background:var(--surface); color:var(--accent-deep); position:relative; }
+  .radio-now .rn-ic.live::after { content:""; position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; background:var(--good); box-shadow:0 0 0 0 color-mix(in srgb, var(--good) 60%, transparent); animation:rnPulse 1.6s infinite; }
+  @keyframes rnPulse { 0%{ box-shadow:0 0 0 0 color-mix(in srgb, var(--good) 55%, transparent); } 70%{ box-shadow:0 0 0 7px transparent; } 100%{ box-shadow:0 0 0 0 transparent; } }
+  .radio-now .rn-main { flex:1; min-width:0; }
+  .radio-now .rn-title { font-size:15.5px; font-weight:800; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .radio-now .rn-title .ar { font-family:var(--ar-font),var(--ar); }
+  .radio-now .rn-sub { margin-top:2px; font-size:12.5px; color:var(--accent-deep); font-weight:600; }
+  .radio-now .rn-btn { width:44px; height:44px; border-radius:50%; border:0; flex:0 0 auto; display:grid; place-items:center; cursor:pointer; background:var(--accent); color:var(--surface); -webkit-tap-highlight-color:transparent; transition:transform .12s; }
+  :root[data-theme="dark"] .radio-now .rn-btn { color:var(--bg); }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme]) .radio-now .rn-btn { color:var(--bg); } }
+  .radio-now .rn-btn:active { transform:scale(.9); }
+  .radio-now .rn-btn.rn-stop { background:var(--surface); color:var(--ink-soft); border:1px solid var(--line); }
   .share-preview { margin-top:12px; border-radius:22px; overflow:hidden; border:1px solid var(--line); background:var(--surface-2); box-shadow:var(--shadow-card); display:flex; justify-content:center; align-items:center; }
   .share-preview canvas { width:auto; max-width:100%; height:min(56vh, 620px); display:block; aspect-ratio:9/16; }
   .share-tools { margin-top:14px; display:flex; flex-direction:column; gap:10px; }
@@ -1602,10 +1618,9 @@
         <div class="m-title">Радио</div>
         <button class="m-close" id="radioSheetClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
+      <div id="radioNow"></div>
+      <div class="radio-cap" id="radioListCap">Эфиры</div>
       <div class="radio-choice-list" id="radioChoiceList"></div>
-      <div class="m-actions">
-        <button type="button" class="secondary" id="radioStopBtn">Выключить</button>
-      </div>
     </div>
   </div>
 
@@ -3589,7 +3604,7 @@ https://azkar.nurtech.dev/app`);
       card.innerHTML = `
         <div class="top">
           <button class="mini drag-grip js-drag" title="Перетащить" aria-label="Перетащить зикр"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.6"/><circle cx="16" cy="6" r="1.6"/><circle cx="8" cy="12" r="1.6"/><circle cx="16" cy="12" r="1.6"/><circle cx="8" cy="18" r="1.6"/><circle cx="16" cy="18" r="1.6"/></svg></button>
-          <div class="badge"><b>${z.n}</b></div>
+          <div class="badge"><b>${(catId || key === 'favorites') ? (idx + 1) : z.n}</b></div>
           <span class="ro-name"><span class="ro-name-txt">${shortLabel(z)}</span><svg class="ro-peek" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
           <div class="sp"></div>
           ${audioBtn}
@@ -5664,56 +5679,71 @@ https://azkar.nurtech.dev/app`);
   function radioIconFor(st){ return st.group === 'ru'
     ? '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 8h6"/><path d="M13 8h6"/><path d="M6 8c0 4 1.5 7 5 9"/><path d="M18 8c0 4-1.5 7-5 9"/></svg>'
     : '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V6a2 2 0 0 1 2-2h11a3 3 0 0 1 3 3v12.5"/><path d="M6 18h14"/><path d="M8 8h8M8 12h6"/></svg>'; }
+  const RN_PAUSE='<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+  const RN_PLAY='<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  const RN_STOP='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';
   function renderRadioChoices(){ const box=document.getElementById('radioChoiceList'); if(!box || box.dataset.ready) return; box.dataset.ready='1';
     box.innerHTML = RADIO_STATIONS.map(function(st){ return '<button type="button" class="radio-choice" data-radio-station="'+st.id+'">'
       + '<span class="rc-ic" aria-hidden="true">'+radioIconFor(st)+'</span>'
       + '<span class="rc-main"><span class="rc-title">'+(st.group==='ar'?'<span class="ar">'+st.title+'</span>':'<span>'+st.title+'</span>')+(st.label?'<span>'+st.label+'</span>':'')+'</span>'
-      + (st.sub?'<span class="rc-sub">'+st.sub+'</span>':'')+'</span><span class="rc-state">идёт</span></button>'; }).join('');
+      + (st.sub?'<span class="rc-sub">'+st.sub+'</span>':'')+'</span><span class="rc-state" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>'; }).join('');
     box.querySelectorAll('[data-radio-station]').forEach(function(btn){ btn.addEventListener('click', function(){ selectRadioStation(btn.getAttribute('data-radio-station')); }); });
   }
-  function radioUI(){ const btn=document.getElementById('radioBtn'); if(!btn) return;
-    btn.classList.toggle('on', RADIO_ON);
-    btn.innerHTML = RADIO_LOADING ? RADIO_SPIN : RADIO_ICON;
-    const title = RADIO_ON ? (RADIO_LOADING ? 'Подключение: ' + radioLabel() : radioLabel() + ' — нажми, чтобы выбрать') : 'Радио — выбрать эфир';
-    btn.setAttribute('title', title);
-    btn.setAttribute('aria-label', title);
+  function radioStatusText(){ if(RADIO_LOADING) return 'Подключение…'; if(RADIO_PAUSED) return 'На паузе'; return 'Прямой эфир'; }
+  function renderRadioNow(){ const box=document.getElementById('radioNow'); if(!box) return;
+    if(!RADIO_ON){ box.innerHTML=''; return; }
+    const st=radioStation(), playing=!RADIO_PAUSED && !RADIO_LOADING;
+    box.innerHTML='<div class="radio-now">'
+      + '<span class="rn-ic'+(playing?' live':'')+'">'+radioIconFor(st)+'</span>'
+      + '<span class="rn-main"><span class="rn-title">'+(st.group==='ar'?'<span class="ar">'+st.title+'</span> ':'')+(st.label||st.title||'')+'</span><span class="rn-sub">'+radioStatusText()+'</span></span>'
+      + '<button type="button" class="rn-btn" id="radioPlayBtn" aria-label="Пауза или продолжить">'+(RADIO_PAUSED?RN_PLAY:RN_PAUSE)+'</button>'
+      + '<button type="button" class="rn-btn rn-stop" id="radioStopBtn2" aria-label="Выключить">'+RN_STOP+'</button>'
+      + '</div>';
+    const pb=document.getElementById('radioPlayBtn'); if(pb) pb.onclick=toggleRadioPlay;
+    const sb=document.getElementById('radioStopBtn2'); if(sb) sb.onclick=function(){ stopRadio(); };
+  }
+  function radioUI(){ const btn=document.getElementById('radioBtn'); if(btn){
+      btn.classList.toggle('on', RADIO_ON);
+      btn.innerHTML = RADIO_LOADING ? RADIO_SPIN : RADIO_ICON;
+      const title = RADIO_ON ? (RADIO_LOADING ? 'Подключение к эфиру' : (RADIO_PAUSED?'Радио на паузе':radioLabel())) : 'Радио';
+      btn.setAttribute('title', title); btn.setAttribute('aria-label', title);
+    }
     updateRadioSheet(); }
   function updateRadioSheet(){ const sheet=document.getElementById('radioSheet'); if(!sheet) return;
-    renderRadioChoices();
+    renderRadioChoices(); renderRadioNow();
     document.querySelectorAll('[data-radio-station]').forEach(function(btn){
-      const on = btn.getAttribute('data-radio-station') === RADIO_STATION && RADIO_ON;
-      btn.classList.toggle('on', on);
-      const state = btn.querySelector('.rc-state'); if(state) state.textContent = RADIO_LOADING && on ? '...' : 'идёт';
+      btn.classList.toggle('on', btn.getAttribute('data-radio-station') === RADIO_STATION && RADIO_ON);
     });
-    const stop=document.getElementById('radioStopBtn'); if(stop) stop.disabled = !RADIO_ON;
+    const cap=document.getElementById('radioListCap'); if(cap) cap.textContent = RADIO_ON ? 'Сменить эфир' : 'Эфиры';
   }
   function openRadioSheet(){ const m=document.getElementById('radioSheet'); if(m){ updateRadioSheet(); m.classList.add('open'); tgHaptic('light'); } }
   function closeRadioSheet(){ const m=document.getElementById('radioSheet'); if(m) m.classList.remove('open'); }
   function toggleRadio(){ openRadioSheet(); }
   function clearRadioRetry(){ if(RADIO_RETRY_TIMER){ clearTimeout(RADIO_RETRY_TIMER); RADIO_RETRY_TIMER=null; } }
-  function startRadio(opts){ opts=opts||{}; const el=radioEl(); if(!el) return; if(typeof qAudioStop==='function') qAudioStop(); clearRadioRetry(); RADIO_ON=true; RADIO_LOADING=true; radioUI(); if(!opts.silent && typeof qToast==='function') qToast('Подключение к эфиру…');
+  function startRadio(opts){ opts=opts||{}; const el=radioEl(); if(!el) return; if(typeof qAudioStop==='function') qAudioStop(); clearRadioRetry(); RADIO_ON=true; RADIO_PAUSED=false; RADIO_LOADING=true; radioUI();
     el.src='/api/radio/stream?station='+encodeURIComponent(RADIO_STATION)+'&t='+Date.now(); el.load(); el.play().catch(function(){ scheduleRadioRetry('play'); }); if(!opts.silent) tgHaptic('light'); }
   function selectRadioStation(station){ station = radioStationExists(station) ? station : 'saudi-quran'; const changed = station !== RADIO_STATION; RADIO_STATION=station; saveRadioStation();
-    if(changed && RADIO_ON) stopRadio();
-    startRadio();
-    closeRadioSheet();
+    if(changed && RADIO_ON){ const el=radioEl(); if(el){ el.pause(); el.removeAttribute('src'); try{ el.load(); }catch(e){} } }
+    startRadio();   // без закрытия шторки — управление остаётся под рукой
   }
-  function scheduleRadioRetry(reason){ if(!RADIO_ON) return; clearRadioRetry(); RADIO_LOADING=true; radioUI(); RADIO_RETRY_COUNT += 1;
+  function pauseRadio(){ const el=radioEl(); if(el) el.pause(); RADIO_PAUSED=true; RADIO_LOADING=false; clearRadioRetry(); radioUI(); tgHaptic('light'); }
+  function resumeRadio(){ RADIO_PAUSED=false; const el=radioEl(); if(el && el.currentSrc){ RADIO_LOADING=true; radioUI(); el.play().catch(function(){ startRadio(); }); } else startRadio(); tgHaptic('light'); }
+  function toggleRadioPlay(){ if(RADIO_PAUSED) resumeRadio(); else pauseRadio(); }
+  function scheduleRadioRetry(reason){ if(!RADIO_ON || RADIO_PAUSED) return; clearRadioRetry(); RADIO_LOADING=true; radioUI(); RADIO_RETRY_COUNT += 1;
     const wait = Math.min(8000, 900 + RADIO_RETRY_COUNT * 900);
-    RADIO_RETRY_TIMER = setTimeout(function(){ if(!RADIO_ON) return; startRadio({silent:true}); }, wait);
+    RADIO_RETRY_TIMER = setTimeout(function(){ if(!RADIO_ON || RADIO_PAUSED) return; startRadio({silent:true}); }, wait);
     if(RADIO_RETRY_COUNT === 3 && typeof qToast==='function') qToast('Переподключаю эфир…');
   }
-  function stopRadio(){ clearRadioRetry(); const el=radioEl(); if(el){ el.pause(); el.removeAttribute('src'); try{ el.load(); }catch(e){} } RADIO_ON=false; RADIO_LOADING=false; RADIO_RETRY_COUNT=0; radioUI(); }
-  (function(){ const el=radioEl(); if(el){ el.addEventListener('playing', function(){ const was=RADIO_LOADING; RADIO_LOADING=false; radioUI(); if(was&&typeof qToast==='function') qToast('Эфир'); }); el.addEventListener('waiting', function(){ if(RADIO_ON) RADIO_LOADING=true; radioUI(); }); el.addEventListener('play', radioUI); el.addEventListener('pause', radioUI);
+  function stopRadio(){ clearRadioRetry(); const el=radioEl(); if(el){ el.pause(); el.removeAttribute('src'); try{ el.load(); }catch(e){} } RADIO_ON=false; RADIO_LOADING=false; RADIO_PAUSED=false; RADIO_RETRY_COUNT=0; radioUI(); tgHaptic('light'); }
+  (function(){ const el=radioEl(); if(el){ el.addEventListener('playing', function(){ RADIO_LOADING=false; RADIO_PAUSED=false; radioUI(); }); el.addEventListener('waiting', function(){ if(RADIO_ON && !RADIO_PAUSED) RADIO_LOADING=true; radioUI(); }); el.addEventListener('play', function(){ if(RADIO_ON) RADIO_PAUSED=false; radioUI(); });
     el.addEventListener('playing', function(){ RADIO_RETRY_COUNT=0; clearRadioRetry(); });
     el.addEventListener('stalled', function(){ scheduleRadioRetry('stalled'); });
     el.addEventListener('ended', function(){ scheduleRadioRetry('ended'); });
     el.addEventListener('error', function(){ scheduleRadioRetry('error'); }); }
     renderRadioChoices();
-    const rs=document.getElementById('radioSheetScrim'), rc=document.getElementById('radioSheetClose'), st=document.getElementById('radioStopBtn');
+    const rs=document.getElementById('radioSheetScrim'), rc=document.getElementById('radioSheetClose');
     if(rs) rs.addEventListener('click', closeRadioSheet);
     if(rc) rc.addEventListener('click', closeRadioSheet);
-    if(st) st.addEventListener('click', function(){ stopRadio(); closeRadioSheet(); });
     radioUI();
   })();
 
