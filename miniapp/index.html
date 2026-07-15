@@ -3560,10 +3560,14 @@ https://azkar.nurtech.dev/app`);
         if(groupTitle && groupTitle !== lastCategoryGroup){
           lastCategoryGroup = groupTitle;
           const count = categoryGroupCounts.get(groupTitle) || 1;
-          const section = document.createElement('div');
-          section.className = 'zikr-section';
-          section.innerHTML = `<span>${azkarEsc(groupTitle)}<small>${count} ${plural(count,'азкар','азкара','азкаров')}</small></span>`;
-          list.appendChild(section);
+          // разделитель-«перегородку» рисуем только для реальных групп (≥2 аскара);
+          // одиночные и так подписаны собственным заголовком карточки — иначе перегородка перед каждым
+          if(count >= 2){
+            const section = document.createElement('div');
+            section.className = 'zikr-section';
+            section.innerHTML = `<span>${azkarEsc(groupTitle)}<small>${count} ${plural(count,'азкар','азкара','азкаров')}</small></span>`;
+            list.appendChild(section);
+          }
         }
       }
       const card = document.createElement('div'); card.className = 'zikr'; card.dataset.i = idx; card.dataset.id = z._id; card.dataset.session = progressKey;
