@@ -1097,6 +1097,11 @@
     cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s, transform .12s; }
   .q-taf-full:active { transform:scale(.98); background:var(--surface-2); }
   .q-taf-full svg { flex:0 0 auto; color:var(--accent-deep); }
+  .q-taf-play { display:inline-flex; align-items:center; gap:7px; margin:2px 0 14px; padding:9px 15px; border-radius:999px; border:0;
+    background:var(--accent); color:var(--surface); font:inherit; font-size:13.5px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s; }
+  :root[data-theme="dark"] .q-taf-play { color:var(--bg); }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme]) .q-taf-play { color:var(--bg); } }
+  .q-taf-play:active { transform:scale(.96); }
   .q-taf-group-note { font-size:12.5px; color:var(--ink-faint); font-style:italic; margin:0 0 12px; }
 
   @media (prefers-reduced-motion: reduce) { *, *:before, *:after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
@@ -5352,6 +5357,7 @@ https://azkar.nurtech.dev/app`);
       .then(function(arr){ const map={}; arr.forEach(function(x){ if(x&&x.su&&x.su.a){ x.su.a.forEach(function(a){ map[x.s+':'+a.n]=a.ru; }); } }); return map; });
   }); }
   function tafsirFromKey(vk){ const p=String(vk).split(':'); openTafsir(parseInt(p[0],10), parseInt(p[1],10)); }
+  function qTafPlay(){ const c=QTAF.cur; if(!c) return; closeQSheet(); if(typeof qPlayAyah==='function') qPlayAyah(c.s, c.a); tgHaptic('light'); }
   function suraNameRu(n){ const su=(QURAN.index||[]).find(function(x){ return x.n===n; }); return su?su.nr:('Сура '+n); }
 
   function qEnterPageMode(){ qLoadPagesMeta().then(function(){
@@ -5620,16 +5626,19 @@ https://azkar.nurtech.dev/app`);
     const su=QURAN.index ? QURAN.index.find(function(x){ return x.n===s; }) : null;
     const nm=su ? su.nr : ('Сура '+s);
     const perAyah = !QTAF.full && r.seg && r.seg[String(a)];
+    const playHtml = '<button type="button" class="q-taf-play" onclick="qTafPlay()"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Слушать аят '+a+'</button>';
     let html='';
     if(perAyah){
       html += '<div class="q-taf-sub">'+escHtml(nm)+' · аят '+a+'</div>';
       if(cur.ayahTr) html += '<div class="q-taf-ayah">'+escHtml(cur.ayahTr)+'</div>';
+      html += playHtml;
       html += '<div class="q-taf-text">'+escHtml(r.seg[String(a)])+'</div>';
       if(r.t>r.f) html += '<button type="button" class="q-taf-full" onclick="qTafToggleFull()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Толкование всего пассажа (аяты '+r.f+'–'+r.t+')</button>';
     } else {
       const rangeLabel = r.f===r.t ? ('аят '+r.f) : ('аяты '+r.f+'–'+r.t);
       html += '<div class="q-taf-sub">'+escHtml(nm)+' · '+rangeLabel+'</div>';
       if(cur.ayahTr) html += '<div class="q-taf-ayah">'+escHtml(cur.ayahTr)+'</div>';   // перевод аята (Кулиев) над толкованием
+      html += playHtml;
       if(r.f!==r.t && !r.seg) html += '<div class="q-taf-group-note">Ас-Саади толкует эти аяты вместе.</div>';
       html += '<div class="q-taf-text">'+escHtml(String(r.x))+'</div>';
       if(r.seg && r.seg[String(a)]) html += '<button type="button" class="q-taf-full" onclick="qTafToggleFull()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>Показать только аят '+a+'</button>';
@@ -5726,7 +5735,9 @@ https://azkar.nurtech.dev/app`);
   function closeRadioSheet(){ const m=document.getElementById('radioSheet'); if(m) m.classList.remove('open'); }
   function toggleRadio(){ openRadioSheet(); }
   function clearRadioRetry(){ if(RADIO_RETRY_TIMER){ clearTimeout(RADIO_RETRY_TIMER); RADIO_RETRY_TIMER=null; } }
-  function startRadio(opts){ opts=opts||{}; const el=radioEl(); if(!el) return; if(typeof qAudioStop==='function') qAudioStop(); clearRadioRetry(); RADIO_ON=true; RADIO_PAUSED=false; RADIO_LOADING=true; radioUI();
+  function startRadio(opts){ opts=opts||{}; const el=radioEl(); if(!el) return; if(typeof qAudioStop==='function') qAudioStop(); clearRadioRetry();
+    try{ el.pause(); el.removeAttribute('src'); el.load(); }catch(e){}   // полностью гасим прежний поток — без наложения нового поверх старого
+    RADIO_ON=true; RADIO_PAUSED=false; RADIO_LOADING=true; radioUI();
     el.src='/api/radio/stream?station='+encodeURIComponent(RADIO_STATION)+'&t='+Date.now(); el.load(); el.play().catch(function(){ scheduleRadioRetry('play'); }); if(!opts.silent) tgHaptic('light'); }
   function selectRadioStation(station){ station = radioStationExists(station) ? station : 'saudi-quran'; const changed = station !== RADIO_STATION; RADIO_STATION=station; saveRadioStation();
     if(changed && RADIO_ON){ const el=radioEl(); if(el){ el.pause(); el.removeAttribute('src'); try{ el.load(); }catch(e){} } }
@@ -5750,6 +5761,7 @@ https://azkar.nurtech.dev/app`);
     const rs=document.getElementById('radioSheetScrim'), rc=document.getElementById('radioSheetClose');
     if(rs) rs.addEventListener('click', closeRadioSheet);
     if(rc) rc.addEventListener('click', closeRadioSheet);
+    if(el && el.currentSrc && !el.paused){ RADIO_ON=true; RADIO_PAUSED=false; }   // элемент уже играет (вернулись после сворачивания) — не терять состояние
     radioUI();
   })();
 
