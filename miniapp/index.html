@@ -2113,6 +2113,20 @@
     if(!res.ok) throw new Error(url + ' ' + res.status);
     return res.json();
   }
+  // Корпус Хиснуль-Муслим оборачивает текст зикра в (( ... )); после )) идут редакторские
+  // варианты в [ ... ] («а вечером скажи…»). Убираем демаркаторы и хвостовые заметки — оставляем сам зикр.
+  function cleanAzkarArabic(s){
+    s = String(s || '').trim();
+    if(s.startsWith('((')){
+      s = s.slice(2);
+      const close = s.indexOf('))');
+      if(close >= 0) s = s.slice(0, close);
+    }
+    return s.trim();
+  }
+  function cleanAzkarText(s){ return String(s || '').replace(/^\(\(\s*/, '').replace(/\s*\)\)\s*\.?\s*$/,'').trim(); }
+  // убрать внутренний редакторский жаргон из пользовательских подписей
+  function azkarCleanSubtitle(s){ return String(s || '').replace(/\s*из текущей проверенной базы/gi, '').trim(); }
   function azkarLegacyItem(item, idx){
     const legacy = item.legacy || {};
     const audio = item.audio || {};
@@ -2125,8 +2139,8 @@
       target:legacy.target || item.repeat || 1,
       targetHint:legacy.targetHint || item.repeat_hint || '',
       afterTargets:legacy.afterTargets || null,
-      ar:legacy.ar || item.arabic || '',
-      tl:legacy.tl || item.translit_ru || '',
+      ar:cleanAzkarArabic(legacy.ar || item.arabic || ''),
+      tl:cleanAzkarText(legacy.tl || item.translit_ru || ''),
       tr:legacy.tr || item.translation_ru || '',
       src:legacy.src || item.source_text || '',
       audioUrl,
@@ -3045,6 +3059,14 @@
     if(chapter) return chapter;
     return azkarItemTitle(z, fallback);
   }
+  function azlibResultCard(z){
+    return `<button class="azlib-result" type="button" onclick="openReading('${azkarEsc(z._session)}', {resume:false}); setTimeout(()=>scrollReadingToId('${azkarEsc(z._id)}'), 80)">
+      <div class="topline">${azkarEsc((AZKAR[z._session] || {}).title || SESSION_TITLES[z._session] || z._session)} · ×${effectiveTarget(z._session, z)}</div>
+      <div class="ar">${azkarArabicHtml(z)}</div>
+      <div class="tr">${azkarEsc(z.tr)}</div>
+      <div class="src">${azkarEsc(z.src)}</div>
+    </button>`;
+  }
   function renderAzkarLibrary(query){
     const body = document.getElementById('azkarLibraryBody');
     const filtersEl = document.getElementById('azkarDbFilters');
@@ -3052,14 +3074,10 @@
     const q = azkarNorm(query != null ? query : (document.getElementById('azkarSearchInput') || {}).value);
     const allItemsRaw = allAzkarItems();
     const allItems = azkarReviewFilterItems(allItemsRaw);
-    const verified = allItemsRaw.filter(z => !z._db || z._db.status === 'verified').length;
-    const review = allItemsRaw.filter(z => z._db && z._db.status !== 'verified').length;
+    const audioCount = allItemsRaw.filter(azkarHasAudio).length;
     if(filtersEl){
-      const filters = [
-        ['all','Все',allItemsRaw.length],
-        ['verified','Проверено',verified],
-        ['review','На сверке',review],
-      ];
+      const filters = [['all','Все',allItemsRaw.length]];
+      if(audioCount) filters.push(['audio','С аудио',audioCount]);
       filtersEl.innerHTML = filters.map(([id,label,count]) => `<button type="button" class="azlib-filter ${AZKAR_LIBRARY_FILTER === id ? 'on' : ''}" onclick="AZKAR_LIBRARY_FILTER='${id}'; renderAzkarLibrary()">${label} · ${count}</button>`).join('');
     }
     if(q){
@@ -3067,14 +3085,13 @@
         ? AZKAR_META.search
         : allItemsRaw.map(z => ({ id:z._id, text:azkarNorm([z.ar,z.tl,z.tr,z.src,z._session].join(' ')) }));
       const ids = new Set(source.filter(row => (row.text || '').includes(q)).map(row => row.id));
-      const results = allItems.filter(z => ids.has(z._id)).slice(0, 30);
-      body.innerHTML = `<div class="azlib-section-title">Найдено: ${results.length}</div><div class="azlib-results">${results.map(z => `
-        <button class="azlib-result" type="button" onclick="openReading('${azkarEsc(z._session)}', {resume:false}); setTimeout(()=>scrollReadingToId('${azkarEsc(z._id)}'), 80)">
-          <div class="topline">${azkarEsc((AZKAR[z._session] || {}).title || SESSION_TITLES[z._session] || z._session)} · ×${effectiveTarget(z._session, z)} · ${azkarEsc(azkarStatusLabel(z).text)}</div>
-          <div class="ar">${azkarArabicHtml(z)}</div>
-          <div class="tr">${azkarEsc(z.tr)}</div>
-          <div class="src">${azkarEsc(z.src)}</div>
-        </button>`).join('') || '<div class="azlib-empty">Ничего не найдено. Попробуй другое слово или источник.</div>'}</div>`;
+      const results = allItemsRaw.filter(z => ids.has(z._id)).slice(0, 30);
+      body.innerHTML = `<div class="azlib-section-title">Найдено: ${results.length}</div><div class="azlib-results">${results.map(azlibResultCard).join('') || '<div class="azlib-empty">Ничего не найдено. Попробуй другое слово или источник.</div>'}</div>`;
+      return;
+    }
+    if(AZKAR_LIBRARY_FILTER === 'audio'){
+      const results = allItemsRaw.filter(azkarHasAudio);
+      body.innerHTML = `<div class="azlib-section-title">С аудио: ${results.length}</div><div class="azlib-results">${results.map(azlibResultCard).join('') || '<div class="azlib-empty">Пока нет аскаров с аудио.</div>'}</div>`;
       return;
     }
     const counts = azkarCountsByCategory();
@@ -3092,7 +3109,7 @@
       return `<button class="azlib-cat${bgClass} ${active ? '' : 'is-planned'}" type="button"${bgStyle} ${active ? `onclick="openReading('${azkarEsc(openKey)}', {resume:true})"` : 'aria-disabled="true"'}>
         <span class="ic">${azkarIconSvg(cat.icon)}</span>
         <span class="t">${azkarEsc(cat.title_ru)}</span>
-        <span class="s">${azkarEsc(cat.subtitle_ru || (active ? 'Открыть раздел' : 'Запланировано к сверке'))}</span>
+        <span class="s">${azkarEsc(azkarCleanSubtitle(cat.subtitle_ru) || (active ? 'Открыть раздел' : 'Скоро добавим'))}</span>
         <span class="count">${active ? `${count} ${plural(count,'азкар','азкара','азкаров')}` : 'скоро'}</span>
       </button>`;
     }).join('')}</div>`;
