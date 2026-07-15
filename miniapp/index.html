@@ -2749,6 +2749,8 @@
   }
   function showScreen(id, opts = {}){
     const keepScroll = !!opts.keepScroll;
+    const leaving = activeScreen();
+    if(leaving && leaving.id === 'quranReader' && id !== 'quranReader' && typeof qClockStop === 'function') qClockStop();   // сохранить время чтения при уходе с читалки
     if(id !== 'qibla' && typeof qiblaStop === 'function') qiblaStop();   // выключить компас при уходе с экрана киблы
     document.querySelectorAll('.screen').forEach(s=>{
       s.classList.remove('active','nav-under','nav-drag');
@@ -2758,6 +2760,7 @@
     if(keepScroll) requestAnimationFrame(()=> window.scrollTo(0, scrollStore[id] || 0));
     else { document.querySelector('.phone').scrollTop = 0; window.scrollTo(0,0); }
     if(typeof qUpdatePageLock==='function') qUpdatePageLock();
+    if(id === 'home' && typeof updateHomeProgress === 'function') updateHomeProgress();   // свежая статистика на главной сразу при входе
     tgBack(navStack.length > 1, back);
   }
   function go(id){
@@ -5222,7 +5225,8 @@ https://azkar.nurtech.dev/app`);
       const st=document.createElement('style');
       // taj-шрифт — COLRv1 с палитрами: 1 = тёмная (светлая база). Регистрируем одноимённую --qcfDark на это семейство,
       // font-palette:--qcfDark на элементе подберёт нужное правило по font-family.
-      st.textContent='@font-face{font-family:"'+fam+'";src:url("'+src+'") format("woff2");font-display:swap}'
+      // font-display:block — глифы PUA не должны мигать «левыми буквами» фолбэка; ждём шрифт (пусто), потом мусхаф
+      st.textContent='@font-face{font-family:"'+fam+'";src:url("'+src+'") format("woff2");font-display:block}'
         + (taj ? '@font-palette-values --qcfDark{font-family:"'+fam+'";base-palette:1}' : '');
       document.head.appendChild(st);
       if(!(window.FontFace&&document.fonts&&document.fonts.load)) return { fam:fam, ok:true };
