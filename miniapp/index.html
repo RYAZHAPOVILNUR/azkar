@@ -587,7 +587,7 @@
   .radio-now .rn-btn:active { transform:scale(.9); }
   .radio-now .rn-btn.rn-stop { background:var(--surface); color:var(--ink-soft); border:1px solid var(--line); }
   .share-preview { margin-top:12px; border-radius:22px; overflow:hidden; border:1px solid var(--line); background:var(--surface-2); box-shadow:var(--shadow-card); display:flex; justify-content:center; align-items:center; }
-  .share-preview canvas { display:block; margin:0 auto; }
+  .share-preview canvas { width:auto; max-width:100%; height:min(56vh, 620px); display:block; aspect-ratio:9/16; }
   .share-tools { margin-top:14px; display:flex; flex-direction:column; gap:10px; }
   .share-bg-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
   .share-bg { height:42px; border-radius:14px; border:1px solid var(--line); cursor:pointer; position:relative; overflow:hidden; }
@@ -3297,7 +3297,7 @@ https://azkar.nurtech.dev/app`);
       src: shareZ.src || 'Достоверная Сунна',
     };
     let best = null;
-    for(let scale = 1; scale >= .45; scale -= .025){   // не мельче читаемого; если не влезло — холст вырастет (drawShareCanvas)
+    for(let scale = 1; scale >= .18; scale -= .025){
       const cfg = {
         arSize: Math.round(58 * scale),
         arLine: Math.round(78 * scale),
@@ -3331,11 +3331,9 @@ https://azkar.nurtech.dev/app`);
     }
     return best;
   }
-  const SHARE_BASE_H = 1920;
-  function drawShareCanvas(grownH){
+  function drawShareCanvas(){
     const canvas = document.getElementById('shareCanvas');
     if(!canvas || !shareZ) return;
-    canvas.height = grownH || SHARE_BASE_H;   // сброс к базовой, растим только под большой зикр
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
     const theme = SHARE_THEMES[shareStyle.bg] || SHARE_THEMES.dawn;
@@ -3378,13 +3376,6 @@ https://azkar.nurtech.dev/app`);
     const footerY = cardY + cardH - 82;
     const availableH = footerY - contentTop - 46;
     const layout = shareLayout(ctx, maxW, availableH);
-    if(!grownH && layout.height > availableH){   // большой зикр не влез читаемым — вырастить холст и перерисовать один раз
-      return drawShareCanvas(SHARE_BASE_H + Math.ceil(layout.height - availableH) + 60);
-    }
-    // отображаемый размер превью по реальным пропорциям буфера (через CSS во flex-контейнере канвас схлопывается)
-    (function(){ const host=canvas.parentElement; const availW=(host?host.clientWidth:340)-2; const availH=Math.min((window.innerHeight||800)*0.56, 620);
-      const r=canvas.width/canvas.height; let dh=availH, dw=dh*r; if(dw>availW){ dw=availW; dh=dw/r; }
-      canvas.style.width=Math.round(dw)+'px'; canvas.style.height=Math.round(dh)+'px'; })();
     let y = contentTop + Math.max(0, Math.floor((availableH - layout.height) / 2));
     ctx.direction = 'rtl';
     ctx.textAlign = 'right';
