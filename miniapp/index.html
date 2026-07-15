@@ -698,8 +698,9 @@
   .q-continue:active { transform:scale(.985); }
   .q-continue .qk-ic { flex:0 0 auto; color:var(--accent-deep); }
   .q-continue .qk-b { flex:1 1 auto; min-width:0; }
-  .q-continue .qk-t { font-size:14px; font-weight:700; color:var(--accent-deep); }
-  .q-continue .qk-s { font-size:12px; color:var(--ink-soft); margin-top:1px; }
+  .q-continue .qk-t { display:block; font-size:14px; font-weight:700; color:var(--accent-deep); }
+  .q-continue .qk-s { display:block; font-size:12px; color:var(--ink-soft); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .q-continue .qk-s:empty { display:none; }
   /* карточка прогресса + карта Корана */
   .q-progress-card { display:block; width:100%; text-align:left; margin:0 0 12px; padding:13px 15px; border-radius:15px; border:1px solid var(--line);
     background:var(--surface); color:inherit; font:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .13s; }
@@ -848,14 +849,11 @@
   .qp-ttl { font-size:13.5px; font-weight:700; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .qp-sub { font-size:11px; color:var(--ink-faint); }
   .qp-x { width:34px; height:34px; }
-  .q-play-btn { display:inline-flex; align-items:center; justify-content:center; gap:5px; margin:11px 8px 0 0; padding:6px 12px; border-radius:999px;
-    border:1px solid var(--line); background:var(--surface); color:var(--accent-deep); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s; }
-  .q-play-btn:active { transform:scale(.96); background:var(--surface-2); }
-  .q-play-btn.on { background:var(--accent-soft); color:var(--accent-deep); border-color:color-mix(in srgb, var(--accent) 30%, transparent); }
-  .q-mem-btn { display:inline-flex; align-items:center; justify-content:center; gap:5px; margin:11px 8px 0 0; padding:6px 12px; border-radius:999px;
-    border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s, background .15s, color .15s; }
-  .q-mem-btn:active { transform:scale(.96); }
-  .q-mem-btn.on { background:var(--accent-soft); color:var(--accent-deep); border-color:color-mix(in srgb, var(--accent) 30%, transparent); }
+  /* действия под аятом — тихая ghost-строка, не перебивает аят */
+  .q-play-btn, .q-mem-btn { display:inline-flex; align-items:center; gap:5px; margin:12px 16px 0 0; padding:3px 0; border:none; background:none; color:var(--ink-faint); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s, color .15s; }
+  .q-play-btn:active, .q-mem-btn:active { transform:scale(.94); }
+  .q-play-btn.on { color:var(--accent-deep); }
+  .q-mem-btn.on { color:var(--accent-deep); }
   .q-ayah.q-memd { border-left:3px solid color-mix(in srgb, var(--accent) 55%, transparent); padding-left:9px; border-radius:0 10px 10px 0; }
   .q-ayah-actions { display:flex; flex-wrap:wrap; align-items:center; }
   /* тренажёр: скрыть текст, показать по тапу */
@@ -1054,11 +1052,11 @@
 
   /* тафсир ас-Саади по клику на аят */
   .q-ar { cursor:pointer; }
-  .q-tafsir-btn { display:inline-flex; align-items:center; gap:6px; margin-top:11px; padding:6px 12px; border-radius:999px;
-    border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); font:inherit; font-size:12.5px; font-weight:600;
-    cursor:pointer; direction:ltr; -webkit-tap-highlight-color:transparent; transition:background .15s, transform .12s, color .15s; }
-  .q-tafsir-btn:active { transform:scale(.96); background:var(--surface-2); }
-  .q-tafsir-btn svg { flex:0 0 auto; color:var(--accent-deep); }
+  .q-tafsir-btn { display:inline-flex; align-items:center; gap:5px; margin:12px 16px 0 0; padding:3px 0; border:none; background:none;
+    color:var(--ink-faint); font:inherit; font-size:12.5px; font-weight:600;
+    cursor:pointer; direction:ltr; -webkit-tap-highlight-color:transparent; transition:transform .12s, color .15s; }
+  .q-tafsir-btn:active { transform:scale(.94); }
+  .q-tafsir-btn svg { flex:0 0 auto; }
   .q-taf-sub { font-size:12px; letter-spacing:.4px; text-transform:uppercase; color:var(--accent-deep); font-weight:700; margin-bottom:10px; }
   .q-taf-text { font-size:15.5px; line-height:1.75; color:var(--ink); white-space:pre-line; }
   .q-taf-loading { padding:18px 2px; color:var(--ink-faint); font-size:14px; text-align:center; }
@@ -4916,7 +4914,9 @@ https://azkar.nurtech.dev/app`);
   function qDayNum(){ return Math.floor(Date.now()/86400000); }
   function qMarkMem(s,a){ const bi=qBitIndex(s,a); if(bi<0) return; const st=qMemLoad(); st.m[bi>>3]|=(1<<(bi&7)); if(!st.srs[s]) st.srs[s]={ i:0, d:qDayNum() }; qMemSave(); }
   function qUnmarkMem(s,a){ const bi=qBitIndex(s,a); if(bi<0) return; const st=qMemLoad(); st.m[bi>>3]&=~(1<<(bi&7)); if(qSuraMemCount(s)===0) delete st.srs[s]; qMemSave(); }
-  function qMemBtnHtml(on){ return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'+(on?'Заучен':'Заучил'); }
+  function qMemBtnHtml(on){ return on
+    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Заучено'
+    : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Заучить'; }
   function qToggleMem(s,a,btn){ const now=!qIsMem(s,a); if(now){ qMarkMem(s,a); tgHaptic('medium'); } else qUnmarkMem(s,a);
     if(btn){ btn.classList.toggle('on', now); btn.innerHTML=qMemBtnHtml(now); const card=btn.closest('.q-ayah'); if(card) card.classList.toggle('q-memd', now); } }
   // SRS
@@ -5069,7 +5069,7 @@ https://azkar.nurtech.dev/app`);
           + '<div class="q-tr">'+escHtml(a.ru)+'</div>'
           + '<div class="q-ayah-actions">'
           + '<button type="button" class="q-play-btn" onclick="qAyahToggle('+su.n+','+a.n+',this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Слушать</button>'
-          + '<button type="button" class="q-mem-btn'+(mem?' on':'')+'" onclick="qToggleMem('+su.n+','+a.n+',this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'+(mem?'Заучен':'Заучил')+'</button>'
+          + '<button type="button" class="q-mem-btn'+(mem?' on':'')+'" onclick="qToggleMem('+su.n+','+a.n+',this)">'+qMemBtnHtml(mem)+'</button>'
           + '<button type="button" class="q-tafsir-btn" onclick="openTafsir('+su.n+','+a.n+')">'+TAFSIR_ICON+'Тафсир</button>'
           + '</div></div>';
       }
