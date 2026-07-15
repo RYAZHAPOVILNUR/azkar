@@ -845,9 +845,18 @@
   .qp-play { background:var(--accent); color:var(--surface); width:46px; height:46px; }
   .qp-play:active { background:var(--accent-deep); }
   .qp-rep.on { color:var(--accent-deep); background:var(--accent-soft); }
-  .qp-mid { flex:1 1 auto; min-width:0; padding:0 4px; }
+  .qp-mid { flex:1 1 auto; min-width:0; padding:2px 4px; border:0; background:none; text-align:left; font:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; border-radius:8px; }
+  .qp-mid:active { background:var(--surface-2); }
   .qp-ttl { font-size:13.5px; font-weight:700; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .qp-sub { font-size:11px; color:var(--ink-faint); }
+  .qp-sub { font-size:11px; color:var(--ink-faint); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .qp-sub::after { content:' ⌄'; opacity:.7; font-weight:700; }
+  /* лист выбора чтеца */
+  .rec-list { display:flex; flex-direction:column; max-height:60vh; overflow-y:auto; -webkit-overflow-scrolling:touch; margin:2px -4px 0; }
+  .rec-row { display:flex; align-items:center; gap:10px; width:100%; padding:12px 12px; border:0; border-radius:12px; background:none; color:var(--ink); font:inherit; font-size:15px; text-align:left; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .rec-row:active { background:var(--surface-2); }
+  .rec-row.on { background:var(--accent-soft); color:var(--accent-deep); font-weight:700; }
+  .rec-row .rec-nm { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rec-row .rec-ck { flex:0 0 auto; color:var(--accent-deep); }
   .qp-x { width:34px; height:34px; }
   /* действия под аятом — тихая ghost-строка, не перебивает аят */
   .q-play-btn, .q-mem-btn { display:inline-flex; align-items:center; gap:5px; margin:12px 16px 0 0; padding:3px 0; border:none; background:none; color:var(--ink-faint); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s, color .15s; }
@@ -1499,7 +1508,7 @@
       <button type="button" class="qp-btn" id="qpPrev" aria-label="Предыдущий аят" onclick="qAudioStep(-1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM9.5 12l8.5 6V6z"/></svg></button>
       <button type="button" class="qp-btn qp-play" id="qpPlay" aria-label="Играть/пауза" onclick="qAudioToggle()"><svg id="qpPlayIc" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
       <button type="button" class="qp-btn" id="qpNext" aria-label="Следующий аят" onclick="qAudioStep(1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg></button>
-      <div class="qp-mid"><div class="qp-ttl" id="qpTtl">—</div><div class="qp-sub" id="qpSub">аль-Хусари · авто</div></div>
+      <button type="button" class="qp-mid" onclick="qOpenReciters()" aria-label="Сменить чтеца"><div class="qp-ttl" id="qpTtl">—</div><div class="qp-sub" id="qpSub">аль-Хусари · авто</div></button>
       <button type="button" class="qp-btn qp-rep" id="qpRep" aria-label="Повтор аята" onclick="qAudioToggleRepeat()" title="Повторять аят (для заучивания)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
       <button type="button" class="qp-btn qp-x" id="qpClose" aria-label="Закрыть плеер" onclick="qAudioStop()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
@@ -3124,6 +3133,8 @@
       </button>`;
     }).join('')}</div>`;
   }
+  // клавиатура поиска не закрывалась при листании — блюрим инпут на скролле/свайпе
+  (function(){ ['scroll','touchmove'].forEach(function(ev){ window.addEventListener(ev, function(){ const el=document.getElementById('azkarSearchInput'); if(el && document.activeElement===el) el.blur(); }, { passive:true, capture:true }); }); })();
   function openAzkarLibrary(){
     renderAzkarLibrary('');
     const input = document.getElementById('azkarSearchInput');
@@ -4504,7 +4515,8 @@ https://azkar.nurtech.dev/app`);
     const mins = Math.max(1, Math.ceil(msLeft / 60000));
     const h = Math.floor(mins / 60);
     const m = mins % 60;
-    return `через ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    if(h > 0) return m > 0 ? `через ${h} ч ${m} мин` : `через ${h} ч`;
+    return `через ${m} мин`;
   }
   function updateNextPrayer(t){
     const now = Date.now();
@@ -5155,9 +5167,48 @@ https://azkar.nurtech.dev/app`);
 
   // ---- аудио-чтец (EveryAyah, поаятно) ----
   const QRECITERS = [
-    { id:'Husary_128kbps', name:'Махмуд аль-Хусари', short:'аль-Хусари' },
-    { id:'Abdul_Basit_Murattal_192kbps', name:'Абдуль-Басит (муратталь)', short:'Абдуль-Басит' },
-    { id:'Minshawy_Murattal_128kbps', name:'Мухаммад аль-Миншави', short:'аль-Миншави' }
+    { id:'Husary_128kbps', name:'Махмуд Халиль аль-Хусари', short:'аль-Хусари' },
+    { id:'Abdullaah_3awwaad_Al-Juhaynee_128kbps', name:'Абдуллах Авад аль-Джухани', short:'аль-Джухани' },
+    { id:'Abdullah_Basfar_192kbps', name:'Абдуллах Басфар', short:'Басфар' },
+    { id:'Abdullah_Matroud_128kbps', name:'Абдуллах Матруд', short:'Матруд' },
+    { id:'Abdul_Basit_Murattal_192kbps', name:'Абдуль-Басит Абдус-Самад', short:'Абдус-Самад' },
+    { id:'Abdul_Basit_Mujawwad_128kbps', name:'Абдуль-Басит Абдус-Самад · муджаввад', short:'Абдус-Самад (мудж.)' },
+    { id:'Abdurrahmaan_As-Sudais_192kbps', name:'Абдуррахман ас-Судайс', short:'ас-Судайс' },
+    { id:'Abu_Bakr_Ash-Shaatree_128kbps', name:'Абубакр аш-Шатри', short:'аш-Шатри' },
+    { id:'aziz_alili_128kbps', name:'Азиз Алили', short:'Алили' },
+    { id:'Ayman_Sowaid_64kbps', name:'Айман Сувейд', short:'Сувейд' },
+    { id:'Akram_AlAlaqimy_128kbps', name:'Акрам аль-Алаими', short:'аль-Алаими' },
+    { id:'Ali_Jaber_64kbps', name:'Али Джабер', short:'Джабер' },
+    { id:'Ali_Hajjaj_AlSuesy_128kbps', name:'Али Хаджадж ас-Суэйси', short:'ас-Суэйси' },
+    { id:'Hudhaify_128kbps', name:'Али аль-Хузейфи', short:'аль-Хузейфи' },
+    { id:'Ahmed_Neana_128kbps', name:'Ахмад Неана', short:'Неана' },
+    { id:'ahmed_ibn_ali_al_ajamy_128kbps', name:'Ахмад ибн Али аль-Аджами', short:'аль-Аджами' },
+    { id:'Ibrahim_Akhdar_32kbps', name:'Ибрахим аль-Ахдар', short:'аль-Ахдар' },
+    { id:'MaherAlMuaiqly128kbps', name:'Махер аль-Муайкли', short:'аль-Муайкли' },
+    { id:'mahmoud_ali_al_banna_32kbps', name:'Махмуд Али аль-Банна', short:'аль-Банна' },
+    { id:'Husary_128kbps_Mujawwad', name:'Махмуд Халиль аль-Хусари · муджаввад', short:'аль-Хусари (мудж.)' },
+    { id:'Alafasy_128kbps', name:'Мишари Рашид аль-Афаси', short:'аль-Афаси' },
+    { id:'Mustafa_Ismail_48kbps', name:'Мустафа Исмаил', short:'Исмаил' },
+    { id:'Muhammad_AbdulKareem_128kbps', name:'Мухаммад Абдуль-Карим', short:'Абдуль-Карим' },
+    { id:'Muhammad_Ayyoub_128kbps', name:'Мухаммад Айюб', short:'Айюб' },
+    { id:'Muhammad_Jibreel_128kbps', name:'Мухаммад Джибриль', short:'Джибриль' },
+    { id:'Minshawy_Murattal_128kbps', name:'Мухаммад Сиддик аль-Миншави', short:'аль-Миншави' },
+    { id:'Minshawy_Mujawwad_192kbps', name:'Мухаммад аль-Миншави · муджаввад', short:'аль-Миншави (мудж.)' },
+    { id:'Mohammad_al_Tablaway_128kbps', name:'Мухаммад ат-Таблави', short:'ат-Таблави' },
+    { id:'Muhsin_Al_Qasim_192kbps', name:'Мухсин аль-Касим', short:'аль-Касим' },
+    { id:'Nabil_Rifa3i_48kbps', name:'Набиль ар-Рифаи', short:'ар-Рифаи' },
+    { id:'Nasser_Alqatami_128kbps', name:'Насер аль-Катами', short:'аль-Катами' },
+    { id:'Ghamadi_40kbps', name:'Саад аль-Гамиди', short:'аль-Гамиди' },
+    { id:'Salah_Al_Budair_128kbps', name:'Салах аль-Будейр', short:'аль-Будейр' },
+    { id:'Salaah_AbdulRahman_Bukhatir_128kbps', name:'Салах аль-Бухатир', short:'аль-Бухатир' },
+    { id:'Saood_ash-Shuraym_128kbps', name:'Сауд аш-Шурейм', short:'аш-Шурейм' },
+    { id:'Sahl_Yassin_128kbps', name:'Сахль Ясин', short:'Ясин' },
+    { id:'Fares_Abbad_64kbps', name:'Фарес Аббад', short:'Аббад' },
+    { id:'Khaalid_Abdullaah_al-Qahtaanee_192kbps', name:'Халид аль-Кахтани', short:'аль-Кахтани' },
+    { id:'khalefa_al_tunaiji_64kbps', name:'Халифа ат-Тунайджи', short:'ат-Тунайджи' },
+    { id:'Hani_Rifai_192kbps', name:'Хани ар-Рифаи', short:'ар-Рифаи' },
+    { id:'Yaser_Salamah_128kbps', name:'Ясер Саляма', short:'Саляма' },
+    { id:'Yasser_Ad-Dussary_128kbps', name:'Яссер ад-Дуссари', short:'ад-Дуссари' }
   ];
   let QAUDIO = { reciter:'Husary_128kbps', auto:true, repeat:false };
   try{ const p=JSON.parse(localStorage.getItem('azkar_quran_audio')||'{}'); if(p&&typeof p==='object'){ if(QRECITERS.some(function(r){return r.id===p.reciter;})) QAUDIO.reciter=p.reciter; if('auto' in p) QAUDIO.auto=!!p.auto; } }catch(e){}
@@ -5200,7 +5251,17 @@ https://azkar.nurtech.dev/app`);
     qPlayAyah(s,a); }
   function qAudioStop(){ const el=qaEl(); if(el){ el.pause(); el.removeAttribute('src'); try{ el.load(); }catch(e){} } QA_CUR=null; const pl=document.getElementById('qPlayer'); if(pl) pl.hidden=true; document.body.classList.remove('q-player-on'); if(QPREFS.mode==='page') qpFit(); qClearHighlight(); qAyahBtnsReset(); }
   function qAudioToggleRepeat(){ QAUDIO.repeat=!QAUDIO.repeat; qAudioSave(); qAudioUpdateUI(); tgHaptic('light'); }
-  function setReciter(id){ if(!QRECITERS.some(function(r){return r.id===id;})) return; QAUDIO.reciter=id; qAudioSave(); if(QA_CUR) qPlayAyah(QA_CUR.s, QA_CUR.a); qAudioUpdateUI(); tgHaptic('light'); if(QTAF.settings) renderReaderSettings(); }
+  function setReciter(id){ if(!QRECITERS.some(function(r){return r.id===id;})) return; QAUDIO.reciter=id; qAudioSave(); if(QA_CUR) qPlayAyah(QA_CUR.s, QA_CUR.a); qAudioUpdateUI(); tgHaptic('light'); if(QTAF.settings) renderReaderSettings(); if(QTAF.reciters) renderReciterSheet(); }
+  // ---- лист выбора чтеца (все чтецы) ----
+  function renderReciterSheet(){
+    const body=document.getElementById('qSheetBody'); if(!body) return;
+    body.innerHTML='<div class="rec-list">'+QRECITERS.map(function(r){
+      const on=QAUDIO.reciter===r.id;
+      return '<button type="button" class="rec-row'+(on?' on':'')+'" onclick="setReciter(\''+r.id+'\'); qCloseReciters();"><span class="rec-nm">'+escHtml(r.name)+'</span>'+(on?'<svg class="rec-ck" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>':'')+'</button>';
+    }).join('')+'</div>';
+  }
+  function qOpenReciters(){ QTAF.settings=false; QTAF.picker=false; QTAF.reciters=true; document.getElementById('qSheetTitle').textContent='Чтец'; renderReciterSheet(); openQSheet(); requestAnimationFrame(function(){ const on=document.querySelector('#qSheetBody .rec-row.on'); if(on) on.scrollIntoView({block:'center'}); }); }
+  function qCloseReciters(){ QTAF.reciters=false; closeQSheet(); }
   function qHighlightAyah(a){ qClearHighlight(); const el=document.querySelector('#qrAyahs .q-ayah[data-a="'+a+'"], #qrAyahs .qcf-ayah[data-a="'+a+'"]'); if(el){ el.classList.add('q-playing'); try{ el.scrollIntoView({ block:'center', behavior:'smooth' }); }catch(e){} } }
   function qClearHighlight(){ document.querySelectorAll('#qrAyahs .q-playing').forEach(function(e){ e.classList.remove('q-playing'); }); }
   (function(){ const el=document.getElementById('qAudioEl'); if(el){ el.addEventListener('ended', qAudioNext); el.addEventListener('play', qAudioUpdateUI); el.addEventListener('pause', qAudioUpdateUI); el.addEventListener('error', function(){ /* нет аудио этого аята — стоп мягко */ }); } })();
@@ -5423,8 +5484,8 @@ https://azkar.nurtech.dev/app`);
     if(QPREFS.mode!=='page') html += '<div class="rs-lbl">Размер</div><div class="rs-size"><button type="button" onclick="setReaderFontSize(-1)" aria-label="Меньше">A−</button><span class="rs-size-val" id="rsSizeVal">'+QPREFS.fs+'</span><button type="button" onclick="setReaderFontSize(1)" aria-label="Больше">A+</button></div>';
     html += '<div class="rs-lbl">Тема</div><div class="rs-modes rs-modes-3">'+themeChip('light','Светлая')+themeChip('dark','Тёмная')+themeChip('auto','Авто')+'</div>';
     // аудио-чтец
-    const recBtn=function(r){ return '<button type="button" class="rs-font'+(QAUDIO.reciter===r.id?' on':'')+'" style="justify-content:flex-start;gap:8px" onclick="setReciter(\''+r.id+'\')"><span class="rs-flbl">'+r.short+'</span></button>'; };
-    html += '<div class="rs-lbl">Чтец (аудио)</div><div class="rs-fonts">'+QRECITERS.map(recBtn).join('')+'</div>';
+    const curRec=QRECITERS.find(function(r){return r.id===QAUDIO.reciter;})||QRECITERS[0];
+    html += '<div class="rs-lbl">Чтец (аудио)</div><button type="button" class="rs-row" onclick="qOpenReciters()"><span>'+escHtml(curRec.name)+'</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.5"><path d="M9 6l6 6-6 6"/></svg></button>';
     // заучивание
     html += '<div class="rs-lbl">Заучивание</div>';
     html += '<button type="button" class="rs-row" onclick="qToggleHide()"><span>Тренажёр — скрыть текст<br><small style="color:var(--ink-faint);font-weight:400">тап по аяту открывает его</small></span>'+sw(QHIDE)+'</button>';
