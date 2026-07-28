@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "quran:validate-pages": "node scripts/quran/validate-pages.mjs",
     "updatedesk:init": "node tools/updatedesk-init.mjs",
     "updatedesk:note": "node tools/updatedesk-note.mjs"
   }

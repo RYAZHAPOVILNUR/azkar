@@ -4953,7 +4953,7 @@ https://azkar.nurtech.dev/app`);
     });
   }
   function qPlural(n,a,b,c){ n=Math.abs(n); const d=n%100, e=n%10; if(d>10&&d<20) return c; if(e>1&&e<5) return b; if(e===1) return a; return c; }
-  const Q_ASSET_V='8';   // версия данных Корана/тафсира — бамп при изменении JSON (сброс кэша браузера)
+  const Q_ASSET_V='9';   // версия данных Корана/тафсира — бамп при изменении JSON (сброс кэша браузера)
   function qFetchJSON(url){ const u=url+(url.indexOf('?')>=0?'&':'?')+'v='+Q_ASSET_V; return fetch(u, { cache:'default' }).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); }); }
   function qLoadIndex(){ if(QURAN.index) return Promise.resolve(QURAN.index); return qFetchJSON('assets/quran/index.json').then(function(d){ QURAN.index=d; return d; }); }
   function qLoadSura(n){ if(QURAN.cache[n]) return Promise.resolve(QURAN.cache[n]); return qFetchJSON('assets/quran/'+n+'.json').then(function(d){ QURAN.cache[n]=d; return d; }); }
@@ -5315,13 +5315,13 @@ https://azkar.nurtech.dev/app`);
   (function(){ const el=document.getElementById('qAudioEl'); if(el){ el.addEventListener('ended', qAudioNext); el.addEventListener('play', qAudioUpdateUI); el.addEventListener('pause', qAudioUpdateUI); el.addEventListener('error', function(){ /* нет аудио этого аята — стоп мягко */ }); } })();
 
   // ---- режим Страница: точная раскладка мусхафа (пофайловые шрифты QCF) ----
-  const QCF_CDN='https://static.qurancdn.com/fonts/quran/hafs/v2/woff2/';           // обычный мединский пофайловый
-  const QCF_TAJ_CDN='https://verses.quran.foundation/fonts/quran/hafs/v4/colrv1/woff2/'; // тот же шрифт с ВШИТЫМ цветным таджвидом (COLRv1)
+  const QCF_CDN='https://static-cdn.tarteel.ai/qul/fonts/quran_fonts/v2/woff2/';           // QUL/QPC V2 page fonts
+  const QCF_TAJ_CDN='https://static-cdn.tarteel.ai/qul/fonts/quran_fonts/v4-tajweed/woff2/'; // QUL/QPC V4 Tajweed page fonts
   const BASMALA='بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ';
   function qLoadPagesMeta(){ if(QURAN.pmeta) return Promise.resolve(QURAN.pmeta); return qFetchJSON('assets/quran/pages/meta.json').then(function(m){ QURAN.pmeta=m; return m; }); }
   function qLoadPage(n){ if(QURAN.pcache[n]) return Promise.resolve(QURAN.pcache[n]); return qFetchJSON('assets/quran/pages/'+n+'.json').then(function(d){ QURAN.pcache[n]=d; return d; }); }
   const FONT_CACHE='mushaf-fonts-v1';
-  const pageFontUrl=function(n,taj){ return (taj?QCF_TAJ_CDN:QCF_CDN)+'p'+n+'.woff2'; };
+  const pageFontUrl=function(n,taj){ return (taj?QCF_TAJ_CDN:QCF_CDN)+'p'+n+'.woff2?v=3.1'; };
   // берём шрифт из Cache API (офлайн) либо из сети + кладём в кэш; отдаём blob-URL или исходный URL
   function cachedFontSrc(url){
     if(!('caches' in window)) return fetch(url,{mode:'cors'}).then(function(r){ if(!r.ok) throw 0; return r.blob(); }).then(function(b){ return URL.createObjectURL(b); }).catch(function(){ return url; });
@@ -5423,7 +5423,8 @@ https://azkar.nurtech.dev/app`);
     // определить сура первой строки — для заголовка ридера
     const firstK = lines.length&&lines[0].w.length ? lines[0].w[0].k : null;
     const firstSura = firstK ? parseInt(firstK.split(':')[0],10) : (QURAN.curN||1);
-    QURAN.curN = firstSura;
+    const displaySura = (data.starts&&data.starts.length&&data.starts[0].s) ? data.starts[0].s : firstSura;
+    QURAN.curN = displaySura;
     let html='';
     for(let i=0;i<lines.length;i++){ const l=lines[i];
       if(!(l.w && l.w.length) && !startByLine[l.n]) continue;   // пустые строки (после чистки чужих слов) не рисуем — иначе зазор
@@ -5457,7 +5458,7 @@ https://azkar.nurtech.dev/app`);
     wrap.innerHTML=full;
     wrap.classList.remove('qp-turning');
     // шапка
-    document.getElementById('qrTitle').textContent = suraNameRu(firstSura);
+    document.getElementById('qrTitle').textContent = suraNameRu(displaySura);
     document.getElementById('qrSub').textContent = 'Джуз '+(data.j||'')+' · страница '+data.p;
     qUpdatePageNav(data.p);
   }
