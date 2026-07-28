@@ -831,9 +831,15 @@
   .qp-pane .qp-page { width:100%; box-sizing:border-box; }
   .qp-page { direction:rtl; font-size:var(--qp-size, 15px); color:var(--ink); padding:4px 6px 2px; -webkit-font-smoothing:antialiased; transform-origin:center; }
   /* Убираем только пустые боковые поля листа: текст, шапка и номер страницы остаются целиком. */
-  .qp-page.qp-svg-paper { width:100%; max-width:100%; margin:0 auto; padding:0; border:0; border-radius:0; background:#fbfaf2; box-shadow:none; overflow:hidden; aspect-ratio:350/547.09; display:grid; place-items:center; }
-  .qp-svg { display:block; width:auto; height:100%; max-width:none; max-height:none; background:#fbfaf2; pointer-events:none;
+  .qp-page.qp-svg-paper { width:100%; max-width:100%; margin:0 auto; padding:0; border:0; border-radius:0; background:#fbfaf2; box-shadow:none; overflow:hidden; aspect-ratio:350/547.09; position:relative; }
+  .qp-svg-stage { position:absolute; left:50%; top:0; height:100%; aspect-ratio:382.68/547.09; transform:translateX(-50%); }
+  .qp-svg { display:block; width:100%; height:100%; max-width:none; max-height:none; background:#fbfaf2; pointer-events:none;
     user-select:none; -webkit-user-drag:none; }
+  .qp-taj-overlay { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+  .qp-taj-lines { width:243.6px; height:405.75px; display:grid; grid-template-rows:repeat(15,27.05px);
+    direction:rtl; color:#111; font-size:18.5px; line-height:1; font-palette:normal; -webkit-font-smoothing:antialiased; }
+  .qp-taj-line { direction:rtl; display:flex; justify-content:space-between; align-items:flex-start; width:100%; height:27.05px; white-space:nowrap; }
+  .qp-taj-w { display:inline-block; flex:0 0 auto; white-space:nowrap; font-family:var(--qp-font); }
   .qp-svg [data-type="empty"] { display:none; }
   @keyframes qpTrackNext { from { transform:translate3d(-50%,0,0); } to { transform:translate3d(0,0,0); } }
   @keyframes qpTrackPrev { from { transform:translate3d(0,0,0); } to { transform:translate3d(-50%,0,0); } }
@@ -4971,7 +4977,7 @@ https://azkar.nurtech.dev/app`);
 
   /* ===================== КОРАН: читалка + таджвид + статистика ===================== */
   const QP_KEY='azkar_quran_prefs', QPOS_KEY='azkar_quran_pos', QST_KEY='azkar_quran_stats';
-  const QURAN = { index:null, cache:{}, kcache:{}, awcache:{}, pcache:{}, svgcache:{}, svgloads:{}, pageloads:{}, pageHtmlCache:{}, pmeta:null, pfonts:{}, fontReady:{}, curPage:0, pageData:null, cur:null, curK:null, curAw:null, curN:0, io:null, seen:null, saveT:null, _raf:0, _lastA:0, _qpSize:0 };
+  const QURAN = { index:null, cache:{}, kcache:{}, awcache:{}, pcache:{}, svgcache:{}, svgloads:{}, shellcache:{}, shellloads:{}, pageloads:{}, tajloads:{}, pageHtmlCache:{}, pmeta:null, pfonts:{}, fontReady:{}, curPage:0, pageData:null, cur:null, curK:null, curAw:null, curN:0, io:null, seen:null, saveT:null, _raf:0, _lastA:0, _qpSize:0 };
   const Q_FONTS = [
     { id:'KFGQPC',      label:'Мединский',   sub:'мусхаф Медины', kfgqpc:true, prev:'ٱلۡحَمۡدُ' },
     { id:'AzkarMushaf', label:'Насх мусхаф', sub:'Amiri Quran' },
@@ -5010,7 +5016,7 @@ https://azkar.nurtech.dev/app`);
     });
   }
   function qPlural(n,a,b,c){ n=Math.abs(n); const d=n%100, e=n%10; if(d>10&&d<20) return c; if(e>1&&e<5) return b; if(e===1) return a; return c; }
-  const Q_ASSET_V='20';   // версия данных Корана/тафсира — бамп при изменении JSON (сброс кэша браузера)
+  const Q_ASSET_V='21';   // версия данных Корана/тафсира — бамп при изменении JSON (сброс кэша браузера)
   function qFetchJSON(url){ const u=url+(url.indexOf('?')>=0?'&':'?')+'v='+Q_ASSET_V; return fetch(u, { cache:'default' }).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); }); }
   function qLoadIndex(){ if(QURAN.index) return Promise.resolve(QURAN.index); return qFetchJSON('assets/quran/index.json').then(function(d){ QURAN.index=d; return d; }); }
   function qLoadSura(n){ if(QURAN.cache[n]) return Promise.resolve(QURAN.cache[n]); return qFetchJSON('assets/quran/'+n+'.json').then(function(d){ QURAN.cache[n]=d; return d; }); }
@@ -5381,18 +5387,21 @@ https://azkar.nurtech.dev/app`);
   function qLoadPage(n){ if(QURAN.pcache[n]) return Promise.resolve(QURAN.pcache[n]); if(QURAN.pageloads[n]) return QURAN.pageloads[n];
     const p=qFetchJSON('assets/quran/pages/'+n+'.json').then(function(d){ QURAN.pcache[n]=d; return d; });
     QURAN.pageloads[n]=p; p.then(function(){ delete QURAN.pageloads[n]; },function(){ delete QURAN.pageloads[n]; }); return p; }
-  function qMushafSvgUrl(n){ return '/api/mushaf-svg/'+n+'?v='+Q_ASSET_V; }
-  function qLoadQulSvgPage(n){ if(QURAN.svgcache[n]) return Promise.resolve(QURAN.svgcache[n]); if(QURAN.svgloads[n]) return QURAN.svgloads[n];
-    const url=qMushafSvgUrl(n);
+  function qMushafSvgUrl(n,shell){ return '/api/mushaf-svg/'+n+'?v='+Q_ASSET_V+(shell?'&shell=1':''); }
+  function qLoadQulSvgImage(n,shell){ const cache=shell?QURAN.shellcache:QURAN.svgcache, loads=shell?QURAN.shellloads:QURAN.svgloads;
+    if(cache[n]) return Promise.resolve(cache[n]); if(loads[n]) return loads[n];
+    const url=qMushafSvgUrl(n,shell);
     const p=new Promise(function(resolve,reject){
       const img=new Image(); img.decoding='async';
-      img.onload=function(){ QURAN.svgcache[n]=url; resolve(url); };
+      img.onload=function(){ cache[n]=url; resolve(url); };
       img.onerror=function(){ reject(new Error('svg '+n)); };
       img.src=url;
     });
-    QURAN.svgloads[n]=p; p.then(function(){ delete QURAN.svgloads[n]; },function(){ delete QURAN.svgloads[n]; }); return p; }
+    loads[n]=p; p.then(function(){ delete loads[n]; },function(){ delete loads[n]; }); return p; }
+  function qLoadQulSvgPage(n){ return qLoadQulSvgImage(n,false); }
+  function qLoadQulSvgShell(n){ return qLoadQulSvgImage(n,true); }
   const FONT_CACHE='mushaf-fonts-v1';
-  const pageFontUrl=function(n,taj){ return (taj?QCF_TAJ_CDN:QCF_CDN)+'p'+n+'.woff2?v=3.1'; };
+  const pageFontUrl=function(n,taj){ return (taj?QCF_TAJ_CDN:QCF_CDN)+'p'+n+'.woff2?v=4'; };
   // берём шрифт из Cache API (офлайн) либо из сети + кладём в кэш; отдаём blob-URL или исходный URL
   function cachedFontSrc(url){
     if(!('caches' in window)) return fetch(url,{mode:'cors'}).then(function(r){ if(!r.ok) throw 0; return r.blob(); }).then(function(b){ return URL.createObjectURL(b); }).catch(function(){ return url; });
@@ -5403,7 +5412,7 @@ https://azkar.nurtech.dev/app`);
       });
     }).catch(function(){ return url; });
   }
-  function qLoadPageFont(n){ const taj=!!QPREFS.tj; const fam=(taj?'QCFT':'QCFP')+n;
+  function qLoadPageFont(n,tajMode){ const taj=tajMode==null?!!QPREFS.tj:!!tajMode; const fam=(taj?'QCFT':'QCFP')+n;
     if(QURAN.pfonts[fam]) return QURAN.pfonts[fam];
     const p = cachedFontSrc(pageFontUrl(n,taj)).then(function(src){
       const st=document.createElement('style');
@@ -5463,17 +5472,58 @@ https://azkar.nurtech.dev/app`);
     return (data&&data.starts&&data.starts.length&&data.starts[0].s) ? data.starts[0].s : firstSura;
   }
   function qSvgPageHtml(n){
-    return '<div class="qp-page qp-svg-paper"><img class="qp-svg" src="'+qMushafSvgUrl(n)+'" alt="Страница мусхафа '+n+'" draggable="false" decoding="async"></div>';
+    return '<div class="qp-page qp-svg-paper"><div class="qp-svg-stage"><img class="qp-svg" src="'+qMushafSvgUrl(n)+'" alt="Страница мусхафа '+n+'" draggable="false" decoding="async"></div></div>';
+  }
+  function qTajPageHtml(data,fam){
+    const byLine={}; (data.lines||[]).forEach(function(line){ byLine[line.n]=line; });
+    let rows='';
+    for(let n=1;n<=15;n++){
+      const line=byLine[n], words=line&&line.w||[];
+      rows+='<div class="qp-taj-line">';
+      for(let i=0;i<words.length;i++) rows+='<span class="qp-taj-w">'+escHtml(words[i].c)+'</span>';
+      rows+='</div>';
+    }
+    return '<div class="qp-page qp-svg-paper qp-taj-paper"><div class="qp-svg-stage">'
+      +'<img class="qp-svg qp-svg-shell" src="'+qMushafSvgUrl(data.p,true)+'" alt="Страница мусхафа '+data.p+' с таджвидом" draggable="false" decoding="async">'
+      +'<svg class="qp-taj-overlay" viewBox="0 0 382.68 547.09" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'
+      +'<foreignObject x="46.2" y="75.5" width="243.6" height="405.75">'
+      +'<div xmlns="http://www.w3.org/1999/xhtml" class="qp-taj-lines" style="--qp-font:\''+fam+'\'">'+rows+'</div>'
+      +'</foreignObject></svg></div></div>';
+  }
+  function qPageHtmlFor(n){
+    const render=QURAN.pageHtmlCache[n];
+    return QPREFS.tj&&render&&render.tajHtml ? render.tajHtml : qSvgPageHtml(n);
   }
   function qSvgRender(data, url){
     const displaySura = qSvgDisplaySura(data);
-    const render = { html:qSvgPageHtml(data.p), data:data, page:data.p, juz:data.j, displaySura:displaySura, url:url||qMushafSvgUrl(data.p) };
+    const previous=QURAN.pageHtmlCache[data.p];
+    const render = { html:qSvgPageHtml(data.p), data:data, page:data.p, juz:data.j, displaySura:displaySura, url:url||qMushafSvgUrl(data.p), tajHtml:previous&&previous.tajHtml||'' };
     QURAN.pageHtmlCache[data.p]=render;
     return render;
   }
+  function qEnsureTajPage(n){
+    n=parseInt(n,10); if(!(n>=1&&n<=604)) return Promise.reject(new Error('bad page'));
+    const cached=QURAN.pageHtmlCache[n];
+    if(cached&&cached.tajHtml) return Promise.resolve(cached);
+    if(QURAN.tajloads[n]) return QURAN.tajloads[n];
+    const p=Promise.all([qLoadPage(n),qLoadPageFont(n,true),qLoadQulSvgShell(n),qLoadIndex().catch(function(){return null;})]).then(function(res){
+      if(!res[1]||!res[1].ok) throw new Error('tajweed font '+n);
+      const render=QURAN.pageHtmlCache[n]||qSvgRender(res[0],qMushafSvgUrl(n));
+      render.tajHtml=qTajPageHtml(res[0],res[1].fam);
+      return render;
+    });
+    QURAN.tajloads[n]=p;
+    p.then(function(){delete QURAN.tajloads[n];},function(){delete QURAN.tajloads[n];});
+    return p;
+  }
+  function qUpgradeTajPane(n,render){
+    if(!QPREFS.tj||!render||!render.tajHtml) return;
+    const pane=document.querySelector('#qrAyahs .qp-pane[data-page="'+n+'"]');
+    if(pane&&pane.innerHTML!==render.tajHtml) pane.innerHTML=render.tajHtml;
+  }
   function qCarouselPane(n, current){
     if(!(n>=1&&n<=604)) return '<div class="qp-pane qp-pane-empty" aria-hidden="true"><div class="qp-page qp-svg-paper"></div></div>';
-    return '<div class="qp-pane'+(current?' qp-pane-current':'')+'" data-page="'+n+'"'+(current?'':' aria-hidden="true"')+'>'+qSvgPageHtml(n)+'</div>';
+    return '<div class="qp-pane'+(current?' qp-pane-current':'')+'" data-page="'+n+'"'+(current?'':' aria-hidden="true"')+'>'+qPageHtmlFor(n)+'</div>';
   }
   function qCenterCarousel(){
     const wrap=document.getElementById('qrAyahs'); if(!wrap||!wrap.classList.contains('qp-carousel-host')) return;
@@ -5515,10 +5565,19 @@ https://azkar.nurtech.dev/app`);
   }
   function qPreloadAdjacentPages(){
     if(QPREFS.mode!=='page' || !QURAN.curPage) return;
-    const prime=function(p){ if(p>=1&&p<=604&&!QURAN.pageHtmlCache[p]) qEnsureSvgPageCached(p).catch(function(){}); };
+    const prime=function(p){
+      if(!(p>=1&&p<=604)) return;
+      if(QPREFS.tj) qEnsureTajPage(p).then(function(render){qUpgradeTajPane(p,render);}).catch(function(){});
+      else if(!QURAN.pageHtmlCache[p]) qEnsureSvgPageCached(p).catch(function(){});
+    };
     prime(QURAN.curPage-1); prime(QURAN.curPage+1);
-    const outer=function(){ prime(QURAN.curPage-2); prime(QURAN.curPage+2); };
-    if('requestIdleCallback' in window) requestIdleCallback(outer,{timeout:1200}); else setTimeout(outer,500);
+    prime(QURAN.curPage-2); prime(QURAN.curPage+2);
+    if(QPREFS.tj){
+      const near=function(){ for(let d=3;d<=5;d++){ prime(QURAN.curPage-d); prime(QURAN.curPage+d); } };
+      const far=function(){ for(let d=6;d<=8;d++){ prime(QURAN.curPage-d); prime(QURAN.curPage+d); } };
+      setTimeout(near,80);
+      if('requestIdleCallback' in window) requestIdleCallback(far,{timeout:700}); else setTimeout(far,350);
+    }
   }
   function qShowCachedSvgPage(n){
     const render=QURAN.pageHtmlCache[n]; const wrap=document.getElementById('qrAyahs');
@@ -5538,12 +5597,21 @@ https://azkar.nurtech.dev/app`);
       qRenderSvgCarousel(render); qApplySvgPageMeta(render); qAfterSvgPageShown(); tgHaptic('light');
     };
     const cached=QURAN.pageHtmlCache[n];
-    if(cached){ done(cached); return; }
+    if(cached){
+      done(cached);
+      if(QPREFS.tj&&!cached.tajHtml) qEnsureTajPage(n).then(function(render){
+        if(QPREFS.mode==='page'&&QPREFS.tj&&QURAN.curPage===n){ qRenderSvgCarousel(render); qApplySvgPageMeta(render); qAfterSvgPageShown(); }
+      }).catch(function(){});
+      return;
+    }
     // Не блокируем следующий жест сетью: новая страница уже находится в ленте как <img>.
     done({ html:qSvgPageHtml(n), data:null, page:n, juz:'', displaySura:QURAN.curN, url:qMushafSvgUrl(n) });
     Promise.all([qLoadPage(n),qLoadIndex().catch(function(){return null;}),qLoadQulSvgPage(n)]).then(function(res){
       const render=qSvgRender(res[0],res[2]);
       if(QPREFS.mode==='page'&&QURAN.curPage===n) qApplySvgPageMeta(render);
+      if(QPREFS.tj) qEnsureTajPage(n).then(function(tajRender){
+        if(QPREFS.mode==='page'&&QPREFS.tj&&QURAN.curPage===n){ qRenderSvgCarousel(tajRender); qApplySvgPageMeta(tajRender); qAfterSvgPageShown(); }
+      }).catch(function(){});
     }).catch(function(){});
   }
   function qCarouselSettle(){
@@ -5612,11 +5680,24 @@ https://azkar.nurtech.dev/app`);
     }
     document.getElementById('qrBism').hidden=true;
     const needTr = QPREFS.mode==='reading';
-    Promise.all([ qLoadPagesMeta().catch(function(){ return null; }), qLoadPage(n), needTr?qLoadPageTr(n):Promise.resolve(null), qLoadIndex().catch(function(){ return null; }), qLoadQulSvgPage(n).catch(function(){ return null; }) ]).then(function(res){
+    const needTajPage=QPREFS.mode==='page'&&QPREFS.tj;
+    Promise.all([
+      qLoadPagesMeta().catch(function(){ return null; }),
+      qLoadPage(n),
+      needTr?qLoadPageTr(n):Promise.resolve(null),
+      qLoadIndex().catch(function(){ return null; }),
+      qLoadQulSvgPage(n).catch(function(){ return null; }),
+      needTajPage?qLoadPageFont(n,true).catch(function(){ return null; }):Promise.resolve(null),
+      needTajPage?qLoadQulSvgShell(n).catch(function(){ return null; }):Promise.resolve(null)
+    ]).then(function(res){
       if(req!==QURAN._pageReq) return;
       QURAN.pageData=res[1]; QURAN.pageTr=res[2];
       if(res[4]){
-        renderSvgPageView(res[1], res[4]);
+        const render=qSvgRender(res[1],res[4]);
+        if(needTajPage&&res[5]&&res[5].ok&&res[6]) render.tajHtml=qTajPageHtml(res[1],res[5].fam);
+        qRenderSvgCarousel(render);
+        qApplySvgPageMeta(render);
+        qPreloadAdjacentPages();
         if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
         try{ localStorage.setItem('azkar_quran_page', String(n)); }catch(e){}
         requestAnimationFrame(function(){ qUpdatePageLock(); window.scrollTo(0,0); const ay=document.getElementById('qrAyahs'); if(ay) ay.scrollTop=0; qClockStart(); QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; qStartDwell(); qPreloadAdjacentPages(); });

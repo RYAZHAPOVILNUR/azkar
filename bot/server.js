@@ -594,6 +594,37 @@ function gzipBuffer(data) {
     zlib.gzip(data, { level: zlib.constants.Z_DEFAULT_COMPRESSION }, (err, out) => err ? reject(err) : resolve(out));
   });
 }
+function stripQuranTextLines(svg) {
+  const start = /<g\b(?=[^>]*\bid=["']md-line-\d+["'])(?=[^>]*\bdata-type=["']text["'])[^>]*>/gi;
+  const group = /<\/?g\b[^>]*>/gi;
+  let cursor = 0;
+  let output = '';
+  let match;
+  while ((match = start.exec(svg))) {
+    output += svg.slice(cursor, match.index);
+    group.lastIndex = start.lastIndex;
+    let depth = 1;
+    let token;
+    while (depth > 0 && (token = group.exec(svg))) {
+      depth += token[0][1] === '/' ? -1 : 1;
+    }
+    if (depth !== 0) throw new Error('malformed QUL SVG groups');
+    cursor = group.lastIndex;
+    start.lastIndex = cursor;
+  }
+  return (output + svg.slice(cursor)).replace('<svg ', '<svg data-tajweed-shell="true" ');
+}
+async function loadQulMushafShell(cacheFile, loaded) {
+  const shellFile = cacheFile.replace(/\.svg$/, '.shell.svg');
+  try {
+    return { svg: await fs.promises.readFile(shellFile, 'utf8'), source: loaded.source + ' shell', cacheFile: shellFile };
+  } catch (e) {
+    if (e && e.code !== 'ENOENT') throw e;
+  }
+  const svg = stripQuranTextLines(loaded.svg);
+  await fs.promises.writeFile(shellFile, svg);
+  return { svg, source: loaded.source + ' shell', cacheFile: shellFile };
+}
 async function sendQulMushafSvg(req, res, cacheFile, loaded) {
   const gzipOk = /\bgzip\b/i.test(String(req.headers['accept-encoding'] || ''));
   let body = Buffer.from(loaded.svg);
@@ -621,8 +652,13 @@ app.get('/api/mushaf-svg/:page', async (req, res) => {
   const id = String(page).padStart(3, '0');
   const cacheFile = path.join(QUL_MUSHAF_CACHE_DIR, id + '.svg');
   try {
-    const loaded = await loadQulMushafSvg(page, cacheFile);
-    await sendQulMushafSvg(req, res, cacheFile, loaded);
+    let loaded = await loadQulMushafSvg(page, cacheFile);
+    let responseFile = cacheFile;
+    if (req.query.shell === '1') {
+      loaded = await loadQulMushafShell(cacheFile, loaded);
+      responseFile = loaded.cacheFile;
+    }
+    await sendQulMushafSvg(req, res, responseFile, loaded);
   } catch (e) {
     console.error('[qul-mushaf-svg]', page, e && e.message ? e.message : e);
     res.status(502).json({ ok: false, error: 'QUL SVG unavailable' });
