@@ -14,6 +14,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const crypto = require('crypto');
 const https = require('https');
 const cron = require('node-cron');
@@ -531,6 +532,73 @@ app.get('/api/azkar-audio/:n', (req, res) => {
   up.setTimeout(20000, () => { try { up.destroy(); } catch {} });
   req.on('close', () => { try { up.destroy(); } catch {} });
   up.end();
+});
+
+const QUL_MUSHAF_LAYOUT_ID = '569';
+const QUL_MUSHAF_CACHE_DIR = process.env.QUL_MUSHAF_CACHE_DIR || path.join(os.tmpdir(), 'azkar-qul-mushaf-svg');
+function httpsText(url, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Azkar Nurtech; QUL Mushaf SVG cache)',
+        Accept: 'text/html,application/xhtml+xml,image/svg+xml,*/*',
+        ...headers,
+      },
+    }, (r) => {
+      if ((r.statusCode || 0) < 200 || (r.statusCode || 0) >= 300) {
+        r.resume();
+        reject(new Error('upstream ' + r.statusCode));
+        return;
+      }
+      let body = '';
+      r.setEncoding('utf8');
+      r.on('data', (chunk) => { body += chunk; });
+      r.on('end', () => resolve(body));
+    });
+    req.on('error', reject);
+    req.setTimeout(25000, () => req.destroy(new Error('timeout')));
+    req.end();
+  });
+}
+function extractQulMushafSvg(html, page) {
+  const id = String(page).padStart(3, '0');
+  const direct = new RegExp(`<svg\\b[^>]*id=["']Mushaf_Page_${id}["'][\\s\\S]*?<\\/svg>`, 'i').exec(html);
+  const svg = direct ? direct[0] : (/<svg\b[^>]*data-md-version=["'][^"']+["'][\s\S]*?<\/svg>/i.exec(html) || [null])[0];
+  if (!svg || !svg.includes('md-page')) return null;
+  return svg.replace(/\sdata-controller=["'][^"']*["']/gi, '');
+}
+app.get('/api/mushaf-svg/:page', async (req, res) => {
+  const page = parseInt(req.params.page, 10);
+  if (!(page >= 1 && page <= 604)) { res.status(400).end(); return; }
+  const id = String(page).padStart(3, '0');
+  const cacheFile = path.join(QUL_MUSHAF_CACHE_DIR, id + '.svg');
+  try {
+    if (fs.existsSync(cacheFile)) {
+      res.set({
+        'Content-Type': 'image/svg+xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=604800',
+        'X-Mushaf-Source': 'QUL cache',
+      });
+      res.send(fs.readFileSync(cacheFile, 'utf8'));
+      return;
+    }
+    const url = 'https://qul.tarteel.ai/resources/mushaf-layout/' + QUL_MUSHAF_LAYOUT_ID + '?page=' + page;
+    const html = await httpsText(url);
+    const svg = extractQulMushafSvg(html, page);
+    if (!svg) throw new Error('svg not found');
+    fs.mkdirSync(QUL_MUSHAF_CACHE_DIR, { recursive: true });
+    fs.writeFileSync(cacheFile, svg);
+    res.set({
+      'Content-Type': 'image/svg+xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=604800',
+      'X-Mushaf-Source': 'QUL',
+    });
+    res.send(svg);
+  } catch (e) {
+    console.error('[qul-mushaf-svg]', page, e && e.message ? e.message : e);
+    res.status(502).json({ ok: false, error: 'QUL SVG unavailable' });
+  }
 });
 
 // Mini App живёт под /app, лендинг — на корне. API и health объявлены выше.
