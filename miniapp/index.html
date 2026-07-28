@@ -843,17 +843,37 @@
   .qp-basmala { text-align:center; font-family:'KFGQPC', var(--ar); font-size:calc(var(--qp-size,23px)*.92); color:var(--ink); margin:2px 0 8px; position:relative; z-index:1; }
   .qp-loading { text-align:center; color:var(--ink-faint); font-size:14px; padding:40px 0; }
   /* цветной таджвид (COLRv1) — фиксированные цвета глифов, показываем на «бумаге» и в тёмной теме */
-  .qp-page.qp-paper { position:relative; background:#fcfbf6; color:#1b1b1b; border-radius:4px; padding:22px 18px 24px; overflow:hidden;
-    border:2px solid #b99a49; box-shadow:0 10px 26px rgba(68,49,18,.14), inset 0 0 0 1px #f3e8c8, inset 0 0 0 7px #fcfbf6, inset 0 0 0 9px #d7bd68; }
-  .qp-page.qp-paper:before, .qp-page.qp-paper:after { content:""; position:absolute; pointer-events:none; border-radius:3px; z-index:0; }
-  .qp-page.qp-paper:before { inset:10px; border:1px solid #d0b45e; }
-  .qp-page.qp-paper:after { inset:15px; border:1px solid rgba(132,100,38,.38); }
+  .qp-page.qp-paper { --frame-gold:#b89436; --frame-gold-2:#d9bf67; --frame-ink:#6e1831; --frame-blue:#1f7781; --frame-red:#b94249;
+    position:relative; background:#fcfbf3; color:#1b1b1b; border-radius:5px; padding:30px 24px 32px; overflow:hidden;
+    border:2px solid var(--frame-gold); box-shadow:0 12px 30px rgba(68,49,18,.14), inset 0 0 0 1px #f8efd1; }
+  .qp-page.qp-paper:before { content:""; position:absolute; inset:8px; pointer-events:none; border-radius:4px; z-index:0;
+    border:2px solid var(--frame-gold-2); box-shadow:inset 0 0 0 2px #fff8df, inset 0 0 0 4px #caa74a, inset 0 0 0 8px #fbf8ed; }
+  .qp-page.qp-paper:after { content:""; position:absolute; inset:18px; pointer-events:none; border-radius:3px; z-index:0;
+    border:1px solid rgba(113,82,28,.42); box-shadow:0 0 0 1px rgba(255,255,255,.76); }
+  .qp-frame { position:absolute; inset:9px; pointer-events:none; z-index:0; border-radius:4px; overflow:hidden; }
+  .qp-frame .b { position:absolute; opacity:.76; }
+  .qp-frame .t, .qp-frame .bt { left:16px; right:16px; height:8px;
+    background:linear-gradient(90deg, transparent, rgba(255,248,218,.62), transparent),
+      repeating-linear-gradient(90deg, var(--frame-ink) 0 7px, #f5df86 7px 10px, var(--frame-blue) 10px 16px, #f5df86 16px 19px);
+    border-top:1px solid #76551c; border-bottom:1px solid #76551c; }
+  .qp-frame .t { top:4px; } .qp-frame .bt { bottom:4px; }
+  .qp-frame .l, .qp-frame .r { top:16px; bottom:16px; width:8px;
+    background:linear-gradient(0deg, transparent, rgba(255,248,218,.62), transparent),
+      repeating-linear-gradient(0deg, var(--frame-ink) 0 7px, #f5df86 7px 10px, var(--frame-blue) 10px 16px, #f5df86 16px 19px);
+    border-left:1px solid #76551c; border-right:1px solid #76551c; }
+  .qp-frame .l { left:4px; } .qp-frame .r { right:4px; }
+  .qp-frame .c { width:22px; height:22px; border-radius:50%; border:2px solid #b88d2d; opacity:.86;
+    background:radial-gradient(circle at 50% 50%, #fff8cf 0 18%, var(--frame-red) 19% 32%, #f5df86 33% 45%, var(--frame-blue) 46% 62%, #672038 63% 100%);
+    box-shadow:0 0 0 2px #fcfbf3, 0 0 0 4px var(--frame-gold-2); }
+  .qp-frame .tl { left:4px; top:4px; } .qp-frame .tr { right:4px; top:4px; }
+  .qp-frame .bl { left:4px; bottom:4px; } .qp-frame .br { right:4px; bottom:4px; }
   .qp-paper .qp-basmala { color:#1b1b1b; }
+  .qp-paper .qp-line { line-height:2.25; }
   .qp-paper .qp-surah:before, .qp-paper .qp-surah:after { background:#dcd6c6; }
   .qp-paper .qp-surah span { color:#575a48; border-color:#dcd6c6; }
   .qp-paper .qp-w:active { color:#8a6d1e; }
-  body.q-page-lock .qp-page.qp-paper { padding:16px 12px 18px; }
-  @media (max-width:380px){ body.q-page-lock .qp-page.qp-paper { padding:14px 10px 16px; } }
+  body.q-page-lock .qp-page.qp-paper { padding:27px 22px 29px; }
+  @media (max-width:380px){ body.q-page-lock .qp-page.qp-paper { padding:25px 20px 27px; } }
   @media (prefers-reduced-motion: reduce){
     .qp-page.qp-in-next, .qp-page.qp-in-prev, .qp-page.qp-out-next, .qp-page.qp-out-prev { animation:none; }
     .qp-page.qp-out-next, .qp-page.qp-out-prev { display:none; }
@@ -4961,7 +4981,7 @@ https://azkar.nurtech.dev/app`);
     });
   }
   function qPlural(n,a,b,c){ n=Math.abs(n); const d=n%100, e=n%10; if(d>10&&d<20) return c; if(e>1&&e<5) return b; if(e===1) return a; return c; }
-  const Q_ASSET_V='10';   // версия данных Корана/тафсира — бамп при изменении JSON (сброс кэша браузера)
+  const Q_ASSET_V='11';   // версия данных Корана/тафсира — бамп при изменении JSON (сброс кэша браузера)
   function qFetchJSON(url){ const u=url+(url.indexOf('?')>=0?'&':'?')+'v='+Q_ASSET_V; return fetch(u, { cache:'default' }).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); }); }
   function qLoadIndex(){ if(QURAN.index) return Promise.resolve(QURAN.index); return qFetchJSON('assets/quran/index.json').then(function(d){ QURAN.index=d; return d; }); }
   function qLoadSura(n){ if(QURAN.cache[n]) return Promise.resolve(QURAN.cache[n]); return qFetchJSON('assets/quran/'+n+'.json').then(function(d){ QURAN.cache[n]=d; return d; }); }
@@ -5469,7 +5489,8 @@ https://azkar.nurtech.dev/app`);
     }
     const swDir = QURAN._swipeDir || (QURAN._outPageHtml ? (QURAN._outPageHtml.indexOf('qp-out-next')>=0 ? 1 : -1) : 0);
     const swCls = swDir ? (swDir>0 ? ' qp-in-next' : ' qp-in-prev') : ''; QURAN._swipeDir=0;
-    let full=(QURAN._outPageHtml||'')+'<div class="qp-page qp-paper'+swCls+'">'+html+'</div>'; QURAN._outPageHtml='';
+    const frame='<div class="qp-frame" aria-hidden="true"><i class="b t"></i><i class="b r"></i><i class="b bt"></i><i class="b l"></i><i class="b c tl"></i><i class="b c tr"></i><i class="b c bl"></i><i class="b c br"></i></div>';
+    let full=(QURAN._outPageHtml||'')+'<div class="qp-page qp-paper'+swCls+'">'+frame+html+'</div>'; QURAN._outPageHtml='';
     // режим Чтение: переводы аятов страницы под мусхафом
     if(QPREFS.mode==='reading'){
       const seen={}, order=[];
@@ -5486,17 +5507,19 @@ https://azkar.nurtech.dev/app`);
     }
     wrap.innerHTML=full;
     wrap.classList.remove('qp-turning');
-    if(swCls) setTimeout(function(){ wrap.classList.remove('qp-animating'); const old=wrap.querySelector('.qp-out-next,.qp-out-prev'); if(old) old.remove(); }, 380);
+    if(swCls) setTimeout(function(){ wrap.classList.remove('qp-animating'); wrap.querySelectorAll('.qp-out-next,.qp-out-prev').forEach(function(old){ old.remove(); }); }, 380);
     else wrap.classList.remove('qp-animating');
     // шапка
     document.getElementById('qrTitle').textContent = suraNameRu(displaySura);
     document.getElementById('qrSub').textContent = 'Джуз '+(data.j||'')+' · страница '+data.p;
     qUpdatePageNav(data.p);
+    requestAnimationFrame(qpFit); setTimeout(qpFit, 260); setTimeout(qpFit, 900);
   }
   function qpFit(){
     const page=document.querySelector('#qrAyahs .qp-page'); const cont=document.getElementById('qrAyahs'); if(!page||!cont) return;
     const cs=getComputedStyle(page);
-    const inset=(parseFloat(cs.paddingLeft)||0)+(parseFloat(cs.paddingRight)||0)+(parseFloat(cs.borderLeftWidth)||0)+(parseFloat(cs.borderRightWidth)||0)+26;
+    const frameGuard=page.classList.contains('qp-paper') ? 54 : 26;
+    const inset=(parseFloat(cs.paddingLeft)||0)+(parseFloat(cs.paddingRight)||0)+(parseFloat(cs.borderLeftWidth)||0)+(parseFloat(cs.borderRightWidth)||0)+frameGuard;
     const avail = cont.clientWidth - inset; if(avail<=0) return;
     let maxW=0; page.querySelectorAll('.qp-line:not(.center)').forEach(function(l){ let s=0; l.querySelectorAll('.qp-w').forEach(function(w){ s+=w.getBoundingClientRect().width; }); if(s>maxW) maxW=s; });
     if(maxW<=0) return;
@@ -5504,13 +5527,20 @@ https://azkar.nurtech.dev/app`);
     const isLand = window.innerWidth > window.innerHeight;
     let nf=cur*(avail/maxW); nf=Math.min(nf, isLand?42:30); nf=Math.max(11, nf);
     page.style.setProperty('--qp-size', nf.toFixed(1)+'px');
+    const shrinkBounds=function(pass){
+      const pb=page.getBoundingClientRect(); const guard=page.classList.contains('qp-paper')?10:2;
+      let bad=false; page.querySelectorAll('.qp-line .qp-w').forEach(function(w){ const r=w.getBoundingClientRect(); if(r.left<pb.left+guard || r.right>pb.right-guard) bad=true; });
+      if(bad && pass<8){ const now=parseFloat(getComputedStyle(page).fontSize)||nf; const next=Math.max(9, now*.94); page.style.setProperty('--qp-size', next.toFixed(1)+'px'); requestAnimationFrame(function(){ shrinkBounds(pass+1); }); }
+    };
     // режим Страница (портрет) — ужимаем по ВЫСОТЕ, чтобы страница влезала целиком без прокрутки; в ландшафте — крупно + прокрутка
     if(QPREFS.mode==='page' && !isLand) requestAnimationFrame(function(){
       // flex-колонка уже вычла шапку/низ/плеер/safe-area — берём реальную высоту области страницы
       const availH = cont.clientHeight - 6;
       const ph = page.getBoundingClientRect().height;
       if(availH>120 && ph>availH){ let nf2 = nf*(availH/ph); nf2=Math.max(9, nf2); if(nf2<nf-0.3) page.style.setProperty('--qp-size', nf2.toFixed(1)+'px'); }
+      requestAnimationFrame(function(){ shrinkBounds(0); });
     });
+    else requestAnimationFrame(function(){ shrinkBounds(0); });
   }
   function qUpdatePageNav(p){
     const prev=document.getElementById('qrPrev'), next=document.getElementById('qrNext');
