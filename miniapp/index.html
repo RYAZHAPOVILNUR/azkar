@@ -851,19 +851,19 @@
   .qp-page.qp-paper:after { content:""; position:absolute; inset:18px; pointer-events:none; border-radius:3px; z-index:0;
     border:1px solid rgba(113,82,28,.42); box-shadow:0 0 0 1px rgba(255,255,255,.76); }
   .qp-frame { position:absolute; inset:9px; pointer-events:none; z-index:0; border-radius:4px; overflow:hidden; }
-  .qp-frame .b { position:absolute; opacity:.76; }
+  .qp-frame .b { position:absolute; opacity:.56; }
   .qp-frame .t, .qp-frame .bt { left:16px; right:16px; height:8px;
     background:linear-gradient(90deg, transparent, rgba(255,248,218,.62), transparent),
-      repeating-linear-gradient(90deg, var(--frame-ink) 0 7px, #f5df86 7px 10px, var(--frame-blue) 10px 16px, #f5df86 16px 19px);
+      repeating-linear-gradient(90deg, #a78331 0 8px, #f6e6a7 8px 13px, #9a7d54 13px 17px, #f6e6a7 17px 22px);
     border-top:1px solid #76551c; border-bottom:1px solid #76551c; }
   .qp-frame .t { top:4px; } .qp-frame .bt { bottom:4px; }
   .qp-frame .l, .qp-frame .r { top:16px; bottom:16px; width:8px;
     background:linear-gradient(0deg, transparent, rgba(255,248,218,.62), transparent),
-      repeating-linear-gradient(0deg, var(--frame-ink) 0 7px, #f5df86 7px 10px, var(--frame-blue) 10px 16px, #f5df86 16px 19px);
+      repeating-linear-gradient(0deg, #a78331 0 8px, #f6e6a7 8px 13px, #9a7d54 13px 17px, #f6e6a7 17px 22px);
     border-left:1px solid #76551c; border-right:1px solid #76551c; }
   .qp-frame .l { left:4px; } .qp-frame .r { right:4px; }
-  .qp-frame .c { width:22px; height:22px; border-radius:50%; border:2px solid #b88d2d; opacity:.86;
-    background:radial-gradient(circle at 50% 50%, #fff8cf 0 18%, var(--frame-red) 19% 32%, #f5df86 33% 45%, var(--frame-blue) 46% 62%, #672038 63% 100%);
+  .qp-frame .c { width:22px; height:22px; border-radius:50%; border:2px solid #b88d2d; opacity:.74;
+    background:radial-gradient(circle at 50% 50%, #fff8cf 0 18%, #b85662 19% 30%, #f5df86 31% 48%, #3c7b82 49% 58%, #795f24 59% 100%);
     box-shadow:0 0 0 2px #fcfbf3, 0 0 0 4px var(--frame-gold-2); }
   .qp-frame .tl { left:4px; top:4px; } .qp-frame .tr { right:4px; top:4px; }
   .qp-frame .bl { left:4px; bottom:4px; } .qp-frame .br { right:4px; bottom:4px; }
@@ -879,10 +879,11 @@
     .qp-page.qp-out-next, .qp-page.qp-out-prev { display:none; }
     .q-pagemode.qp-turning .qp-page { transition:none; }
   }
-  /* Тёмная тема + таджвид: у COLRv1-шрифта QCFT встроена тёмная палитра (base-palette:1, светлая база) — переключаем на неё */
-  :root[data-theme="dark"] .q-tajweed.q-pagemode .qp-page { font-palette:--qcfDark; }
+  /* Страница мусхафа всегда рисуется на светлой бумаге: базовая палитра шрифта должна оставаться тёмной. */
+  .q-tajweed.q-pagemode .qp-page.qp-paper { font-palette:normal !important; }
+  :root[data-theme="dark"] .q-tajweed.q-pagemode .qp-page:not(.qp-paper) { font-palette:--qcfDark; }
   @media (prefers-color-scheme: dark){
-    :root:not([data-theme]) .q-tajweed.q-pagemode .qp-page { font-palette:--qcfDark; }
+    :root:not([data-theme]) .q-tajweed.q-pagemode .qp-page:not(.qp-paper) { font-palette:--qcfDark; }
   }
   /* режим Чтение — аяты поштучно цветным пофайловым мединским */
   .q-reading .q-ayah { padding:16px 2px; border-bottom:1px solid color-mix(in srgb, var(--line) 60%, transparent); }
@@ -1007,7 +1008,8 @@
     body.q-page-lock #quranReader .qr-head .qr-ttl .s { display:none; }         /* компактная шапка — без подписи */
     body.q-page-lock #quranReader .qr-head .back, body.q-page-lock #quranReader .qr-head .iconbtn { width:34px; height:34px; }
     body.q-page-lock #quranReader .qwrap { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
-    body.q-page-lock #quranReader #qrAyahs { flex:1 1 auto; min-height:0; overflow:hidden; display:flex; flex-direction:column; justify-content:center; }
+    body.q-page-lock #quranReader #qrAyahs { flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain; display:flex; flex-direction:column; justify-content:flex-start; padding:10px 0 6px; }
     body.q-page-lock #quranReader .qr-nav { flex:0 0 auto; margin-top:4px; }
     /* плеер докуется в низ колонки (НЕ плавает поверх страницы) и заменяет навигацию */
     body.q-page-lock #quranReader .q-player { position:static; left:auto; transform:none; bottom:auto; width:100%; margin:5px 0 0; box-shadow:0 -1px 10px rgba(0,0,0,.06); }
@@ -4981,7 +4983,7 @@ https://azkar.nurtech.dev/app`);
     });
   }
   function qPlural(n,a,b,c){ n=Math.abs(n); const d=n%100, e=n%10; if(d>10&&d<20) return c; if(e>1&&e<5) return b; if(e===1) return a; return c; }
-  const Q_ASSET_V='11';   // версия данных Корана/тафсира — бамп при изменении JSON (сброс кэша браузера)
+  const Q_ASSET_V='12';   // версия данных Корана/тафсира — бамп при изменении JSON (сброс кэша браузера)
   function qFetchJSON(url){ const u=url+(url.indexOf('?')>=0?'&':'?')+'v='+Q_ASSET_V; return fetch(u, { cache:'default' }).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); }); }
   function qLoadIndex(){ if(QURAN.index) return Promise.resolve(QURAN.index); return qFetchJSON('assets/quran/index.json').then(function(d){ QURAN.index=d; return d; }); }
   function qLoadSura(n){ if(QURAN.cache[n]) return Promise.resolve(QURAN.cache[n]); return qFetchJSON('assets/quran/'+n+'.json').then(function(d){ QURAN.cache[n]=d; return d; }); }
@@ -5451,7 +5453,7 @@ https://azkar.nurtech.dev/app`);
         renderPageView(res[1], r.fam);
         if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
         try{ localStorage.setItem('azkar_quran_page', String(n)); }catch(e){}
-        requestAnimationFrame(function(){ qUpdatePageLock(); window.scrollTo(0,0); qpFit(); qClockStart(); QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; qStartDwell(); });
+        requestAnimationFrame(function(){ qUpdatePageLock(); window.scrollTo(0,0); const ay=document.getElementById('qrAyahs'); if(ay) ay.scrollTop=0; qpFit(); qClockStart(); QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; qStartDwell(); });
         tgHaptic('light');
       });
     }).catch(function(e){
