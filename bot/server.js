@@ -14,9 +14,9 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const os = require('os');
 const crypto = require('crypto');
 const https = require('https');
+const zlib = require('zlib');
 const cron = require('node-cron');
 const { spawn } = require('child_process');
 
@@ -535,7 +535,8 @@ app.get('/api/azkar-audio/:n', (req, res) => {
 });
 
 const QUL_MUSHAF_LAYOUT_ID = '569';
-const QUL_MUSHAF_CACHE_DIR = process.env.QUL_MUSHAF_CACHE_DIR || path.join(os.tmpdir(), 'azkar-qul-mushaf-svg');
+const QUL_MUSHAF_CACHE_DIR = process.env.QUL_MUSHAF_CACHE_DIR || path.join(__dirname, 'data', 'qul-mushaf-svg');
+const qulMushafInflight = new Map();
 function httpsText(url, headers = {}) {
   return new Promise((resolve, reject) => {
     const req = https.request(url, {
@@ -568,33 +569,60 @@ function extractQulMushafSvg(html, page) {
   if (!svg || !svg.includes('md-page')) return null;
   return svg.replace(/\sdata-controller=["'][^"']*["']/gi, '');
 }
+async function loadQulMushafSvg(page, cacheFile) {
+  try {
+    return { svg: await fs.promises.readFile(cacheFile, 'utf8'), source: 'QUL cache' };
+  } catch (e) {
+    if (e && e.code !== 'ENOENT') throw e;
+  }
+  if (qulMushafInflight.has(page)) return qulMushafInflight.get(page);
+  const pending = (async () => {
+    const url = 'https://qul.tarteel.ai/resources/mushaf-layout/' + QUL_MUSHAF_LAYOUT_ID + '?page=' + page;
+    const html = await httpsText(url);
+    const svg = extractQulMushafSvg(html, page);
+    if (!svg) throw new Error('svg not found');
+    await fs.promises.mkdir(QUL_MUSHAF_CACHE_DIR, { recursive: true });
+    await fs.promises.writeFile(cacheFile, svg);
+    return { svg, source: 'QUL' };
+  })();
+  qulMushafInflight.set(page, pending);
+  try { return await pending; }
+  finally { qulMushafInflight.delete(page); }
+}
+function gzipBuffer(data) {
+  return new Promise((resolve, reject) => {
+    zlib.gzip(data, { level: zlib.constants.Z_DEFAULT_COMPRESSION }, (err, out) => err ? reject(err) : resolve(out));
+  });
+}
+async function sendQulMushafSvg(req, res, cacheFile, loaded) {
+  const gzipOk = /\bgzip\b/i.test(String(req.headers['accept-encoding'] || ''));
+  let body = Buffer.from(loaded.svg);
+  res.set({
+    'Content-Type': 'image/svg+xml; charset=utf-8',
+    'Cache-Control': 'public, max-age=31536000, immutable',
+    'Vary': 'Accept-Encoding',
+    'X-Mushaf-Source': loaded.source,
+  });
+  if (gzipOk) {
+    const gzipFile = cacheFile + '.gz';
+    try { body = await fs.promises.readFile(gzipFile); }
+    catch (e) {
+      if (!e || e.code !== 'ENOENT') throw e;
+      body = await gzipBuffer(body);
+      fs.promises.writeFile(gzipFile, body).catch(() => {});
+    }
+    res.set('Content-Encoding', 'gzip');
+  }
+  res.send(body);
+}
 app.get('/api/mushaf-svg/:page', async (req, res) => {
   const page = parseInt(req.params.page, 10);
   if (!(page >= 1 && page <= 604)) { res.status(400).end(); return; }
   const id = String(page).padStart(3, '0');
   const cacheFile = path.join(QUL_MUSHAF_CACHE_DIR, id + '.svg');
   try {
-    if (fs.existsSync(cacheFile)) {
-      res.set({
-        'Content-Type': 'image/svg+xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=604800',
-        'X-Mushaf-Source': 'QUL cache',
-      });
-      res.send(fs.readFileSync(cacheFile, 'utf8'));
-      return;
-    }
-    const url = 'https://qul.tarteel.ai/resources/mushaf-layout/' + QUL_MUSHAF_LAYOUT_ID + '?page=' + page;
-    const html = await httpsText(url);
-    const svg = extractQulMushafSvg(html, page);
-    if (!svg) throw new Error('svg not found');
-    fs.mkdirSync(QUL_MUSHAF_CACHE_DIR, { recursive: true });
-    fs.writeFileSync(cacheFile, svg);
-    res.set({
-      'Content-Type': 'image/svg+xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=604800',
-      'X-Mushaf-Source': 'QUL',
-    });
-    res.send(svg);
+    const loaded = await loadQulMushafSvg(page, cacheFile);
+    await sendQulMushafSvg(req, res, cacheFile, loaded);
   } catch (e) {
     console.error('[qul-mushaf-svg]', page, e && e.message ? e.message : e);
     res.status(502).json({ ok: false, error: 'QUL SVG unavailable' });
