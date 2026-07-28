@@ -830,8 +830,9 @@
   .qp-pane { direction:rtl; flex:0 0 50%; width:50%; min-width:0; }
   .qp-pane .qp-page { width:100%; box-sizing:border-box; }
   .qp-page { direction:rtl; font-size:var(--qp-size, 15px); color:var(--ink); padding:4px 6px 2px; -webkit-font-smoothing:antialiased; transform-origin:center; }
-  .qp-page.qp-svg-paper { width:100%; max-width:100%; margin:0 auto; padding:0; border:0; border-radius:0; background:#fbfaf2; box-shadow:none; overflow:hidden; aspect-ratio:382.68/547.09; display:grid; place-items:center; }
-  .qp-svg { display:block; width:100%; height:auto; max-height:100%; background:#fbfaf2; pointer-events:none;
+  /* Убираем только пустые боковые поля листа: текст, шапка и номер страницы остаются целиком. */
+  .qp-page.qp-svg-paper { width:100%; max-width:100%; margin:0 auto; padding:0; border:0; border-radius:0; background:#fbfaf2; box-shadow:none; overflow:hidden; aspect-ratio:350/547.09; display:grid; place-items:center; }
+  .qp-svg { display:block; width:auto; height:100%; max-width:none; max-height:none; background:#fbfaf2; pointer-events:none;
     user-select:none; -webkit-user-drag:none; }
   .qp-svg [data-type="empty"] { display:none; }
   @keyframes qpTrackNext { from { transform:translate3d(-50%,0,0); } to { transform:translate3d(0,0,0); } }
@@ -5009,7 +5010,7 @@ https://azkar.nurtech.dev/app`);
     });
   }
   function qPlural(n,a,b,c){ n=Math.abs(n); const d=n%100, e=n%10; if(d>10&&d<20) return c; if(e>1&&e<5) return b; if(e===1) return a; return c; }
-  const Q_ASSET_V='19';   // версия данных Корана/тафсира — бамп при изменении JSON (сброс кэша браузера)
+  const Q_ASSET_V='20';   // версия данных Корана/тафсира — бамп при изменении JSON (сброс кэша браузера)
   function qFetchJSON(url){ const u=url+(url.indexOf('?')>=0?'&':'?')+'v='+Q_ASSET_V; return fetch(u, { cache:'default' }).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); }); }
   function qLoadIndex(){ if(QURAN.index) return Promise.resolve(QURAN.index); return qFetchJSON('assets/quran/index.json').then(function(d){ QURAN.index=d; return d; }); }
   function qLoadSura(n){ if(QURAN.cache[n]) return Promise.resolve(QURAN.cache[n]); return qFetchJSON('assets/quran/'+n+'.json').then(function(d){ QURAN.cache[n]=d; return d; }); }
@@ -5476,7 +5477,9 @@ https://azkar.nurtech.dev/app`);
   }
   function qCenterCarousel(){
     const wrap=document.getElementById('qrAyahs'); if(!wrap||!wrap.classList.contains('qp-carousel-host')) return;
-    QURAN._carouselReset=true; QURAN._carouselIgnoreUntil=Date.now()+400; wrap.scrollLeft=wrap.clientWidth||window.innerWidth||390;
+    QURAN._carouselReset=true;
+    QURAN._carouselIgnoreUntil=Math.max(QURAN._carouselIgnoreUntil||0,Date.now()+120);
+    wrap.scrollLeft=wrap.clientWidth||window.innerWidth||390;
     requestAnimationFrame(function(){ wrap.scrollLeft=wrap.clientWidth||window.innerWidth||390; requestAnimationFrame(function(){ QURAN._carouselReset=false; }); });
   }
   function qRenderSvgCarousel(render){
@@ -5545,7 +5548,9 @@ https://azkar.nurtech.dev/app`);
   }
   function qCarouselSettle(){
     const wrap=document.getElementById('qrAyahs');
-    if(!wrap||QPREFS.mode!=='page'||QURAN._carouselReset||QURAN._carouselBusy||QURAN._carouselTouch||Date.now()<(QURAN._carouselIgnoreUntil||0)) return;
+    if(!wrap||QPREFS.mode!=='page'||QURAN._carouselReset||QURAN._carouselBusy||QURAN._carouselTouch) return;
+    const wait=(QURAN._carouselIgnoreUntil||0)-Date.now();
+    if(wait>0){ setTimeout(qCarouselSettle,wait+20); return; }
     const w=wrap.clientWidth||1, x=wrap.scrollLeft;
     const target=x<w*.45?QURAN.curPage+1:(x>w*1.55?QURAN.curPage-1:0);
     if(target>=1&&target<=604) qCarouselCommit(target);
@@ -5560,7 +5565,10 @@ https://azkar.nurtech.dev/app`);
   (function(){
     const wrap=document.getElementById('qrAyahs'); if(!wrap) return; let settleT=null;
     const later=function(ms){ if(settleT) clearTimeout(settleT); settleT=setTimeout(qCarouselSettle,ms||120); };
-    wrap.addEventListener('touchstart',function(){ if(QPREFS.mode==='page') QURAN._carouselTouch=true; },{passive:true});
+    wrap.addEventListener('touchstart',function(){ if(QPREFS.mode==='page'){
+      QURAN._carouselTouch=true; QURAN._carouselReset=false; QURAN._carouselIgnoreUntil=0;
+      if(settleT) clearTimeout(settleT);
+    } },{passive:true});
     wrap.addEventListener('touchend',function(){ if(QPREFS.mode==='page'){ QURAN._carouselTouch=false; later(140); } },{passive:true});
     wrap.addEventListener('touchcancel',function(){ QURAN._carouselTouch=false; later(140); },{passive:true});
     wrap.addEventListener('scroll',function(){ if(QPREFS.mode==='page'&&!QURAN._carouselTouch&&!QURAN._carouselReset) later(140); },{passive:true});
