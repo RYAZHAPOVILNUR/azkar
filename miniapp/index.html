@@ -1057,10 +1057,15 @@
   .qp-tr-item .q-tafsir-btn { margin-top:9px; }
   /* ландшафт: во весь экран, компактная шапка, крупный мусхаф */
   @media (orientation:landscape) and (max-height:600px){
+    body.q-page-lock { overflow:hidden; }
     .phone:has(#quranReader.active){ max-width:none; border-radius:0; }
+    body.q-page-lock #quranReader.active { position:fixed; inset:0; height:100dvh; overflow-x:hidden; overflow-y:auto;
+      overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y; padding-bottom:calc(28px + var(--tg-safe-bottom)); }
     .qr-head { padding-top:calc(4px + var(--tg-safe-top)); padding-bottom:4px; margin-bottom:6px; }
     .qr-head .qr-ttl .s { display:none; }
-    #quranReader .qwrap { padding:0 26px !important; }
+    #quranReader .qwrap { flex:0 0 auto; overflow:visible; padding:0 26px !important; }
+    body.q-page-lock #quranReader #qrAyahs.qp-carousel-host { overflow-x:auto; overflow-y:hidden; touch-action:pan-x pan-y;
+      overscroll-behavior-x:contain; overscroll-behavior-y:auto; }
   }
 
   /* нижняя навигация страниц + шапка джуза */
@@ -5548,10 +5553,14 @@ https://azkar.nurtech.dev/app`);
     qUpdatePageNav(render.page);
     try{ localStorage.setItem('azkar_quran_page', String(render.page)); }catch(e){}
   }
+  function qResetPageScroll(){
+    window.scrollTo(0,0);
+    const reader=document.getElementById('quranReader'); if(reader) reader.scrollTop=0;
+    const ay=document.getElementById('qrAyahs'); if(ay) ay.scrollTop=0;
+  }
   function qAfterSvgPageShown(){
     requestAnimationFrame(function(){
-      qUpdatePageLock(); window.scrollTo(0,0);
-      const ay=document.getElementById('qrAyahs'); if(ay) ay.scrollTop=0;
+      qUpdatePageLock(); qResetPageScroll();
       qClockStart(); QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; qStartDwell();
       qPreloadAdjacentPages();
     });
@@ -5700,7 +5709,7 @@ https://azkar.nurtech.dev/app`);
         qPreloadAdjacentPages();
         if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
         try{ localStorage.setItem('azkar_quran_page', String(n)); }catch(e){}
-        requestAnimationFrame(function(){ qUpdatePageLock(); window.scrollTo(0,0); const ay=document.getElementById('qrAyahs'); if(ay) ay.scrollTop=0; qClockStart(); QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; qStartDwell(); qPreloadAdjacentPages(); });
+        requestAnimationFrame(function(){ qUpdatePageLock(); qResetPageScroll(); qClockStart(); QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; qStartDwell(); qPreloadAdjacentPages(); });
         tgHaptic('light');
         return;
       }
@@ -5710,7 +5719,7 @@ https://azkar.nurtech.dev/app`);
         renderPageView(res[1], r.fam);
         if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
         try{ localStorage.setItem('azkar_quran_page', String(n)); }catch(e){}
-        requestAnimationFrame(function(){ qUpdatePageLock(); window.scrollTo(0,0); const ay=document.getElementById('qrAyahs'); if(ay) ay.scrollTop=0; qpFit(); qClockStart(); QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; qStartDwell(); });
+        requestAnimationFrame(function(){ qUpdatePageLock(); qResetPageScroll(); qpFit(); qClockStart(); QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; qStartDwell(); });
         tgHaptic('light');
       });
     }).catch(function(e){
@@ -6033,7 +6042,7 @@ https://azkar.nurtech.dev/app`);
     let _rt=null;
     const refit=function(){ const a=activeScreen(); if(!(a&&a.id==='quranReader')) return; if(!qIsPageBased()) return;
       QURAN._qpSize=0; QURAN._carouselReset=true; QURAN._carouselIgnoreUntil=Date.now()+700;
-      if(_rt) clearTimeout(_rt); _rt=setTimeout(function(){ qCenterCarousel(); qpFit(); if(QPREFS.mode==='page') window.scrollTo(0,0); }, 160); };
+      if(_rt) clearTimeout(_rt); _rt=setTimeout(function(){ qCenterCarousel(); qpFit(); if(QPREFS.mode==='page') qResetPageScroll(); }, 160); };
     window.addEventListener('resize', refit, { passive:true });
     window.addEventListener('orientationchange', refit, { passive:true });
   })();
