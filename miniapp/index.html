@@ -5201,6 +5201,22 @@ https://azkar.nurtech.dev/app`);
     return qFetchJSON('assets/quran/kfgqpc/'+n+'.json').then(function(d){ QURAN.kcache[n]=d; return d; }); }
   function qLoadAyahWords(n){ if(QURAN.awcache[n]) return Promise.resolve(QURAN.awcache[n]);
     return qFetchJSON('assets/quran/aw/'+n+'.json').then(function(d){ QURAN.awcache[n]=d; return d; }); }
+  function qAwFontPages(aw, fromAyah, toAyah){
+    const found={}; if(!aw) return [];
+    const from=Math.max(1,parseInt(fromAyah,10)||1), to=Math.max(from,parseInt(toAyah,10)||from);
+    for(let a=from;a<=to;a++){ const words=aw[a]; if(!words) continue;
+      for(let i=0;i<words.length;i++) found[words[i][1]]=1;
+    }
+    return Object.keys(found).map(function(p){ return parseInt(p,10); }).sort(function(a,b){ return a-b; });
+  }
+  function qLoadFontPages(pages,taj,workers){
+    const queue=pages.slice(), count=Math.max(1,Math.min(workers||2,queue.length||1));
+    const worker=function(){ const page=queue.shift(); if(!page) return Promise.resolve();
+      return qLoadPageFont(page,taj).catch(function(){ return null; }).then(worker);
+    };
+    const jobs=[]; for(let i=0;i<count;i++) jobs.push(worker());
+    return Promise.all(jobs);
+  }
   // арабский аята из пословных code_v2 глифов, каждое слово — своим пофайловым шрифтом (v2/v4 таджвид)
   function qMarkFontReady(fam){
     QURAN.fontReady[fam]=true;
@@ -5211,21 +5227,32 @@ https://azkar.nurtech.dev/app`);
   // Чтение (аяты поштучно + перевод) и Сура (сплошным) — оба цветным мединским из пословных QCF-глифов.
   // Шрифты грузятся по страницам. Пока конкретный шрифт не готов, прячем его PUA-глифы, чтобы не мигали служебные символы.
   function qOpenSuraQcf(n, ayah){
+    const req=(QURAN._suraReq||0)+1; QURAN._suraReq=req;
     const wrap=document.getElementById('qrAyahs');
     if(wrap){
       wrap.className = 'q-ayahs' + (QPREFS.mode==='mushaf' ? ' q-flow' : ' q-reading') + (QPREFS.tj ? ' q-tajweed' : '');
       wrap.innerHTML='<div class="qp-loading">Готовим шрифт мусхафа…</div>';
     }
-    Promise.all([ qLoadIndex().catch(function(){ return null; }), qLoadSura(n) ]).then(function(res){
-      const su=res[1]; QURAN.cur=su; QURAN.curN=n; QURAN.curAw=null; QURAN.seen=new Set();
+    Promise.all([ qLoadIndex().catch(function(){ return null; }), qLoadSura(n), qLoadAyahWords(n).catch(function(){ return null; }) ]).then(function(res){
+      if(req!==QURAN._suraReq) return;
+      const su=res[1], aw=res[2]; QURAN.cur=su; QURAN.curN=n; QURAN.curAw=aw; QURAN.seen=new Set();
       document.getElementById('qrTitle').textContent = su.n+'. '+su.nr;
       document.getElementById('qrSub').textContent = su.c+' '+qPlural(su.c,'аят','аята','аятов')+' · '+su.t;
       document.getElementById('qrBism').hidden = true;
       if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
-      renderReader(su, ayah);
-      qSavePos(n, ayah||1);
-      requestAnimationFrame(function(){ if(ayah) qScrollToAyah(ayah, false); qSetupObserver(); qClockStart(); qUpdatePageLock(); });
-      renderQContinue(); renderQuranHome(); tgHaptic('light');
+      const start=Math.max(1,parseInt(ayah,10)||1);
+      const critical=qAwFontPages(aw,Math.max(1,start-2),Math.min(su.c,start+12));
+      const all=qAwFontPages(aw,1,su.c);
+      return qLoadFontPages(critical,QPREFS.tj,3).then(function(){
+        if(req!==QURAN._suraReq||QURAN.curN!==n) return;
+        renderReader(su, ayah);
+        qSavePos(n, ayah||1);
+        requestAnimationFrame(function(){ if(ayah) qScrollToAyah(ayah, false); qSetupObserver(); qClockStart(); qUpdatePageLock(); });
+        renderQContinue(); renderQuranHome(); tgHaptic('light');
+        const rest=all.filter(function(p){ return critical.indexOf(p)<0; });
+        const prepare=function(){ qLoadFontPages(rest,QPREFS.tj,2).catch(function(){}); };
+        if('requestIdleCallback' in window) requestIdleCallback(prepare,{timeout:900}); else setTimeout(prepare,250);
+      });
     }).catch(function(){ if(wrap) wrap.innerHTML='<div class="qp-loading">Не удалось загрузить.<br>Проверьте соединение.</div>'; tgHaptic('light'); });
   }
   function qOpenSura(n, ayah){
@@ -5244,7 +5271,7 @@ https://azkar.nurtech.dev/app`);
     document.getElementById('qrBism').hidden = !su.bism;
     document.getElementById('qrBism').style.fontFamily = "'KFGQPC', var(--ar)";
     const wrap=document.getElementById('qrAyahs');
-    const wordsOf=function(a){ if(aw && aw[a.n] && qWordsFontsReady(aw[a.n], QPREFS.tj)) return qcfWordsHtml(aw[a.n], QPREFS.tj); return (QPREFS.tj ? tjRender(a.tj) : escHtml(a.ar))+ayahMarker(a.n); };
+    const wordsOf=function(a){ if(aw && aw[a.n]) return qcfWordsHtml(aw[a.n], QPREFS.tj); return (QPREFS.tj ? tjRender(a.tj) : escHtml(a.ar))+ayahMarker(a.n); };
     let html='';
     if(QPREFS.mode==='mushaf'){
       let inner='';
