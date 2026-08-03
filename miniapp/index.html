@@ -823,10 +823,12 @@
      Выключка строк вшита в метрики шрифта, поэтому кегль считается ЧИСТЫМ CSS от размеров контейнера
      (container queries) — ни одного JS-измерения и ни одного второго прохода, отсюда отсутствие дёрганья. */
   #qrAyahs.qp-stage { position:relative; display:block; overflow:hidden; direction:ltr;
-    background:#fdfcf7; touch-action:pan-y; }
+    background:var(--qp-paper-bg,#fdfcf7); touch-action:pan-y; }
   .qp-deck { position:absolute; top:0; bottom:0; left:0; display:flex; width:300%; transform:translate3d(calc(-33.33333% + var(--qp-drag,0px)),0,0); }
   .qp-deck.qp-anim { transition:transform .26s cubic-bezier(.22,.61,.36,1); }
   .qp-pane { flex:0 0 33.33333%; width:33.33333%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  /* ландшафт: лист по ширине экрана (текст крупный), по вертикали — прокрутка */
+  #qrAyahs.qp-stage.qp-land .qp-pane { align-items:flex-start; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
   /* Кегль и габариты листа ставит JS (qSizePaper) от РЕАЛЬНЫХ размеров контейнера — одним проходом.
      Container queries тут неприменимы: в WebView Telegram они дают не ту величину и лист вылезал за экран. */
   .qp-paper {
@@ -837,14 +839,14 @@
     -webkit-text-size-adjust:100%; text-size-adjust:100%;
     box-sizing:border-box; padding:calc(var(--pad)*1em) calc(var(--mx)*1em);
     display:grid; grid-template-rows:calc(var(--head)*1em) 1fr calc(var(--foot)*1em);
-    background:#fdfcf7; color:#17150f; direction:rtl; -webkit-font-smoothing:antialiased; }
+    background:var(--qp-paper-bg,#fdfcf7); color:var(--qp-ink,#17150f); direction:rtl; -webkit-font-smoothing:antialiased; }
   .q-tajweed .qp-paper { --em:18.95; }
   /* колонтитул — В ПОТОКЕ грида, поэтому наезд на текст невозможен по построению */
   .qp-head { display:flex; align-items:center; justify-content:space-between; gap:.5em; direction:ltr;
-    font-family:var(--sans); font-size:.42em; color:#3f3a2c; padding:0 .2em; min-width:0; }
+    font-family:var(--sans); font-size:.42em; color:var(--qp-head-ink,#3f3a2c); padding:0 .2em; min-width:0; }
   .qp-h-juz { flex:0 0 auto; font-weight:600; white-space:nowrap; font-variant-numeric:tabular-nums; }
   .qp-h-sura { flex:1 1 auto; text-align:center; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
-  .qp-h-bm { flex:0 0 auto; display:block; width:1.15em; height:1.15em; color:#3f3a2c; opacity:.75; }
+  .qp-h-bm { flex:0 0 auto; display:block; width:1.15em; height:1.15em; color:var(--qp-head-ink,#3f3a2c); opacity:.75; }
   .qp-h-bm svg { width:100%; height:100%; display:block; }
   .qp-body { display:grid; grid-template-rows:repeat(var(--rows),minmax(0,1fr)); align-items:center; line-height:1; }
   /* space-between даёт настоящую выключку: остаток ширины расходится между словами */
@@ -855,15 +857,29 @@
   .qp-w { display:inline-block; flex:0 0 auto; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:color .12s; }
   .qp-w:active { color:#8a6d1e; }
   .qp-ayah-on { color:#1c6b52; }
-  .qp-banner { font-family:'QBSML'; font-size:.95em; line-height:1; color:#17150f; }
-  .qp-bism { font-family:'KFGQPC', var(--ar); font-size:.6em; line-height:1; color:#17150f; }
+  .qp-banner { font-family:'QBSML'; font-size:.95em; line-height:1; color:var(--qp-ink,#17150f); }
+  .qp-bism { font-family:'KFGQPC', var(--ar); font-size:.6em; line-height:1; color:var(--qp-ink,#17150f); }
   .qp-foot { display:grid; place-items:center; direction:ltr; }
-  .qp-num { font-family:'KFGQPC', var(--ar); font-size:.52em; color:#5b5340; line-height:1; }
+  .qp-num { font-family:'KFGQPC', var(--ar); font-size:.52em; color:var(--qp-num-ink,#5b5340); line-height:1; }
   .qp-paper.is-blank .qp-body, .qp-paper.is-blank .qp-foot, .qp-paper.is-blank .qp-head { visibility:hidden; }
   .qp-loading { text-align:center; color:var(--ink-faint); font-size:14px; padding:40px 16px; }
   @media (prefers-reduced-motion: reduce){ .qp-deck.qp-anim { transition:none; } }
-  /* лист печатается на светлой бумаге — базовая (тёмная) палитра таджвид-шрифта здесь верна */
+  /* На светлой бумаге верна базовая (тёмная) палитра таджвид-шрифта */
   .q-tajweed .qp-paper { font-palette:normal; }
+  /* Тёмная тема мусхафа: тёмная бумага + светлый текст; у таджвид-шрифта берём палитру
+     со светлой базой (там, где COLRv1 поддерживается). */
+  :root[data-theme="dark"] {
+    --qp-paper-bg:#14171a; --qp-ink:#e9e7e0; --qp-head-ink:#a8a49a; --qp-num-ink:#8e8a80;
+  }
+  :root[data-theme="dark"] .q-tajweed .qp-paper { font-palette:--qcfDark; }
+  :root[data-theme="dark"] .qp-w:active { color:#d8b56a; }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme]) {
+      --qp-paper-bg:#14171a; --qp-ink:#e9e7e0; --qp-head-ink:#a8a49a; --qp-num-ink:#8e8a80;
+    }
+    :root:not([data-theme]) .q-tajweed .qp-paper { font-palette:--qcfDark; }
+    :root:not([data-theme]) .qp-w:active { color:#d8b56a; }
+  }
   /* режим Чтение — аяты поштучно цветным пофайловым мединским */
   .q-reading .q-ayah { padding:16px 2px; border-bottom:1px solid color-mix(in srgb, var(--line) 60%, transparent); }
   .q-reading .qcf-ar { direction:rtl; text-align:center; font-size:var(--q-ar-size, 30px); line-height:2.0; color:var(--ink); cursor:pointer; padding:4px 2px; }
@@ -1012,7 +1028,7 @@
   @media (orientation:landscape){
     body.q-page-lock { overflow:hidden; }
     .phone:has(#quranReader.active){ max-width:none; border-radius:0; }
-    body.q-page-lock #quranReader.active { position:fixed; top:0; left:0; right:0; height:var(--app-h,100dvh); max-height:var(--app-h,100dvh); display:flex; flex-direction:column; overflow:hidden; background:#fdfcf7; }
+    body.q-page-lock #quranReader.active { position:fixed; top:0; left:0; right:0; height:var(--app-h,100dvh); max-height:var(--app-h,100dvh); display:flex; flex-direction:column; overflow:hidden; background:var(--qp-paper-bg,#fdfcf7); }
     body.q-page-lock #quranReader .qwrap { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; padding:0 !important; }
     body.q-page-lock #quranReader #qrAyahs { flex:1 1 auto; min-height:0; }
     body.q-page-lock #quranReader .qr-nav { display:none; }
@@ -5665,9 +5681,15 @@ https://azkar.nurtech.dev/app`);
     }
     const wU=em+2*QP_GEO.mx;
     const hU=rows*QP_GEO.pitch+QP_GEO.head+QP_GEO.foot+2*QP_GEO.pad;
+    // В портрете лист вписывается целиком. В ландшафте высоты мало, и подгонка по ней делала
+    // текст мелким — там вписываем по ШИРИНЕ (текст крупный), а лист прокручивается по вертикали.
+    const land=W>H*1.15;
+    const byW=W/wU, byH=H/hU;
     // 0.5% запаса: сумма ширин отдельных inline-block в WebKit после округления бывает
     // на доли пикселя больше расчётной — без запаса строка переполняется и обрезается.
-    const fs=Math.min(W/wU, H/hU)*0.995;
+    const fs=(land ? Math.min(byW, byH*2.6) : Math.min(byW, byH))*0.995;
+    const stage=document.getElementById('qrAyahs');
+    if(stage) stage.classList.toggle('qp-land', land);
     if(fs>0) paper.style.fontSize=fs.toFixed(3)+'px';
   }
   function qResizeAllPanes(){
@@ -5761,6 +5783,9 @@ https://azkar.nurtech.dev/app`);
   // заполнить три панели вокруг страницы n (данные соседей — из кэша либо догружаются)
   function qPaintDeck(n){
     const panes=qPanes(); if(panes.length!==3) return;
+    // класс таджвида обновляем на каждой отрисовке: дека строится один раз, а режим можно переключить
+    const wrap=document.getElementById('qrAyahs');
+    if(wrap) wrap.classList.toggle('q-tajweed', !!QPREFS.tj);
     [[panes[0], n-1],[panes[1], n],[panes[2], n+1]].forEach(function(pair){
       const pane=pair[0], p=pair[1];
       if(!(p>=1&&p<=QP_TOTAL)){ qFillPane(pane, p, null, null); return; }
