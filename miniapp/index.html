@@ -5706,7 +5706,7 @@ https://azkar.nurtech.dev/app`);
     if(QPREFS.mode!=='page' || !QURAN.curPage) return;
     const prime=function(p){
       if(!(p>=1&&p<=604)) return;
-      qEnsureFontPage(p,QPREFS.tj).then(function(render){qUpgradeFontPane(p,render);}).catch(function(){});
+      qEnsureSvgPageCached(p).catch(function(){});
     };
     prime(QURAN.curPage-1); prime(QURAN.curPage+1);
     prime(QURAN.curPage-2); prime(QURAN.curPage+2);
@@ -5730,15 +5730,11 @@ https://azkar.nurtech.dev/app`);
     QURAN._carouselBusy=true; qClockStop();
     const done=function(render){
       if(QPREFS.mode!=='page') return;
-      qRenderSvgCarousel(render); qApplySvgPageMeta(render); qAfterSvgPageShown(); tgHaptic('light');
+      qRenderSvgCarousel(render); qApplySvgPageMeta(render); qAfterSvgPageShown();
     };
     const cached=QURAN.pageHtmlCache[n];
     if(cached){
       done(cached);
-      const missing=QPREFS.tj?!cached.tajHtml:!cached.plainHtml;
-      if(missing) qEnsureFontPage(n,QPREFS.tj).then(function(render){
-        if(QPREFS.mode==='page'&&QURAN.curPage===n){ qRenderSvgCarousel(render); qApplySvgPageMeta(render); qAfterSvgPageShown(); }
-      }).catch(function(){});
       return;
     }
     // Не блокируем следующий жест сетью: новая страница уже находится в ленте как <img>.
@@ -5746,9 +5742,6 @@ https://azkar.nurtech.dev/app`);
     Promise.all([qLoadPage(n),qLoadIndex().catch(function(){return null;}),qLoadQulSvgPage(n)]).then(function(res){
       const render=qSvgRender(res[0],res[2]);
       if(QPREFS.mode==='page'&&QURAN.curPage===n) qApplySvgPageMeta(render);
-      qEnsureFontPage(n,QPREFS.tj).then(function(fontRender){
-        if(QPREFS.mode==='page'&&QURAN.curPage===n){ qRenderSvgCarousel(fontRender); qApplySvgPageMeta(fontRender); qAfterSvgPageShown(); }
-      }).catch(function(){});
     }).catch(function(){});
   }
   function qCarouselSettle(){
@@ -5830,39 +5823,23 @@ https://azkar.nurtech.dev/app`);
     }
     document.getElementById('qrBism').hidden=true;
     const needTr = QPREFS.mode==='reading';
-    const pageTaj=!!QPREFS.tj;
     Promise.all([
       qLoadPagesMeta().catch(function(){ return null; }),
       qLoadPage(n),
       needTr?qLoadPageTr(n):Promise.resolve(null),
       qLoadIndex().catch(function(){ return null; }),
-      qLoadPageFont(n,pageTaj).catch(function(){ return null; }),
-      qLoadQulSvgShell(n).catch(function(){ return null; })
+      qLoadQulSvgPage(n).catch(function(){ return null; })
     ]).then(function(res){
       if(req!==QURAN._pageReq) return;
       QURAN.pageData=res[1]; QURAN.pageTr=res[2];
-      if(res[4]&&res[4].ok&&res[5]){
-        const render=qSvgRender(res[1],res[5]);
-        render[pageTaj?'tajHtml':'plainHtml']=qFontPageHtml(res[1],res[4].fam,pageTaj);
-        qRenderSvgCarousel(render);
-        qApplySvgPageMeta(render);
-        qPreloadAdjacentPages();
-        if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
-        try{ localStorage.setItem('azkar_quran_page', String(n)); }catch(e){}
-        requestAnimationFrame(function(){ qUpdatePageLock(); qFitSvgPaper(); qResetPageScroll(); qClockStart(); QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; qStartDwell(); qPreloadAdjacentPages(); });
-        tgHaptic('light');
-        return;
-      }
-      return Promise.all([qLoadPageFont(n,pageTaj),qLoadQulSvgPage(n)]).then(function(fallback){
-        if(req!==QURAN._pageReq) return;
-        const r=fallback[0];
-        if(!r.ok){ throw { nofont:true }; }
-        renderSvgPageView(res[1],fallback[1]);
-        if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
-        try{ localStorage.setItem('azkar_quran_page', String(n)); }catch(e){}
-        requestAnimationFrame(function(){ qUpdatePageLock(); qFitSvgPaper(); qResetPageScroll(); qpFit(); qClockStart(); QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; qStartDwell(); });
-        tgHaptic('light');
-      });
+      const render=qSvgRender(res[1],res[4]||qMushafSvgUrl(n));
+      qRenderSvgCarousel(render);
+      qApplySvgPageMeta(render);
+      qPreloadAdjacentPages();
+      if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
+      try{ localStorage.setItem('azkar_quran_page', String(n)); }catch(e){}
+      requestAnimationFrame(function(){ qUpdatePageLock(); qFitSvgPaper(); qResetPageScroll(); qClockStart(); QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; qStartDwell(); qPreloadAdjacentPages(); });
+      tgHaptic('light');
     }).catch(function(e){
       if(req!==QURAN._pageReq) return;
       if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
