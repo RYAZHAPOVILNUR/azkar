@@ -569,6 +569,26 @@ function extractQulMushafSvg(html, page) {
   if (!svg || !svg.includes('md-page')) return null;
   return svg.replace(/\sdata-controller=["'][^"']*["']/gi, '');
 }
+function fitQulMushafSvg(svg) {
+  let out = String(svg);
+  ['md-non-quranic-header-surah-name', 'md-non-quranic-header-juz-name', 'md-non-quranic-page-number'].forEach((id) => {
+    out = stripSvgGroupById(out, id);
+  });
+  return out.replace(/\bviewBox=["']0 0 382\.68 547\.09["']/, 'viewBox="-18 0 418.68 547.09"');
+}
+function stripSvgGroupById(svg, id) {
+  const start = new RegExp(`<g\\b(?=[^>]*\\bid=["']${id}["'])[^>]*>`, 'i').exec(svg);
+  if (!start) return svg;
+  const group = /<\/?g\b[^>]*>/gi;
+  group.lastIndex = start.index + start[0].length;
+  let depth = 1;
+  let token;
+  while (depth > 0 && (token = group.exec(svg))) {
+    depth += token[0][1] === '/' ? -1 : 1;
+  }
+  if (depth !== 0) return svg;
+  return svg.slice(0, start.index) + svg.slice(group.lastIndex);
+}
 async function loadQulMushafSvg(page, cacheFile) {
   try {
     return { svg: await fs.promises.readFile(cacheFile, 'utf8'), source: 'QUL cache' };
@@ -627,7 +647,7 @@ async function loadQulMushafShell(cacheFile, loaded) {
 }
 async function sendQulMushafSvg(req, res, cacheFile, loaded) {
   const gzipOk = /\bgzip\b/i.test(String(req.headers['accept-encoding'] || ''));
-  let body = Buffer.from(loaded.svg);
+  let body = Buffer.from(fitQulMushafSvg(loaded.svg));
   res.set({
     'Content-Type': 'image/svg+xml; charset=utf-8',
     'Cache-Control': 'public, max-age=31536000, immutable',
@@ -635,7 +655,7 @@ async function sendQulMushafSvg(req, res, cacheFile, loaded) {
     'X-Mushaf-Source': loaded.source,
   });
   if (gzipOk) {
-    const gzipFile = cacheFile + '.gz';
+    const gzipFile = cacheFile + '.fit-v4.gz';
     try { body = await fs.promises.readFile(gzipFile); }
     catch (e) {
       if (!e || e.code !== 'ENOENT') throw e;

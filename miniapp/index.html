@@ -835,10 +835,14 @@
   .qp-svg { display:block; width:100%; height:100%; max-width:none; max-height:none; background:#fbfaf2; pointer-events:none;
     user-select:none; -webkit-user-drag:none; }
   .qp-app-head { position:absolute; z-index:3; top:0; left:0; right:0; height:10%; min-height:54px; display:grid;
-    grid-template-columns:1fr minmax(0,1.5fr); align-items:center; gap:12px; padding:8px 64px 7px 20px;
+    grid-template-columns:1fr minmax(0,1.45fr) 1fr; align-items:center; gap:12px; padding:8px 20px 7px;
     direction:ltr; color:#242424; background:#fbfaf2; font-family:system-ui,-apple-system,sans-serif; }
   .qp-app-head span { font-size:12px; font-weight:650; white-space:nowrap; }
   .qp-app-head strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:center; font-size:13px; font-weight:700; }
+  .qp-app-head i { justify-self:end; width:22px; height:22px; color:#242424; }
+  .qp-app-head i svg { width:100%; height:100%; display:block; }
+  .qp-svg-page-num { position:absolute; z-index:3; left:0; right:0; bottom:22px; direction:ltr; text-align:center;
+    color:#242424; font-family:system-ui,-apple-system,sans-serif; font-size:16px; font-weight:700; }
   .qp-taj-overlay { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
   .qp-taj-lines { width:243.6px; height:405.75px; display:grid; grid-template-rows:repeat(15,27.05px);
     direction:rtl; color:#111; font-size:18.5px; line-height:1; font-palette:normal; -webkit-font-smoothing:antialiased; }
@@ -1044,8 +1048,8 @@
     body.q-page-lock #quranReader .qp-carousel { height:100%; min-height:0; }
     body.q-page-lock #quranReader .qp-carousel > .qp-pane { height:100%; display:flex; align-items:center; justify-content:center; }
     body.q-page-lock #quranReader .qp-carousel .qp-page.qp-svg-paper {
-      width:var(--qp-paper-w, 100%);
-      height:var(--qp-paper-h, auto);
+      width:100%;
+      height:100%;
       max-width:100%;
       max-height:100%;
       flex:0 0 auto;
@@ -1061,6 +1065,14 @@
     background:color-mix(in srgb, var(--surface) 92%, transparent); color:var(--ink-soft);
     box-shadow:0 8px 20px rgba(0,0,0,.08); -webkit-tap-highlight-color:transparent; }
   .q-page-settings:active { transform:scale(.96); background:var(--surface-2); }
+  body.q-page-lock #quranReader .qp-svg-stage { height:100%; }
+  body.q-page-lock #quranReader .qp-svg { transform:scaleX(.82); transform-origin:center center; background:#fbfaf2; }
+  body.q-page-lock #quranReader .qp-app-head { top:calc(var(--tg-safe-top) + 52px); height:36px; min-height:36px; padding:0 30px;
+    font-size:18px; background:transparent; }
+  body.q-page-lock #quranReader .qp-app-head span,
+  body.q-page-lock #quranReader .qp-app-head strong { font-size:18px; font-weight:700; }
+  body.q-page-lock #quranReader .qp-svg-page-num { bottom:calc(var(--tg-safe-bottom) + 30px); font-size:18px; }
+  body.q-page-lock #quranReader .q-page-settings { display:none; }
   /* режим Чтение: переводы под страницей */
   .qp-trans { direction:ltr; text-align:left; margin-top:18px; border-top:1px solid var(--line); padding-top:4px; }
   .qp-trans-h { font-size:11.5px; letter-spacing:.5px; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin:10px 0 10px; }
@@ -5573,8 +5585,14 @@ https://azkar.nurtech.dev/app`);
     const firstSura = firstK ? parseInt(firstK.split(':')[0],10) : (QURAN.curN||1);
     return (data&&data.starts&&data.starts.length&&data.starts[0].s) ? data.starts[0].s : firstSura;
   }
-  function qSvgPageHtml(n){
-    return '<div class="qp-page qp-svg-paper"><div class="qp-svg-stage"><img class="qp-svg" src="'+qMushafSvgUrl(n)+'" alt="Страница мусхафа '+n+'" draggable="false" decoding="async"></div></div>';
+  function qSvgPageHtml(n,data){
+    const sura = data ? qSvgDisplaySura(data) : (QURAN.curN || 1);
+    const juz = data && data.j ? data.j : '';
+    return '<div class="qp-page qp-svg-paper">'
+      +'<div class="qp-app-head"><span>Джуз '+escHtml(juz)+'</span><strong>'+escHtml(suraNameRu(sura))+'</strong><i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.5A2.5 2.5 0 0 1 8.5 2h7A2.5 2.5 0 0 1 18 4.5V22l-6-3.6L6 22V4.5Z"/></svg></i></div>'
+      +'<div class="qp-svg-stage"><img class="qp-svg" src="'+qMushafSvgUrl(n)+'" alt="Страница мусхафа '+n+'" draggable="false" decoding="async"></div>'
+      +'<div class="qp-svg-page-num">'+n+'</div>'
+      +'</div>';
   }
   function qFontPageHtml(data,fam,taj){
     const byLine={}; (data.lines||[]).forEach(function(line){ byLine[line.n]=line; });
@@ -5597,16 +5615,13 @@ https://azkar.nurtech.dev/app`);
   }
   function qPageHtmlFor(n){
     const render=QURAN.pageHtmlCache[n];
-    if(render){
-      const fontHtml=QPREFS.tj?render.tajHtml:render.plainHtml;
-      if(fontHtml) return fontHtml;
-    }
+    if(render&&render.html) return render.html;
     return qSvgPageHtml(n);
   }
   function qSvgRender(data, url){
     const displaySura = qSvgDisplaySura(data);
     const previous=QURAN.pageHtmlCache[data.p];
-    const render = { html:qSvgPageHtml(data.p), data:data, page:data.p, juz:data.j, displaySura:displaySura, url:url||qMushafSvgUrl(data.p),
+    const render = { html:qSvgPageHtml(data.p,data), data:data, page:data.p, juz:data.j, displaySura:displaySura, url:url||qMushafSvgUrl(data.p),
       tajHtml:previous&&previous.tajHtml||'', plainHtml:previous&&previous.plainHtml||'' };
     QURAN.pageHtmlCache[data.p]=render;
     return render;
@@ -5628,11 +5643,7 @@ https://azkar.nurtech.dev/app`);
     return p;
   }
   function qUpgradeFontPane(n,render){
-    if(!render) return;
-    const html=QPREFS.tj?render.tajHtml:render.plainHtml;
-    if(!html) return;
-    const pane=document.querySelector('#qrAyahs .qp-pane[data-page="'+n+'"]');
-    if(pane&&pane.innerHTML!==html) pane.innerHTML=html;
+    return;
   }
   function qCarouselPane(n, current){
     if(!(n>=1&&n<=604)) return '<div class="qp-pane qp-pane-empty" aria-hidden="true"><div class="qp-page qp-svg-paper"></div></div>';
