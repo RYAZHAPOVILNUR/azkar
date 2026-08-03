@@ -80,6 +80,7 @@
   :root { --tg-safe-top: 0px; --tg-safe-bottom: 0px; }
   * { box-sizing: border-box; }
   html,body { margin:0; padding:0; overscroll-behavior:none; }
+  html, body { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   body {
     font-family: var(--sans);
     background: radial-gradient(120% 70% at 50% -12%, var(--bg-2), var(--bg) 70%);
@@ -821,33 +822,35 @@
   /* ===== Мусхаф (режим «Страница»): лист на HTML + пофайловый шрифт QCF =====
      Выключка строк вшита в метрики шрифта, поэтому кегль считается ЧИСТЫМ CSS от размеров контейнера
      (container queries) — ни одного JS-измерения и ни одного второго прохода, отсюда отсутствие дёрганья. */
-  #qrAyahs.qp-stage { container-type:size; position:relative; display:block; overflow:hidden; direction:ltr;
+  #qrAyahs.qp-stage { position:relative; display:block; overflow:hidden; direction:ltr;
     background:#fdfcf7; touch-action:pan-y; }
-  .qp-deck { display:flex; width:300%; height:100%; transform:translate3d(calc(-33.33333% + var(--qp-drag,0px)),0,0); }
+  .qp-deck { position:absolute; top:0; bottom:0; left:0; display:flex; width:300%; transform:translate3d(calc(-33.33333% + var(--qp-drag,0px)),0,0); }
   .qp-deck.qp-anim { transition:transform .26s cubic-bezier(.22,.61,.36,1); }
-  .qp-pane { flex:0 0 33.33333%; width:33.33333%; height:100%; display:grid; place-items:center; }
+  .qp-pane { flex:0 0 33.33333%; width:33.33333%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  /* Кегль и габариты листа ставит JS (qSizePaper) от РЕАЛЬНЫХ размеров контейнера — одним проходом.
+     Container queries тут неприменимы: в WebView Telegram они дают не ту величину и лист вылезал за экран. */
   .qp-paper {
     --em:15.9; --rows:15; --pitch:1.62; --mx:.55; --head:1.75; --foot:1.55; --pad:.4;
-    --fs-w:calc(100cqw / (var(--em) + 2*var(--mx)));
-    --fs-h:calc(100cqh / (var(--rows)*var(--pitch) + var(--head) + var(--foot) + 2*var(--pad)));
-    font-size:min(var(--fs-w), var(--fs-h));
+    font-size:16px;
     width:calc((var(--em) + 2*var(--mx)) * 1em);
     height:calc((var(--rows)*var(--pitch) + var(--head) + var(--foot) + 2*var(--pad)) * 1em);
+    -webkit-text-size-adjust:100%; text-size-adjust:100%;
     box-sizing:border-box; padding:calc(var(--pad)*1em) calc(var(--mx)*1em);
     display:grid; grid-template-rows:calc(var(--head)*1em) 1fr calc(var(--foot)*1em);
     background:#fdfcf7; color:#17150f; direction:rtl; -webkit-font-smoothing:antialiased; }
   .q-tajweed .qp-paper { --em:18.95; }
   /* колонтитул — В ПОТОКЕ грида, поэтому наезд на текст невозможен по построению */
-  .qp-head { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; direction:ltr;
-    font-family:var(--sans); font-size:.42em; color:#3f3a2c; padding:0 .3em; }
-  .qp-h-juz { justify-self:start; font-weight:600; white-space:nowrap; font-variant-numeric:tabular-nums; }
-  .qp-h-sura { justify-self:center; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
-  .qp-h-bm { justify-self:end; display:block; width:1.1em; height:1.1em; color:#3f3a2c; opacity:.8; }
+  .qp-head { display:flex; align-items:center; justify-content:space-between; gap:.5em; direction:ltr;
+    font-family:var(--sans); font-size:.42em; color:#3f3a2c; padding:0 .2em; min-width:0; }
+  .qp-h-juz { flex:0 0 auto; font-weight:600; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .qp-h-sura { flex:1 1 auto; text-align:center; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+  .qp-h-bm { flex:0 0 auto; display:block; width:1.15em; height:1.15em; color:#3f3a2c; opacity:.75; }
   .qp-h-bm svg { width:100%; height:100%; display:block; }
   .qp-body { display:grid; grid-template-rows:repeat(var(--rows),minmax(0,1fr)); align-items:center; line-height:1; }
   /* space-between даёт настоящую выключку: остаток ширины расходится между словами */
   .qp-line { display:flex; justify-content:space-between; align-items:center; white-space:nowrap; line-height:1; overflow:visible; }
   .qp-line.is-empty { visibility:hidden; }
+  .qp-line.qp-line-wrap { white-space:normal; flex-wrap:wrap; justify-content:center; align-content:center; line-height:.92; row-gap:0; }
   .qp-line.center, .qp-line.qp-deco { justify-content:center; }
   .qp-w { display:inline-block; flex:0 0 auto; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:color .12s; }
   .qp-w:active { color:#8a6d1e; }
@@ -978,7 +981,7 @@
   @media (orientation:portrait){
     body.q-page-lock { overflow:hidden; }
     /* flex-колонка на весь экран: компактная шапка + страница flex:1 + низ/плеер, всё в safe-area */
-    body.q-page-lock #quranReader.active { position:fixed; inset:0; height:100dvh; display:flex; flex-direction:column;
+    body.q-page-lock #quranReader.active { position:fixed; top:0; left:0; right:0; height:var(--app-h,100dvh); max-height:var(--app-h,100dvh); display:flex; flex-direction:column;
       padding-top:var(--tg-safe-top); padding-bottom:var(--tg-safe-bottom); box-sizing:border-box; background:#fbfaf2; }
     body.q-page-lock #quranReader .qr-head { display:none; }
     body.q-page-lock #quranReader .qwrap { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; padding:0 !important; }
@@ -991,7 +994,7 @@
     body.q-page-lock #quranReader .q-player { position:static; left:auto; transform:none; bottom:auto; width:100%; margin:5px 0 0; box-shadow:0 -1px 10px rgba(0,0,0,.06); }
     body.q-page-lock.q-player-on #quranReader .qr-nav { display:none; }
   }
-  .q-page-settings { display:none; position:fixed; right:12px; top:calc(var(--tg-safe-top) + 10px); z-index:8; width:42px; height:42px;
+  .q-page-settings { display:none; position:fixed; right:12px; bottom:calc(var(--tg-safe-bottom) + 14px); z-index:8; width:40px; height:40px;
     place-items:center; border-radius:999px; border:1px solid color-mix(in srgb, var(--line) 82%, transparent);
     background:color-mix(in srgb, var(--surface) 92%, transparent); color:var(--ink-soft);
     box-shadow:0 8px 20px rgba(0,0,0,.08); -webkit-tap-highlight-color:transparent; }
@@ -1009,7 +1012,7 @@
   @media (orientation:landscape){
     body.q-page-lock { overflow:hidden; }
     .phone:has(#quranReader.active){ max-width:none; border-radius:0; }
-    body.q-page-lock #quranReader.active { position:fixed; inset:0; height:100dvh; display:flex; flex-direction:column; overflow:hidden; background:#fdfcf7; }
+    body.q-page-lock #quranReader.active { position:fixed; top:0; left:0; right:0; height:var(--app-h,100dvh); max-height:var(--app-h,100dvh); display:flex; flex-direction:column; overflow:hidden; background:#fdfcf7; }
     body.q-page-lock #quranReader .qwrap { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; padding:0 !important; }
     body.q-page-lock #quranReader #qrAyahs { flex:1 1 auto; min-height:0; }
     body.q-page-lock #quranReader .qr-nav { display:none; }
@@ -1855,7 +1858,46 @@
     const bot = Number(TG.safeAreaInset && TG.safeAreaInset.bottom || 0);
     document.documentElement.style.setProperty('--tg-safe-top', top + 'px');
     document.documentElement.style.setProperty('--tg-safe-bottom', bot + 'px');
+    qApplyAppHeight();
   }
+  // В WKWebView Telegram 100dvh = высота ФРЕЙМА, а не видимой области: лист получался выше экрана,
+  // и его края обрезались. Берём МИНИМУМ из доступных источников видимой высоты — так лист влезает всегда.
+  function qApplyAppHeight(){
+    const c=[];
+    if(TG){ const v=Number(TG.viewportStableHeight||TG.viewportHeight||0); if(v>100) c.push(v); }
+    if(window.visualViewport && window.visualViewport.height>100) c.push(window.visualViewport.height);
+    if(window.innerHeight>100) c.push(window.innerHeight);
+    if(!c.length) return;
+    const h=Math.round(Math.min.apply(null,c));
+    document.documentElement.style.setProperty('--app-h', h+'px');
+  }
+  // единая точка пересчёта геометрии: safe-area + габариты листов
+  // видимая высота нужна и без Telegram (обычный браузер) — ставим сразу и следим за изменениями
+  (function(){
+    const set=function(){ try{ qApplyAppHeight(); }catch(e){} };
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', set, {once:true}); else set();
+    const sync=function(){ set(); if(typeof qGeoSync==='function') qGeoSync(); };
+    // ResizeObserver на корне — самый надёжный источник: ловит изменение вьюпорта даже там,
+    // где событие resize не приходит (а в WebView это бывает).
+    if(window.ResizeObserver){
+      try{ new ResizeObserver(sync).observe(document.documentElement); }catch(e){}
+    }
+    window.addEventListener('resize', sync, {passive:true});
+    window.addEventListener('orientationchange', function(){ [0,150,400].forEach(function(ms){ setTimeout(sync, ms); }); }, {passive:true});
+    if(window.visualViewport){
+      window.visualViewport.addEventListener('resize', sync, {passive:true});
+      window.visualViewport.addEventListener('scroll', sync, {passive:true});
+    }
+  })();
+  let _geoRaf=0;
+  function qGeoSync(){
+    if(_geoRaf) return;
+    _geoRaf=requestAnimationFrame(function(){ _geoRaf=0;
+      if(TG) applySafeArea(); else qApplyAppHeight();
+      if(typeof qResizeAllPanes==='function') qResizeAllPanes();
+    });
+  }
+  function qGeoSyncBurst(){ [0,120,350,700].forEach(function(ms){ setTimeout(qGeoSync, ms); }); }
   function applyTgColors(){
     if(!TG) return;
     try {
@@ -1869,9 +1911,9 @@
       TG.disableVerticalSwipes && TG.disableVerticalSwipes();  // не сворачивать при листании вниз
       TG.requestFullscreen && TG.requestFullscreen();          // на весь экран, без чёлки (Bot API 8.0)
     } catch(e){}
-    applySafeArea(); applyTgColors();
+    applySafeArea(); applyTgColors(); qGeoSyncBurst();
     ['safeAreaChanged','contentSafeAreaChanged','fullscreenChanged','viewportChanged'].forEach(ev=>{
-      try { TG.onEvent && TG.onEvent(ev, applySafeArea); } catch(e){}
+      try { TG.onEvent && TG.onEvent(ev, qGeoSync); } catch(e){}
     });
     try { TG.onEvent && TG.onEvent('themeChanged', applyTgColors); } catch(e){}
   }
@@ -5273,7 +5315,7 @@ https://azkar.nurtech.dev/app`);
     else { if(!isKfgqpc()) QURAN.curK=null; after(); } }
   function qNav(dir){ if(qIsPageBased()){ qDeckTurn(dir); return; }
     const n=QURAN.curN+dir; if(n<1||n>114) return; qClockStop(); if(QURAN.io){ QURAN.io.disconnect(); QURAN.io=null; } qOpenSura(n); }
-  function qBackToList(){ qClockStop(); qStopDwell(); qAudioStop(); qEndReview(); if(QURAN.io){ QURAN.io.disconnect(); QURAN.io=null; } back({visual:true}); }
+  function qBackToList(){ qGeoWatchStop(); qClockStop(); qStopDwell(); qAudioStop(); qEndReview(); if(QURAN.io){ QURAN.io.disconnect(); QURAN.io=null; } back({visual:true}); }
 
   // ---- аудио-чтец (EveryAyah, поаятно) ----
   const QRECITERS = [
@@ -5416,6 +5458,34 @@ https://azkar.nurtech.dev/app`);
       .catch(function(){ delete QURAN.pfonts[fam]; return { fam:fam, ok:false }; });
     QURAN.pfonts[fam]=p; return p;
   }
+  // WebKit (в т.ч. WKWebView в Telegram на iOS) не умеет COLRv1: таджвид-шрифт отрисуется одним
+  // цветом, а метрики у него ДРУГИЕ — отсюда «кегль скачет». Проверяем один раз и при отсутствии
+  // поддержки переключаем на обычный мединский шрифт.
+  let _colrProbe=null;
+  function qColrSupported(){
+    if(_colrProbe!=null) return Promise.resolve(_colrProbe);
+    return qLoadPageFont(1,true).then(function(r){
+      if(!r||!r.ok){ _colrProbe=false; return false; }
+      try{
+        const d=QURAN.pcache[1];
+        const glyph=(d&&d.lines&&d.lines[0]&&d.lines[0].w&&d.lines[0].w[0])?d.lines[0].w[0].c:null;
+        if(!glyph){ _colrProbe=true; return true; }
+        const cv=document.createElement('canvas'); cv.width=64; cv.height=64;
+        const ctx=cv.getContext('2d', { willReadFrequently:true });
+        ctx.fillStyle='#fff'; ctx.fillRect(0,0,64,64);
+        ctx.fillStyle='#000'; ctx.font='48px "'+r.fam+'"'; ctx.fillText(glyph, 2, 48);
+        const px=ctx.getImageData(0,0,64,64).data;
+        let colored=false;
+        for(let i=0;i<px.length;i+=4){
+          if(px[i+3]<8) continue;
+          if(Math.abs(px[i]-px[i+1])>18 || Math.abs(px[i+1]-px[i+2])>18){ colored=true; break; }
+        }
+        _colrProbe=colored;
+      }catch(e){ _colrProbe=false; }
+      return _colrProbe;
+    }).catch(function(){ _colrProbe=false; return false; });
+  }
+
   // шрифт орнаментальных баннеров сур (глиф = 0xF0FF + номер суры)
   let _qbsml=null;
   function qLoadBannerFont(){
@@ -5500,9 +5570,26 @@ https://azkar.nurtech.dev/app`);
   function qSuraLen(s){ const su=(QURAN.index||[]).find(function(x){ return x.n===s; }); return su?su.c:0; }
 
   // ---- раскладка страницы по 15 рядам: строки по своим номерам + баннер суры и басмала ----
+  // В датасете у 22 страниц в КОНЦЕ последней строки лежат слова с аятом МЕНЬШЕ первого аята
+  // страницы — хвост предыдущей страницы. В пофайловом шрифте этой страницы для них нет корректных
+  // форм: они рисуются мусором (тот самый «кластер ٢٠٨–٢١٣»). Отсекаем только их — узко и однозначно.
+  function qStripForeignTail(lines){
+    const src=(lines||[]).filter(function(l){ return l.w && l.w.length; }).sort(function(a,b){ return a.n-b.n; });
+    if(src.length<2) return lines;
+    const vk=function(k){ const p=String(k).split(':'); return [parseInt(p[0],10), parseInt(p[1],10)]; };
+    const first=vk(src[0].w[0].k);
+    const last=src[src.length-1];
+    let cut=0;
+    for(let i=0;i<last.w.length;i++){
+      const v=vk(last.w[i].k);
+      if(v[0]<first[0] || (v[0]===first[0] && v[1]<first[1])) cut++; else break;
+    }
+    if(!cut || cut>=last.w.length) return lines;
+    return lines.map(function(l){ return l===last ? { n:l.n, w:l.w.slice(cut) } : l; });
+  }
   function qPageLayout(data, nextData){
     const p=data.p, rows=qPageRows(p), slot={};
-    (data.lines||[]).forEach(function(l){ if(l.w&&l.w.length) slot[l.n]={ t:'line', w:l.w }; });
+    qStripForeignTail(data.lines||[]).forEach(function(l){ if(l.w&&l.w.length) slot[l.n]={ t:'line', w:l.w }; });
     (data.starts||[]).forEach(function(st){
       const s=st.s, line=st.line;
       if(s===1||s===9){ if(line-1>=1&&!slot[line-1]) slot[line-1]={ t:'surah', s:s }; }
@@ -5531,24 +5618,65 @@ https://azkar.nurtech.dev/app`);
   // Точная ширина самой длинной строки страницы в em — по МЕТРИКАМ шрифта через canvas,
   // а не по разложенному DOM: не вызывает reflow и не даёт второго прохода (он и давал дёрганье).
   const QP_EM_CACHE={};
+  // ВАЖНО: document.fonts.check() тут бесполезен — он проверяет отрисовку пробела и возвращает true
+  // даже когда семейство не загружено. Ведём собственный реестр (заполняется в qMarkFontReady).
+  function qFontReady(fam){ return !!(QURAN.fontReady && QURAN.fontReady[fam]); }
   function qPageMetrics(data, fam){
     const key=fam+'#'+data.p;
     if(QP_EM_CACHE[key]) return QP_EM_CACHE[key];
+    // Замер по НЕзагруженному шрифту даёт ширину фолбэка → кегль скачет и слова вылезают за лист.
+    if(!qFontReady(fam)) return null;
     let em=0; const byLine={};
     try{
       const cv=qPageMetrics._cv||(qPageMetrics._cv=document.createElement('canvas'));
       const ctx=cv.getContext('2d');
       ctx.font='100px "'+fam+'"';
-      (data.lines||[]).forEach(function(l){
+      qStripForeignTail(data.lines||[]).forEach(function(l){
         if(!l.w||!l.w.length) return;
         let s=''; for(let i=0;i<l.w.length;i++) s+=l.w[i].c;
         const w=ctx.measureText(s).width/100;
         byLine[l.n]=w; if(w>em) em=w;
       });
     }catch(e){}
+    // В датасете 6 страниц имеют «склеенную» строку (две печатные строки в одной записи).
+    // Считать по ней кегль нельзя — вся страница станет мелкой. Берём робастный максимум,
+    // а сама строка-выброс ужимается индивидуально при заполнении.
+    const vals=Object.keys(byLine).map(function(k){ return byLine[k]; }).sort(function(a,b){ return a-b; });
+    if(vals.length>=4){
+      const med=vals[Math.floor(vals.length/2)];
+      const capped=vals.filter(function(v){ return v<=med*1.25; });
+      if(capped.length) em=capped[capped.length-1];
+    }
     if(!(em>4)) em=QPREFS.tj?18.95:15.9;         // запас, если canvas недоступен
     const m={ em:em, line:byLine };
     QP_EM_CACHE[key]=m; return m;
+  }
+
+  // Габариты листа считаем в JS от РЕАЛЬНЫХ размеров контейнера: один проход, без итераций
+  // и без container queries (в WebView Telegram они давали лист больше экрана — текст обрезался).
+  const QP_GEO={ pitch:1.62, mx:.55, head:1.75, foot:1.55, pad:.4 };
+  function qSizePaper(paper, em, rows, retry){
+    if(!paper) return;
+    const pane=paper.parentElement; if(!pane) return;
+    const W=pane.clientWidth, H=pane.clientHeight;
+    if(!(W>1&&H>1)){                       // бокс ещё не готов — повторим в следующем кадре
+      if(!(retry>4)) requestAnimationFrame(function(){ qSizePaper(paper, em, rows, (retry||0)+1); });
+      return;
+    }
+    const wU=em+2*QP_GEO.mx;
+    const hU=rows*QP_GEO.pitch+QP_GEO.head+QP_GEO.foot+2*QP_GEO.pad;
+    // 0.5% запаса: сумма ширин отдельных inline-block в WebKit после округления бывает
+    // на доли пикселя больше расчётной — без запаса строка переполняется и обрезается.
+    const fs=Math.min(W/wU, H/hU)*0.995;
+    if(fs>0) paper.style.fontSize=fs.toFixed(3)+'px';
+  }
+  function qResizeAllPanes(){
+    document.querySelectorAll('#qrAyahs .qp-pane').forEach(function(pane){
+      const paper=pane.querySelector('.qp-paper'); if(!paper) return;
+      const em=parseFloat(paper.style.getPropertyValue('--em'))||15.9;
+      const rows=parseFloat(paper.style.getPropertyValue('--rows'))||15;
+      qSizePaper(paper, em, rows);
+    });
   }
 
   // ---- скелет листа: строится один раз на панель, дальше только заполняется ----
@@ -5573,7 +5701,13 @@ https://azkar.nurtech.dev/app`);
     paper.style.setProperty('--rows', lay.rows);
     paper.style.fontFamily='"'+fam+'"';
     const metrics=qPageMetrics(data, fam);
+    if(!metrics){                       // шрифт страницы ещё не готов — заполним, как только приедет
+      paper.classList.add('is-blank');
+      qLoadPageFont(n).then(function(){ if(pane.dataset.page==String(n)) qFillPane(pane, n, data, nextData); });
+      return;
+    }
     paper.style.setProperty('--em', metrics.em.toFixed(3));
+    qSizePaper(paper, metrics.em, lay.rows);
     const sura=qPageSura(data);
     const hj=paper.querySelector('.qp-h-juz'); if(hj) hj.textContent='Джуз '+(data.j||'');
     const hs=paper.querySelector('.qp-h-sura'); if(hs) hs.textContent=suraNameRu(sura);
@@ -5590,6 +5724,15 @@ https://azkar.nurtech.dev/app`);
       if(it.t==='bism'){ el.innerHTML='<span class="qp-bism">'+BASMALA+'</span>'; continue; }
       let h=''; for(let j=0;j<it.w.length;j++) h+='<span class="qp-w" data-k="'+it.w[j].k+'">'+escHtml(it.w[j].c)+'</span>';
       el.innerHTML=h;
+      // В датасете 6 страниц имеют «склеенную» строку (слова, потерявшие своё место в раскладке).
+      // Их нельзя ни выбросить (пропадёт текст), ни сильно ужать (глифы сливаются) —
+      // поэтому умеренно уменьшаем и разрешаем перенос внутри ряда.
+      const lw=metrics.line[row];
+      if(lw && lw>metrics.em*0.999){
+        const k=Math.max(0.80, metrics.em*0.995/lw);   // не мельче 0.8em, иначе глифы сливаются в кашу
+        el.style.fontSize=k.toFixed(4)+'em';
+        el.classList.add('qp-line-wrap');
+      } else { el.style.fontSize=''; }
     }
   }
 
@@ -5607,6 +5750,11 @@ https://azkar.nurtech.dev/app`);
       +'</div>';
     deck=wrap.querySelector('.qp-deck');
     qBindDeckGestures(wrap, deck);
+    // страховка: ловит фактическое изменение бокса (шторка Telegram, safe-area, док-плеер, поворот)
+    if(window.ResizeObserver && !QURAN._deckRO){
+      QURAN._deckRO=new ResizeObserver(function(){ if(!QURAN._deckBusy) qGeoSync(); });
+      try{ QURAN._deckRO.observe(wrap); }catch(e){}
+    }
     return deck;
   }
   function qPanes(){ const d=qDeck(); return d?Array.prototype.slice.call(d.children):[]; }
@@ -5713,6 +5861,27 @@ https://azkar.nurtech.dev/app`);
       if(w2&&w2.dataset.k&&!QURAN._deckBusy) tafsirFromKey(w2.dataset.k);
     });
   }
+  // Сторож геометрии. События (resize / viewportChanged / ResizeObserver) в WebView приходят
+  // не всегда — а страница мусхафа обязана вписываться ВСЕГДА. Поэтому раз в 400 мс сверяем
+  // фактические размеры и пересчитываем только при расхождении (дёшево: сравнение чисел).
+  function qGeoWatchStart(){
+    if(QURAN._geoWatch) return;
+    let lastW=0, lastH=0, lastVH=0;
+    QURAN._geoWatch=setInterval(function(){
+      const a=activeScreen();
+      if(!(a && a.id==='quranReader' && QPREFS.mode==='page')){ qGeoWatchStop(); return; }
+      if(QURAN._deckBusy) return;                       // не мешаем жесту листания
+      const pane=document.querySelector('#qrAyahs .qp-pane');
+      const w=pane?pane.clientWidth:0, h=pane?pane.clientHeight:0;
+      const vh=Math.round((window.visualViewport&&window.visualViewport.height)||window.innerHeight||0);
+      if(w===lastW && h===lastH && vh===lastVH) return;
+      lastW=w; lastH=h; lastVH=vh;
+      qApplyAppHeight();
+      qResizeAllPanes();
+    }, 400);
+  }
+  function qGeoWatchStop(){ if(QURAN._geoWatch){ clearInterval(QURAN._geoWatch); QURAN._geoWatch=null; } }
+
   function qPageDwellReset(){ QURAN._pdwell=0; QURAN._pmarked=false; QURAN._pAyahs=null; }
 
   // ---- вход в режим и открытие конкретной страницы ----
@@ -5743,6 +5912,8 @@ https://azkar.nurtech.dev/app`);
         qUpdatePageLock();
         qClockStart(); qPageDwellReset(); qStartDwell();
         qPreloadPages(n);
+        qGeoSyncBurst();          // геометрия Telegram доезжает не сразу после expand()/fullscreen
+        qGeoWatchStart();
       };
       if(document.hidden) paint(); else requestAnimationFrame(paint);
     }).catch(function(){
@@ -5751,7 +5922,9 @@ https://azkar.nurtech.dev/app`);
       wrap.innerHTML='<div class="qp-loading">Не удалось загрузить страницу.<br>Проверьте соединение или скачайте мусхаф в настройках ⚙.</div>';
     });
   }
-  function qEnterPageMode(){ qLoadPagesMeta().then(function(){
+  function qEnterPageMode(){ qColrSupported().then(function(ok){
+      if(!ok && QPREFS.tj){ QPREFS.tj=false; qSavePrefs(); }   // без COLRv1 таджвид не отрисуется
+    }).catch(function(){}).then(function(){ return qLoadPagesMeta(); }).then(function(){
       let target = QURAN.curN ? pageSuraStartPage(QURAN.curN) : 0;
       if(!target){ try{ target=parseInt(localStorage.getItem('azkar_quran_page'),10)||1; }catch(e){ target=1; } }
       qOpenPage(target);
@@ -5971,14 +6144,13 @@ https://azkar.nurtech.dev/app`);
       QURAN._raf=requestAnimationFrame(function(){ QURAN._raf=0; const ay=qCurrentAyah();
         if(ay&&ay!==QURAN._lastA){ QURAN._lastA=ay; if(QURAN.saveT) clearTimeout(QURAN.saveT); QURAN.saveT=setTimeout(function(){ qSavePos(QURAN.curN, ay); }, 400); } });
     }, { passive:true });
-    // Кегль листа считает CSS (container queries), поэтому на resize пересчитывать нечего.
-    // Реагируем только на смену ШИРИНЫ: схлопывание адресной строки меняет высоту и раньше дёргало страницу.
-    let _lastW=window.innerWidth;
-    window.addEventListener('resize', function(){
-      if(Math.abs(window.innerWidth-_lastW)<2) return;
-      _lastW=window.innerWidth;
-      const d=qDeck(); if(d) d.style.setProperty('--qp-drag','0px');
-    }, { passive:true });
+    // В Telegram высота вьюпорта меняется без изменения ширины (шторка, fullscreen, safe-area),
+    // поэтому реагируем на ЛЮБОЕ изменение; дедуп — через rAF внутри qGeoSync.
+    window.addEventListener('resize', qGeoSync, { passive:true });
+    window.addEventListener('orientationchange', qGeoSyncBurst, { passive:true });
+    if(window.visualViewport){
+      window.visualViewport.addEventListener('resize', qGeoSync, { passive:true });
+    }
   })();
 
   // ---- радио: прямой эфир (серверный аудио-прокси, выбор конкретной станции) ----

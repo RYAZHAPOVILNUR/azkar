@@ -1,0 +1,103 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Стенд: геометрия Telegram</title>
+<style>
+  body{margin:0;font:14px -apple-system,system-ui,sans-serif;background:#1c1c1e;color:#eee}
+  .bar{display:flex;gap:8px;align-items:center;padding:8px 10px;flex-wrap:wrap;background:#2c2c2e}
+  button{padding:6px 10px;border-radius:8px;border:1px solid #555;background:#3a3a3c;color:#eee;cursor:pointer;font:inherit}
+  #log{padding:8px 10px;font-family:ui-monospace,monospace;font-size:12px;white-space:pre-wrap;max-height:160px;overflow:auto}
+  .ok{color:#4ade80}.bad{color:#f87171}
+  #view{position:relative;overflow:hidden;background:#000;margin:0 auto;border:2px solid #444}
+  iframe{border:0;display:block}
+</style>
+<div class="bar">
+  <span>видимая область:</span>
+  <button onclick="setView(390,740)">390×740</button>
+  <button onclick="setView(375,600)">375×600</button>
+  <button onclick="setView(320,480)">320×480</button>
+  <span>| фрейм выше видимого:</span>
+  <button onclick="setFrameExtra(0)">+0</button>
+  <button onclick="setFrameExtra(160)">+160</button>
+  <button onclick="setFrameExtra(320)">+320</button>
+  <span>|</span>
+  <button onclick="shrink()">сжать шторку</button>
+  <button onclick="safeArea(47,34)">safe-area</button>
+  <button onclick="check()">ПРОВЕРИТЬ</button>
+</div>
+<div id="log">Загрузка…</div>
+<div id="view"><iframe id="fr" src="/index.html"></iframe></div>
+
+<script>
+let VW=390, VH=740, EXTRA=320;
+const view=document.getElementById('view'), fr=document.getElementById('fr'), log=document.getElementById('log');
+
+function apply(){
+  view.style.width=VW+'px'; view.style.height=VH+'px';
+  fr.style.width=VW+'px'; fr.style.height=(VH+EXTRA)+'px';   // ФРЕЙМ ВЫШЕ ВИДИМОГО — ключ теста
+  say('видимая область '+VW+'×'+VH+', фрейм '+VW+'×'+(VH+EXTRA)+' (лишних '+EXTRA+'px снизу)');
+}
+function setView(w,h){ VW=w; VH=h; apply(); reload(); }
+function setFrameExtra(x){ EXTRA=x; apply(); reload(); }
+function say(t,cls){ log.innerHTML+='\n'+(cls?'<span class="'+cls+'">'+t+'</span>':t); log.scrollTop=log.scrollHeight; }
+
+// фейковый Telegram.WebApp: сообщает ВИДИМУЮ высоту, тогда как фрейм выше
+function inject(){
+  const w=fr.contentWindow;
+  const listeners={};
+  w.Telegram={ WebApp:{
+    initData:'', initDataUnsafe:{},
+    viewportHeight:VH, viewportStableHeight:VH,
+    safeAreaInset:{top:0,bottom:0,left:0,right:0},
+    contentSafeAreaInset:{top:0,bottom:0,left:0,right:0},
+    isExpanded:true, colorScheme:'light', themeParams:{},
+    ready(){}, expand(){}, close(){},
+    onEvent(e,cb){ (listeners[e]=listeners[e]||[]).push(cb); },
+    offEvent(e,cb){},
+    sendData(){}, HapticFeedback:{ impactOccurred(){}, notificationOccurred(){}, selectionChanged(){} },
+    BackButton:{ show(){},hide(){},onClick(){},offClick(){} },
+    MainButton:{ show(){},hide(){},setText(){},onClick(){} },
+    CloudStorage:{ getItem(k,cb){cb&&cb(null,null)}, setItem(k,v,cb){cb&&cb(null,true)}, getKeys(cb){cb&&cb(null,[])} },
+    setHeaderColor(){}, setBackgroundColor(){}, setBottomBarColor(){},
+    disableVerticalSwipes(){}, enableVerticalSwipes(){},
+    _fire(e){ (listeners[e]||[]).forEach(function(cb){ try{cb({isStateStable:true});}catch(_){} }); }
+  }};
+  w.__fire=function(e){ w.Telegram.WebApp._fire(e); };
+}
+function reload(){ fr.onload=function(){ try{ inject(); }catch(e){ say('inject fail: '+e.message,'bad'); } }; fr.contentWindow.location.reload(); }
+
+function shrink(){
+  const w=fr.contentWindow, T=w.Telegram&&w.Telegram.WebApp; if(!T) return;
+  T.viewportHeight=VH-120; T.viewportStableHeight=VH-120; w.__fire('viewportChanged');
+  say('шторка сжата: viewportStableHeight='+T.viewportStableHeight);
+}
+function safeArea(t,b){
+  const w=fr.contentWindow, T=w.Telegram&&w.Telegram.WebApp; if(!T) return;
+  T.safeAreaInset={top:t,bottom:b,left:0,right:0};
+  T.contentSafeAreaInset={top:0,bottom:0,left:0,right:0};
+  w.__fire('safeAreaChanged'); say('safe-area '+t+'/'+b);
+}
+
+// проверка инварианта прямо внутри фрейма
+function check(){
+  const w=fr.contentWindow, d=w.document;
+  const pane=d.querySelector('.qp-pane[data-page]'), paper=pane&&pane.querySelector('.qp-paper');
+  if(!paper){ say('нет листа — открой мусхаф во фрейме','bad'); return; }
+  const errs=[];
+  const pr=paper.getBoundingClientRect(), sr=pane.getBoundingClientRect();
+  if(pr.width>sr.width+1)  errs.push('лист шире панели на '+Math.round(pr.width-sr.width));
+  if(pr.height>sr.height+1) errs.push('лист выше панели на '+Math.round(pr.height-sr.height));
+  // видимая область стенда
+  if(pr.bottom>VH+1) errs.push('лист уходит ниже видимой области на '+Math.round(pr.bottom-VH));
+  let ov=0;
+  paper.querySelectorAll('.qp-line').forEach(function(l){ if(l.scrollWidth>l.clientWidth+1) ov++; });
+  if(ov) errs.push(ov+' строк переполнены');
+  const tsa=w.getComputedStyle(d.documentElement).webkitTextSizeAdjust;
+  if(tsa && tsa!=='100%' && tsa!=='auto') errs.push('text-size-adjust='+tsa);
+  const fs=parseFloat(w.getComputedStyle(paper).fontSize);
+  say('стр '+pane.dataset.page+': кегль '+fs.toFixed(1)+'px, лист '+Math.round(pr.width)+'×'+Math.round(pr.height)+
+      ', панель '+Math.round(sr.width)+'×'+Math.round(sr.height)+' → '+(errs.length?('ПРОВАЛ: '+errs.join('; ')):'OK'),
+      errs.length?'bad':'ok');
+}
+apply();
+fr.onload=function(){ try{ inject(); say('Telegram-мок внедрён. Открой мусхаф во фрейме и жми ПРОВЕРИТЬ.'); }catch(e){ say('inject fail','bad'); } };
+</script>
