@@ -5760,13 +5760,26 @@ https://azkar.nurtech.dev/app`);
   (function(){
     const wrap=document.getElementById('qrAyahs'); if(!wrap) return; let settleT=null;
     const later=function(ms){ if(settleT) clearTimeout(settleT); settleT=setTimeout(qCarouselSettle,ms||120); };
-    wrap.addEventListener('touchstart',function(){ if(QPREFS.mode==='page'){
+    wrap.addEventListener('touchstart',function(e){ if(QPREFS.mode==='page'){
       QURAN._carouselTouch=true; QURAN._carouselReset=false; QURAN._carouselIgnoreUntil=0;
+      QURAN._carouselMinX=wrap.scrollLeft; QURAN._carouselMaxX=wrap.scrollLeft;
+      QURAN._carouselStartX=e.touches&&e.touches[0]?e.touches[0].clientX:0;
       if(settleT) clearTimeout(settleT);
     } },{passive:true});
-    wrap.addEventListener('touchend',function(){ if(QPREFS.mode==='page'){ QURAN._carouselTouch=false; later(140); } },{passive:true});
+    wrap.addEventListener('touchend',function(e){ if(QPREFS.mode==='page'){
+      QURAN._carouselTouch=false;
+      const w=wrap.clientWidth||1, mn=QURAN._carouselMinX, mx=QURAN._carouselMaxX;
+      const endX=e.changedTouches&&e.changedTouches[0]?e.changedTouches[0].clientX:QURAN._carouselStartX;
+      const dx=endX-(QURAN._carouselStartX||endX);
+      const target=mn<w*.72?QURAN.curPage+1:(mx>w*1.28?QURAN.curPage-1:(dx>42?QURAN.curPage+1:(dx<-42?QURAN.curPage-1:0)));
+      if(target>=1&&target<=604) setTimeout(function(){ qCarouselCommit(target); },80);
+      else later(140);
+    } },{passive:true});
     wrap.addEventListener('touchcancel',function(){ QURAN._carouselTouch=false; later(140); },{passive:true});
-    wrap.addEventListener('scroll',function(){ if(QPREFS.mode==='page'&&!QURAN._carouselTouch&&!QURAN._carouselReset) later(140); },{passive:true});
+    wrap.addEventListener('scroll',function(){ if(QPREFS.mode==='page'){
+      if(QURAN._carouselTouch){ QURAN._carouselMinX=Math.min(QURAN._carouselMinX||wrap.scrollLeft,wrap.scrollLeft); QURAN._carouselMaxX=Math.max(QURAN._carouselMaxX||wrap.scrollLeft,wrap.scrollLeft); }
+      else if(!QURAN._carouselReset) later(140);
+    } },{passive:true});
     wrap.addEventListener('scrollend',function(){ if(QPREFS.mode==='page'&&!QURAN._carouselTouch) qCarouselSettle(); },{passive:true});
   })();
 
