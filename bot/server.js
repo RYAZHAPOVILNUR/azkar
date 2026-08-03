@@ -571,7 +571,7 @@ function extractQulMushafSvg(html, page) {
 }
 function fitQulMushafSvg(svg) {
   let out = String(svg);
-  ['md-non-quranic-header-surah-name', 'md-non-quranic-header-juz-name', 'md-non-quranic-page-number'].forEach((id) => {
+  ['md-non-quranic-header-surah-name', 'md-non-quranic-header-juz-name', 'md-non-quranic-page-number', 'md-non-quranic-margin-juz-hisb'].forEach((id) => {
     out = stripSvgGroupById(out, id);
   });
   return out.replace(/\bviewBox=["']0 0 382\.68 547\.09["']/, 'viewBox="-18 0 418.68 547.09"');
@@ -655,7 +655,7 @@ async function sendQulMushafSvg(req, res, cacheFile, loaded) {
     'X-Mushaf-Source': loaded.source,
   });
   if (gzipOk) {
-    const gzipFile = cacheFile + '.fit-v4.gz';
+    const gzipFile = cacheFile + '.fit-v5.gz';
     try { body = await fs.promises.readFile(gzipFile); }
     catch (e) {
       if (!e || e.code !== 'ENOENT') throw e;
