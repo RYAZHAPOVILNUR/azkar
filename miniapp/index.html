@@ -79,24 +79,36 @@
 
   :root { --tg-safe-top: 0px; --tg-safe-bottom: 0px; }
   * { box-sizing: border-box; }
+  * { scrollbar-width:thin; scrollbar-color:color-mix(in srgb, var(--ink-faint) 55%, transparent) transparent; }
+  *::-webkit-scrollbar { width:8px; height:8px; }
+  *::-webkit-scrollbar-track { background:transparent; }
+  *::-webkit-scrollbar-thumb { border:2px solid transparent; border-radius:999px; background:color-mix(in srgb, var(--ink-faint) 55%, transparent); background-clip:content-box; }
+  *::-webkit-scrollbar-thumb:hover { background:color-mix(in srgb, var(--ink-soft) 70%, transparent); background-clip:content-box; }
   html,body { margin:0; padding:0; overscroll-behavior:none; }
   html, body { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   body {
     font-family: var(--sans);
-    background: radial-gradient(120% 70% at 50% -12%, var(--bg-2), var(--bg) 70%);
+    background: var(--bg);
     color: var(--ink); min-height: 100vh;
-    display:flex; justify-content:center; align-items:flex-start; padding: 22px 14px 40px;
+    display:flex; flex-direction:column; justify-content:flex-start; align-items:center; padding: 22px 14px 0;
     -webkit-font-smoothing: antialiased;
     -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent;
     touch-action: pan-y; /* вертикальный скролл ок, двойной тап-зум выключен */
   }
+  body::after { content:""; display:block; flex:0 0 22px; width:1px; }
   button, .cbtn, .iconbtn, .back, .session, .seg button, .switch { touch-action: manipulation; }
-  @media (max-width:480px){ body{ padding:0; } }
+  @media (max-width:480px){ body{ padding:0; } body::after{ display:none; } }
 
   .phone {
-    width:100%; max-width:430px; background: var(--bg);
+    width:100%; max-width:430px; background: var(--surface);
     border-radius:40px; box-shadow: var(--shadow); overflow:hidden; position:relative;
     border:1px solid var(--line); min-height:860px; display:flex; flex-direction:column;
+  }
+  .phone::before {
+    content:""; position:absolute; inset:0 0 auto; height:72px; z-index:5; pointer-events:none;
+    border-radius:inherit;
+    box-shadow:inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent);
+    background:linear-gradient(180deg, color-mix(in srgb, #fff 5%, transparent), transparent 58%);
   }
   @media (max-width:480px){ .phone{ border-radius:0; border:none; min-height:100vh; } }
 
@@ -107,7 +119,7 @@
   .screen { display:none; flex-direction:column; flex:1; width:100%; }
   .screen.active { display:flex; }
   .screen.nav-under, .screen.nav-drag {
-    display:flex; min-height:100%; background:var(--bg);
+    display:flex; min-height:100%; background:var(--surface);
     will-change:transform; animation:none; overflow:hidden;
   }
   /* оба экрана перехода — fixed к вьюпорту (иначе absolute выпадает из потока, .phone схлопывается,
@@ -115,8 +127,14 @@
      чтобы он показывал твою прокрутку, а не прыгал к началу. */
   .screen.nav-drag { position:fixed; left:0; right:0; top:0; z-index:2; box-shadow:-18px 0 36px rgba(0,0,0,.16); }
   .screen.nav-under { position:fixed; inset:0; z-index:1; pointer-events:none; }
-  #home.nav-under, #home.nav-drag { background:radial-gradient(120% 70% at 50% -12%, var(--home-bg-2), var(--home-bg) 70%); }
-  #home { background: radial-gradient(120% 70% at 50% -12%, var(--home-bg-2), var(--home-bg) 70%); }
+  @media (min-width:481px){
+    .screen.nav-drag, .screen.nav-under {
+      left:calc(50% - min(215px, calc((100vw - 28px) / 2)));
+      right:auto; width:min(430px, calc(100vw - 28px)); max-width:none; margin:0; border-radius:40px;
+    }
+  }
+  #home.nav-under, #home.nav-drag { background:var(--surface); }
+  #home { background: var(--surface); }
   @keyframes fade { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
 
   /* HOME */
@@ -509,12 +527,32 @@
     background:var(--surface); border-radius:20px 20px 0 0; border-top:1px solid var(--line);
     box-shadow:0 -8px 40px rgba(0,0,0,.25); padding:8px 20px calc(24px + var(--tg-safe-bottom));
     animation:sheetUp .28s cubic-bezier(.2,.8,.2,1); }
+  #qSheet .sheet { height:min(88dvh, calc(100dvh - 24px)); max-height:min(88dvh, calc(100dvh - 24px)); overflow:hidden; display:flex; flex-direction:column; }
+  #qSheet .sheet { --q-scroll-top: 0px; }
   @keyframes sheetUp { from{transform:translateY(100%);} to{transform:none;} }
-  .modal .grip { width:40px; height:4px; border-radius:99px; background:var(--line); margin:8px auto 14px;
-    touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none; }
+  .modal .grip {
+    width:40px; min-width:40px; height:5px; min-height:5px; flex:0 0 5px;
+    border-radius:99px; background:color-mix(in srgb, var(--ink-faint) 36%, var(--line));
+    margin:8px auto 14px; transform:translateZ(0);
+    touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none;
+  }
   .modal .grip:active { cursor:grabbing; }
   .modal .m-head { touch-action:none; }
-  .modal .m-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .modal .m-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; flex:0 0 auto; }
+  #qSheetBody {
+    min-height:0; flex:1 1 auto; overflow-y:auto; overscroll-behavior:contain;
+    padding-right:24px; margin-right:0; scrollbar-width:none;
+  }
+  #qSheetBody::-webkit-scrollbar { display:none; width:0; height:0; }
+  #qSheetScroll {
+    position:absolute; top:78px; right:10px; bottom:18px; width:14px;
+    pointer-events:none; opacity:0; transition:opacity .16s;
+  }
+  #qSheet.open #qSheetScroll.on { opacity:1; }
+  #qSheetScrollThumb {
+    position:absolute; top:var(--q-scroll-top); right:4px; width:6px; height:36px; border-radius:999px;
+    background:color-mix(in srgb, var(--ink-faint) 78%, transparent);
+  }
   .modal .m-badge { width:30px; height:30px; border-radius:50%; background:var(--accent-soft); color:var(--accent-deep);
     display:grid; place-items:center; font-weight:800; font-size:14px; flex-shrink:0; }
   .modal .m-title { font-size:18px; font-weight:700; flex:1; }
@@ -1036,6 +1074,12 @@
     body.q-page-lock #quranReader .q-page-settings { display:grid; }
     body.q-page-lock #quranReader #qrAyahs.qp-stage { overflow:hidden; touch-action:pan-y; }
   }
+  @media (min-width:481px){
+    body.q-page-lock #quranReader.active {
+      top:22px; bottom:22px; left:14px; right:14px;
+      height:auto; max-height:none; border:1px solid var(--line); box-sizing:border-box;
+    }
+  }
 
   /* нижняя навигация страниц + шапка джуза */
   .qr-sub-nav { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12px; color:var(--ink-faint); margin-top:6px; }
@@ -1141,6 +1185,11 @@
   .q-taf-sub { font-size:12px; letter-spacing:.4px; text-transform:uppercase; color:var(--accent-deep); font-weight:700; margin-bottom:10px; }
   .q-taf-text { font-size:15.5px; line-height:1.75; color:var(--ink); white-space:pre-line; }
   .q-taf-loading { padding:18px 2px; color:var(--ink-faint); font-size:14px; text-align:center; }
+  .q-taf-sources { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin:0 0 14px; padding:3px; border-radius:13px;
+    background:var(--surface-2); border:1px solid var(--line); }
+  .q-taf-source { min-width:0; border:0; border-radius:10px; padding:8px 7px; background:transparent; color:var(--ink-soft);
+    font:inherit; font-size:12.5px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .q-taf-source.on { background:var(--surface); color:var(--ink); box-shadow:0 1px 4px rgba(0,0,0,.08); }
   .q-taf-ayah { font-size:14.5px; line-height:1.6; color:var(--ink); padding:11px 14px; border-radius:12px; background:var(--surface-2);
     margin-bottom:14px; border-left:3px solid color-mix(in srgb, var(--accent) 45%, var(--line)); }
   .q-taf-full { display:inline-flex; align-items:center; gap:7px; margin-top:16px; padding:9px 14px; border-radius:12px;
@@ -2888,6 +2937,9 @@
     if(navStack[navStack.length-1] !== id) navStack.push(id);
     showScreen(id, { keepScroll: !!scrollStore[id] });
   }
+  function shouldUseBackVisual(){
+    return window.matchMedia && window.matchMedia('(max-width:480px)').matches;
+  }
   function finishBackVisual(cur, prev, commit){
     if(navAnimating) return;
     navAnimating = true;
@@ -2915,7 +2967,7 @@
     if(activeScreen() && activeScreen().id === 'quranReader'){ qClockStop(); }
     if(navStack.length <= 1){ showScreen('home'); return; }
     rememberScroll();
-    if(opts.visual){
+    if(opts.visual && shouldUseBackVisual()){
       const cur = activeScreen();
       const prev = document.getElementById(navStack[navStack.length-2] || 'home');
       if(cur && prev && cur !== prev){
@@ -6010,11 +6062,13 @@ https://azkar.nurtech.dev/app`);
     const sw=function(on){ return '<span class="rs-sw'+(on?' on':'')+'"><i></i></span>'; };
     const thm=(typeof themeMode!=='undefined')?themeMode:'auto';
     const themeChip=function(t,lbl){ return '<button type="button" class="rs-mode'+(thm===t?' on':'')+'" style="padding:11px 4px" onclick="setQuranTheme(\''+t+'\')"><span class="rm-l" style="font-size:13px">'+lbl+'</span></button>'; };
+    const tafChip=function(id,sub){ const src=QTAF_SOURCES[id]; return '<button type="button" class="rs-mode'+(qTafSource().id===id?' on':'')+'" onclick="qSetTafsirSource(\''+id+'\')"><span class="rm-l">'+escHtml(src.label)+'</span><span class="rm-s">'+escHtml(sub)+'</span></button>'; };
     let html='';
     html += '<div class="rs-lbl">Режим</div><div class="rs-modes rs-modes-3">'+mode('page','Страница',P_ICON,'мусхаф')+mode('reading','Чтение',R_ICON,'аяты+перевод')+mode('mushaf','Сура',M_ICON,'сплошным')+'</div>';
     html += '<div class="rs-lbl">Таджвид</div><button type="button" class="rs-row" onclick="qToggleTj()"><span>Цвета правил таджвида</span>'+sw(QPREFS.tj)+'</button>';
     if(QPREFS.mode!=='page') html += '<div class="rs-lbl">Размер</div><div class="rs-size"><button type="button" onclick="setReaderFontSize(-1)" aria-label="Меньше">A−</button><span class="rs-size-val" id="rsSizeVal">'+QPREFS.fs+'</span><button type="button" onclick="setReaderFontSize(1)" aria-label="Больше">A+</button></div>';
     html += '<div class="rs-lbl">Тема</div><div class="rs-modes rs-modes-3">'+themeChip('light','Светлая')+themeChip('dark','Тёмная')+themeChip('auto','Авто')+'</div>';
+    html += '<div class="rs-lbl">Тафсир</div><div class="rs-modes">'+tafChip('saadi','кратче')+tafChip('kathir','подробно')+'</div>';
     // аудио-чтец
     const curRec=QRECITERS.find(function(r){return r.id===QAUDIO.reciter;})||QRECITERS[0];
     html += '<div class="rs-lbl">Чтец (аудио)</div><button type="button" class="rs-row" onclick="qOpenReciters()"><span>'+escHtml(curRec.name)+'</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.5"><path d="M9 6l6 6-6 6"/></svg></button>';
@@ -6105,20 +6159,60 @@ https://azkar.nurtech.dev/app`);
   }
 
   // ---- тафсир ас-Саади по клику на аят ----
-  const QTAF = { cache:{} };
-  function qLoadTafsir(s){ if(QTAF.cache[s]) return Promise.resolve(QTAF.cache[s]); return qFetchJSON('assets/quran/tafsir/'+s+'.json').then(function(d){ QTAF.cache[s]=d; return d; }); }
+  const QTAF_SOURCES = {
+    saadi: {
+      id:'saadi',
+      label:'Ас-Саади',
+      title:'Тафсир ас-Саади',
+      dir:'assets/quran/tafsir/',
+      missing:'Для этого аята тафсир ас-Саади пока недоступен.',
+      groupNote:'Ас-Саади толкует эти аяты вместе.',
+      attr:'<div class="m-note">Тафсир ас-Саади (‘Абд ар-Рахман ибн Насир ас-Саади), русский перевод.</div>'
+    },
+    kathir: {
+      id:'kathir',
+      label:'Ибн Касир',
+      title:'Тафсир Ибн Касира',
+      dir:'assets/quran/tafsir-ibn-kathir/',
+      missing:'Для этого аята тафсир Ибн Касира пока недоступен.',
+      groupNote:'Ибн Касир толкует эти аяты вместе.',
+      attr:'<div class="m-note">Тафсир Ибн Касира, русский перевод. Источник данных: Quranic Universal Library (QUL) / Tarteel AI, ресурс Tafsir Ibne Kathir.</div>'
+    }
+  };
+  const QTAF = { cache:{}, source:(function(){ try{ return localStorage.getItem('azkar_qtafsir') || 'saadi'; }catch(e){ return 'saadi'; } })() };
+  function qTafSource(){ return QTAF_SOURCES[QTAF.source] || QTAF_SOURCES.saadi; }
+  function qLoadTafsir(s){
+    const src=qTafSource(), key=src.id+':'+s;
+    if(QTAF.cache[key]) return Promise.resolve(QTAF.cache[key]);
+    return qFetchJSON(src.dir+s+'.json').then(function(d){ QTAF.cache[key]=d; return d; });
+  }
   function tafsirRangeFor(list, a){ if(!Array.isArray(list)) return null; for(let i=0;i<list.length;i++){ if(a>=list[i].f && a<=list[i].t) return list[i]; } return null; }
-  const QTAF_ATTR='<div class="m-note">Тафсир ас-Саади (‘Абд ар-Рахман ибн Насир ас-Саади), русский перевод.</div>';
+  function qTafSourcesHtml(){
+    return '<div class="q-taf-sources">'
+      + Object.keys(QTAF_SOURCES).map(function(id){
+        const src=QTAF_SOURCES[id];
+        return '<button type="button" class="q-taf-source'+(qTafSource().id===id?' on':'')+'" onclick="qSetTafsirSource(\''+id+'\')">'+escHtml(src.label)+'</button>';
+      }).join('')
+      + '</div>';
+  }
+  function qSetTafsirSource(id){
+    if(!QTAF_SOURCES[id] || qTafSource().id===id) return;
+    QTAF.source=id; try{ localStorage.setItem('azkar_qtafsir', id); }catch(e){}
+    const cur=QTAF.cur;
+    if(QTAF.settings) renderReaderSettings();
+    else if(cur) openTafsir(cur.s, cur.a);
+  }
   function openTafsir(s, a){
     QTAF.settings=false;
     s=parseInt(s,10); a=parseInt(a,10);
-    document.getElementById('qSheetTitle').textContent='Тафсир ас-Саади';
+    const src=qTafSource();
+    document.getElementById('qSheetTitle').textContent=src.title;
     document.getElementById('qSheetBody').innerHTML='<div class="q-taf-loading">Загрузка тафсира…</div>';
     openQSheet();
     Promise.all([qLoadTafsir(s), qLoadSura(s).catch(function(){ return null; })]).then(function(res){
       const list=res[0], sura=res[1];
       const r=tafsirRangeFor(list, a);
-      if(!r || !r.x){ document.getElementById('qSheetBody').innerHTML='<div class="m-note">Для этого аята тафсир ас-Саади пока недоступен.</div>'; return; }
+      if(!r || !r.x){ document.getElementById('qSheetBody').innerHTML=qTafSourcesHtml()+'<div class="m-note">'+escHtml(src.missing)+'</div>'; return; }
       const ayahTr=(sura && sura.a && sura.a[a-1]) ? sura.a[a-1].ru : ((QURAN.cur && QURAN.cur.n===s && QURAN.cur.a[a-1]) ? QURAN.cur.a[a-1].ru : '');
       QTAF.cur={ s:s, a:a, r:r, ayahTr:ayahTr }; QTAF.full=false;
       renderTafsir();
@@ -6127,11 +6221,12 @@ https://azkar.nurtech.dev/app`);
   function qTafToggleFull(){ QTAF.full=!QTAF.full; renderTafsir(); const b=document.getElementById('qSheetBody'); if(b) b.scrollTop=0; const sh=document.querySelector('#qSheet .sheet'); if(sh) sh.scrollTop=0; }
   function renderTafsir(){
     const cur=QTAF.cur; if(!cur) return; const s=cur.s, a=cur.a, r=cur.r;
+    const src=qTafSource();
     const su=QURAN.index ? QURAN.index.find(function(x){ return x.n===s; }) : null;
     const nm=su ? su.nr : ('Сура '+s);
     const perAyah = !QTAF.full && r.seg && r.seg[String(a)];
     const playHtml = '<button type="button" class="q-taf-play" onclick="qTafPlay()"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Слушать аят '+a+'</button>';
-    let html='';
+    let html=qTafSourcesHtml();
     if(perAyah){
       html += '<div class="q-taf-sub">'+escHtml(nm)+' · аят '+a+'</div>';
       if(cur.ayahTr) html += '<div class="q-taf-ayah">'+escHtml(cur.ayahTr)+'</div>';
@@ -6143,11 +6238,11 @@ https://azkar.nurtech.dev/app`);
       html += '<div class="q-taf-sub">'+escHtml(nm)+' · '+rangeLabel+'</div>';
       if(cur.ayahTr) html += '<div class="q-taf-ayah">'+escHtml(cur.ayahTr)+'</div>';   // перевод аята (Кулиев) над толкованием
       html += playHtml;
-      if(r.f!==r.t && !r.seg) html += '<div class="q-taf-group-note">Ас-Саади толкует эти аяты вместе.</div>';
+      if(r.f!==r.t && !r.seg) html += '<div class="q-taf-group-note">'+escHtml(src.groupNote)+'</div>';
       html += '<div class="q-taf-text">'+escHtml(String(r.x))+'</div>';
       if(r.seg && r.seg[String(a)]) html += '<button type="button" class="q-taf-full" onclick="qTafToggleFull()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>Показать только аят '+a+'</button>';
     }
-    document.getElementById('qSheetBody').innerHTML = html + QTAF_ATTR;
+    document.getElementById('qSheetBody').innerHTML = html + src.attr;
   }
 
   (function(){

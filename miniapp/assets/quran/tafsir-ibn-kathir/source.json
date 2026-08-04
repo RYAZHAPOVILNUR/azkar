@@ -1,0 +1,9 @@
+{
+  "name": "Tafsir Ibne Kathir",
+  "language": "Russian",
+  "source": "Quranic Universal Library (QUL) / Tarteel AI",
+  "resource": "https://qul.tarteel.ai/resources/tafsir/307",
+  "per_ayah_url": "https://qul.tarteel.ai/resources/translation/307?ayah={sura}:{ayah}",
+  "downloaded_at": "2026-08-04T12:34:01.545Z",
+  "errors": []
+}
