@@ -558,6 +558,18 @@
   .modal .m-actions .secondary { background:var(--surface-2); color:var(--ink-soft); }
   :root[data-theme="dark"] .modal .m-actions .primary { color:var(--bg); }
   @media (prefers-color-scheme: dark){ :root:not([data-theme]) .modal .m-actions .primary { color:var(--bg); } }
+  .confirm-modal { z-index:2200; }
+  .confirm-modal .confirm-card { position:absolute; left:50%; top:50%; width:min(360px, calc(100vw - 40px)); transform:translate(-50%, -46%) scale(.96);
+    opacity:0; border:1px solid var(--line); border-radius:18px; background:var(--surface); color:var(--ink); box-shadow:0 24px 70px rgba(0,0,0,.38);
+    padding:18px; transition:transform .2s cubic-bezier(.22,.8,.2,1), opacity .18s; }
+  .confirm-modal.open .confirm-card { opacity:1; transform:translate(-50%, -50%) scale(1); }
+  .confirm-title { font-size:17px; line-height:1.25; font-weight:800; color:var(--ink); }
+  .confirm-text { margin-top:8px; font-size:13.5px; line-height:1.45; color:var(--ink-soft); }
+  .confirm-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:18px; }
+  .confirm-actions button { min-height:40px; padding:0 16px; border-radius:12px; border:1px solid var(--line); font:inherit; font-size:13.5px; font-weight:800; cursor:pointer;
+    background:var(--surface-2); color:var(--ink-soft); -webkit-tap-highlight-color:transparent; transition:transform .12s, background .15s, color .15s, border-color .15s; }
+  .confirm-actions button:active { transform:scale(.96); }
+  .confirm-actions .danger { background:color-mix(in srgb, var(--danger, #ef4444) 14%, var(--surface-2)); color:color-mix(in srgb, var(--danger, #ef4444) 82%, var(--ink)); border-color:color-mix(in srgb, var(--danger, #ef4444) 42%, var(--line)); }
   .radio-choice-list { display:flex; flex-direction:column; gap:10px; margin-top:14px; }
   .radio-choice { width:100%; min-height:76px; display:flex; align-items:center; gap:13px; padding:14px;
     border-radius:17px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink);
@@ -1710,6 +1722,18 @@
         <button class="m-close" id="qSheetClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div id="qSheetBody"></div>
+    </div>
+  </div>
+
+  <div class="modal confirm-modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+    <div class="scrim" id="confirmScrim"></div>
+    <div class="confirm-card">
+      <div class="confirm-title" id="confirmTitle">Подтвердить действие</div>
+      <div class="confirm-text" id="confirmText">Это действие нельзя отменить.</div>
+      <div class="confirm-actions">
+        <button type="button" id="confirmCancel">Отмена</button>
+        <button type="button" class="danger" id="confirmOk">Удалить</button>
+      </div>
     </div>
   </div>
 
@@ -5278,11 +5302,43 @@ https://azkar.nurtech.dev/app`);
       qManualSave({ v:1, items:items }); qManualTouchStats(refs.length, rec.date); qManualRefresh(); renderQManualSheet(); qToast(old?'Запись обновлена':'Прочитанное отмечено'); tgHaptic('medium');
     }).catch(function(){ qToast('Не удалось отметить диапазон'); });
   }
+  function qConfirm(opts){
+    opts=opts||{};
+    const modal=document.getElementById('confirmModal'), title=document.getElementById('confirmTitle'), text=document.getElementById('confirmText'), ok=document.getElementById('confirmOk'), cancel=document.getElementById('confirmCancel'), scrim=document.getElementById('confirmScrim');
+    if(!modal || !ok || !cancel) return Promise.resolve(false);
+    if(title) title.textContent=opts.title||'Подтвердить действие';
+    if(text) text.textContent=opts.text||'Это действие нельзя отменить.';
+    ok.textContent=opts.ok||'OK';
+    cancel.textContent=opts.cancel||'Отмена';
+    return new Promise(function(resolve){
+      let done=false;
+      function finish(v){
+        if(done) return; done=true;
+        modal.classList.remove('open');
+        ok.removeEventListener('click', onOk); cancel.removeEventListener('click', onCancel);
+        if(scrim) scrim.removeEventListener('click', onCancel);
+        document.removeEventListener('keydown', onKey);
+        resolve(v);
+      }
+      function onOk(){ finish(true); }
+      function onCancel(){ finish(false); }
+      function onKey(e){ if(e.key==='Escape') finish(false); }
+      ok.addEventListener('click', onOk);
+      cancel.addEventListener('click', onCancel);
+      if(scrim) scrim.addEventListener('click', onCancel);
+      document.addEventListener('keydown', onKey);
+      modal.classList.add('open');
+      tgHaptic('light');
+      setTimeout(function(){ try{ cancel.focus(); }catch(e){} }, 0);
+    });
+  }
   function qManualDelete(id){
     const man=qManualLoad(), items=man.items||[], rec=items.find(function(x){ return x.id===id; }); if(!rec) return;
-    if(!confirm('Удалить ручную запись?')) return;
-    qManualSave({ v:1, items:items.filter(function(x){ return x.id!==id; }) }); qManualTouchStats(-((rec.refs||[]).length), rec.date);
-    qManualRefresh(); renderQManualSheet(); qToast('Запись удалена'); tgHaptic('medium');
+    qConfirm({ title:'Удалить запись?', text:'Ручная отметка будет удалена из прогресса чтения.', ok:'Удалить', cancel:'Отмена' }).then(function(yes){
+      if(!yes) return;
+      qManualSave({ v:1, items:items.filter(function(x){ return x.id!==id; }) }); qManualTouchStats(-((rec.refs||[]).length), rec.date);
+      qManualRefresh(); renderQManualSheet(); qToast('Запись удалена'); tgHaptic('medium');
+    });
   }
 
   // ---- заучивание: битовая карта заученных аятов + интервальные повторения (SRS) по сурам ----
