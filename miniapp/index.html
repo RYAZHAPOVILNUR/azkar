@@ -776,7 +776,11 @@
   .q-manual-actions button { flex:1; min-height:44px; border:1px solid color-mix(in srgb, var(--ink-faint) 58%, var(--line)); border-radius:13px; background:var(--surface); color:var(--ink); font:inherit; font-size:14px; font-weight:800; }
   .q-manual-actions .ghost { background:var(--surface); color:var(--ink); border-color:color-mix(in srgb, var(--ink-faint) 58%, var(--line)); }
   .q-manual-note { font-size:12.5px; line-height:1.45; color:var(--ink-faint); }
-  .q-manual-list { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+  .q-manual-list { display:flex; flex-direction:column; gap:8px; margin-top:14px; max-height:min(336px, 38vh); overflow-y:auto; overflow-x:hidden;
+    padding-right:4px; border-radius:16px; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:color-mix(in srgb, var(--ink-faint) 42%, transparent) transparent; }
+  .q-manual-list::-webkit-scrollbar { width:7px; }
+  .q-manual-list::-webkit-scrollbar-track { background:transparent; margin:8px 0; }
+  .q-manual-list::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--ink-faint) 42%, transparent); border-radius:999px; border:2px solid transparent; background-clip:content-box; }
   .q-manual-entry { display:flex; align-items:center; gap:10px; padding:11px 12px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
   .q-manual-entry .qm-tag { flex:0 0 auto; padding:4px 8px; border-radius:999px; background:var(--accent-soft); color:var(--accent-deep); font-size:11px; font-weight:800; }
   .q-manual-entry .qm-body { flex:1 1 auto; min-width:0; }
@@ -5167,6 +5171,7 @@ https://azkar.nurtech.dev/app`);
 
   // ---- ручные отметки чтения: бумажный мусхаф / другие приложения ----
   let QMANUAL_FORM={ mode:'pages', edit:null, pageFrom:1, pageTo:1, sura:1, ayahFrom:1, ayahTo:1 };
+  function qManualDefaultForm(){ return { mode:'pages', edit:null, pageFrom:1, pageTo:1, sura:1, ayahFrom:1, ayahTo:1 }; }
   function qRefUniq(refs){ const seen={}, out=[]; (refs||[]).forEach(function(k){ if(!seen[k]){ seen[k]=1; out.push(k); } }); return out; }
   function qRefsForPages(from,to){
     from=Math.max(1,Math.min(QP_TOTAL,parseInt(from,10)||1)); to=Math.max(from,Math.min(QP_TOTAL,parseInt(to,10)||from));
@@ -5220,7 +5225,7 @@ https://azkar.nurtech.dev/app`);
   function openQManual(editId){
     qLoadIndex().then(function(){ QTAF.settings=false; const man=qManualLoad(); const rec=editId ? (man.items||[]).find(function(x){ return x.id===editId; }) : null;
       if(rec){ QMANUAL_FORM={ mode:rec.type||'pages', edit:rec.id, pageFrom:rec.from||1, pageTo:rec.to||1, sura:rec.sura||1, ayahFrom:rec.from||1, ayahTo:rec.to||1 }; }
-      else QMANUAL_FORM={ mode:'pages', edit:null, pageFrom:1, pageTo:1, sura:1, ayahFrom:1, ayahTo:1 };
+      else QMANUAL_FORM=qManualDefaultForm();
       document.getElementById('qSheetTitle').textContent=rec?'Изменить запись':'Отметить прочитанное';
       renderQManualSheet();
       openQSheet();
@@ -5292,7 +5297,7 @@ https://azkar.nurtech.dev/app`);
     if(k==='ayahFrom' && QMANUAL_FORM.ayahTo<v) QMANUAL_FORM.ayahTo=v;
     renderQManualSheet();
   }
-  function qManualCancelEdit(){ QMANUAL_FORM.edit=null; renderQManualSheet(); }
+  function qManualCancelEdit(){ QMANUAL_FORM=qManualDefaultForm(); const t=document.getElementById('qSheetTitle'); if(t) t.textContent='Отметить прочитанное'; renderQManualSheet(); tgHaptic('light'); }
   function qManualSubmit(){
     const f=QMANUAL_FORM, p=(f.mode==='pages') ? qRefsForPages(f.pageFrom,f.pageTo) : Promise.resolve(qRefsForAyahs(f.sura,f.ayahFrom,f.ayahTo));
     p.then(function(refs){ if(!refs.length){ qToast('Не найден диапазон'); return; }
