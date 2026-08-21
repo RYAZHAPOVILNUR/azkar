@@ -746,18 +746,20 @@
   .q-select-arrow { position:absolute; right:14px; top:50%; width:18px; height:18px; transform:translateY(-50%) rotate(0deg); color:var(--ink-soft);
     pointer-events:none; transition:transform .22s cubic-bezier(.22,.8,.2,1), color .16s; }
   .q-select.open .q-select-arrow { transform:translateY(-50%) rotate(180deg); color:var(--accent-deep); }
-  .q-select-menu { position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:60; display:none; max-height:min(242px, 45vh); overflow:auto;
-    padding:5px; border:1px solid color-mix(in srgb, var(--line) 92%, var(--ink-faint)); border-radius:14px; background:var(--surface);
-    box-shadow:0 18px 46px rgba(0,0,0,.24), 0 1px 0 rgba(255,255,255,.04); overscroll-behavior:contain; }
+  .q-select-menu { position:absolute; left:0; right:0; bottom:calc(100% + 6px); z-index:60; display:none; overflow:hidden;
+    border:1px solid color-mix(in srgb, var(--line) 92%, var(--ink-faint)); border-radius:14px; background:var(--surface);
+    box-shadow:0 18px 46px rgba(0,0,0,.24), 0 1px 0 rgba(255,255,255,.04); }
   .q-select.open .q-select-menu { display:block; animation:qSelectIn .14s cubic-bezier(.22,.8,.2,1); }
-  .q-select-menu::-webkit-scrollbar { width:7px; }
-  .q-select-menu::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--ink-faint) 42%, transparent); border-radius:999px; }
+  .q-select-options { max-height:min(242px, 45vh); overflow-y:auto; overflow-x:hidden; padding:5px; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:color-mix(in srgb, var(--ink-faint) 42%, transparent) transparent; }
+  .q-select-options::-webkit-scrollbar { width:7px; }
+  .q-select-options::-webkit-scrollbar-track { background:transparent; margin:7px 0; }
+  .q-select-options::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--ink-faint) 42%, transparent); border-radius:999px; border:2px solid transparent; background-clip:content-box; }
   .q-select-option { width:100%; min-height:34px; border:0; border-radius:10px; background:transparent; color:var(--ink); font:inherit; font-size:14.5px;
     display:flex; align-items:center; padding:0 10px; cursor:pointer; text-align:left; }
   .q-select-option:active { transform:scale(.99); }
   .q-select-option:hover, .q-select-option:focus-visible { background:var(--surface-2); outline:none; }
   .q-select-option.on { background:var(--accent-soft); color:var(--accent-deep); font-weight:800; }
-  @keyframes qSelectIn { from{ opacity:0; transform:translateY(-4px) scale(.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
+  @keyframes qSelectIn { from{ opacity:0; transform:translateY(4px) scale(.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
   .q-manual-actions { display:flex; gap:9px; }
   .q-manual-actions button { flex:1; min-height:44px; border:0; border-radius:13px; background:var(--accent); color:#fff; font:inherit; font-size:14px; font-weight:800; }
   .q-manual-actions .ghost { background:var(--surface-2); color:var(--ink-soft); }
@@ -5181,9 +5183,9 @@ https://azkar.nurtech.dev/app`);
       +'<button type="button" class="q-select-btn" aria-haspopup="listbox" aria-expanded="false" onclick="qManualSelectToggle(this)">'
       +'<span class="q-select-value">'+escHtml(current.label)+'</span>'
       +'<svg class="q-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>'
-      +'</button><div class="q-select-menu" role="listbox">'
+      +'</button><div class="q-select-menu"><div class="q-select-options" role="listbox">'
       +items.map(function(x){ const on=+x.value===+sel; return '<button type="button" class="q-select-option'+(on?' on':'')+'" role="option" aria-selected="'+(on?'true':'false')+'" onclick="qManualPick(\''+field+'\','+parseInt(x.value,10)+')">'+escHtml(x.label)+'</button>'; }).join('')
-      +'</div></div>';
+      +'</div></div></div>';
   }
   function qManualNumberItems(from,to){ const out=[]; for(let i=from;i<=to;i++) out.push({ value:i, label:String(i) }); return out; }
   function qManualSuraItems(){ return (QURAN.index||[]).map(function(s){ return { value:s.n, label:s.n+'. '+s.nr }; }); }
@@ -5233,7 +5235,10 @@ https://azkar.nurtech.dev/app`);
     box.classList.toggle('open', willOpen);
     btn.setAttribute('aria-expanded', willOpen?'true':'false');
     if(willOpen){
-      setTimeout(function(){ const cur=box.querySelector('.q-select-option.on'); if(cur) cur.scrollIntoView({ block:'nearest' }); }, 0);
+      setTimeout(function(){
+        const list=box.querySelector('.q-select-options'), cur=box.querySelector('.q-select-option.on');
+        if(list && cur) list.scrollTop = Math.max(0, cur.offsetTop - list.clientHeight / 2 + cur.offsetHeight / 2);
+      }, 0);
       tgHaptic('select');
     }
   }
