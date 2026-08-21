@@ -729,6 +729,29 @@
   .qpc-bar { display:block; height:8px; border-radius:99px; background:var(--surface-2); overflow:hidden; margin:9px 0 7px; }
   .qpc-bar i { display:block; height:100%; width:0; border-radius:99px; background:var(--accent); transition:width .5s cubic-bezier(.22,.8,.2,1); }
   .qpc-sub { font-size:12px; color:var(--ink-faint); }
+  .q-manual-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:44px; margin:0 0 12px; padding:11px 14px;
+    border-radius:14px; border:1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); background:color-mix(in srgb, var(--accent-soft) 70%, var(--surface));
+    color:var(--accent-deep); font:inherit; font-size:14px; font-weight:750; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .13s; }
+  .q-manual-btn:active { transform:scale(.99); }
+  .q-manual-form { display:flex; flex-direction:column; gap:12px; }
+  .q-manual-field { display:flex; flex-direction:column; gap:7px; }
+  .q-manual-field label { font-size:12px; font-weight:750; color:var(--ink-faint); }
+  .q-manual-row { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .q-manual-field select { width:100%; min-height:44px; border:1px solid var(--line); border-radius:13px; background:var(--surface); color:var(--ink);
+    padding:0 12px; font:inherit; font-size:15px; outline:none; }
+  .q-manual-actions { display:flex; gap:9px; }
+  .q-manual-actions button { flex:1; min-height:44px; border:0; border-radius:13px; background:var(--accent); color:#fff; font:inherit; font-size:14px; font-weight:800; }
+  .q-manual-actions .ghost { background:var(--surface-2); color:var(--ink-soft); }
+  .q-manual-note { font-size:12.5px; line-height:1.45; color:var(--ink-faint); }
+  .q-manual-list { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+  .q-manual-entry { display:flex; align-items:center; gap:10px; padding:11px 12px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+  .q-manual-entry .qm-tag { flex:0 0 auto; padding:4px 8px; border-radius:999px; background:var(--accent-soft); color:var(--accent-deep); font-size:11px; font-weight:800; }
+  .q-manual-entry .qm-body { flex:1 1 auto; min-width:0; }
+  .q-manual-entry .qm-title { display:block; font-size:13.5px; font-weight:750; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .q-manual-entry .qm-sub { display:block; font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
+  .q-manual-entry .qm-act { flex:0 0 auto; display:flex; gap:4px; }
+  .q-manual-entry .qm-act button { width:34px; height:34px; border:0; border-radius:10px; background:var(--surface-2); color:var(--ink-soft); display:grid; place-items:center; padding:0; }
+  @media (max-width:360px){ .q-manual-row { grid-template-columns:1fr; } .q-manual-entry { align-items:flex-start; } }
   .qm-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin:2px 0 14px; }
   .qm-stat { padding:13px 10px; border-radius:14px; background:var(--surface-2); text-align:center; }
   .qm-stat b { display:block; font-size:20px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
@@ -1541,6 +1564,10 @@
         <div class="qpc-top"><span class="qpc-t">Мой прогресс</span><span class="qpc-pct" id="qpcPct">0%</span></div>
         <span class="qpc-bar"><i id="qpcBar"></i></span>
         <div class="qpc-sub" id="qpcSub">прочитано 0 из 6236 аятов · карта →</div>
+      </button>
+      <button type="button" class="q-manual-btn" onclick="openQManual()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/><path d="M4 19.5V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13.5"/></svg>
+        Отметить прочитанное
       </button>
       <div class="q-search">
         <span class="qs-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></span>
@@ -5059,23 +5086,136 @@ https://azkar.nurtech.dev/app`);
   function qAddSec(sec){ sec=Math.round(sec); if(sec<=0) return; const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].sec+=sec; s.totSec=(s.totSec||0)+sec; qStatsSave(s); }
   function qIsPageBased(){ return QPREFS.mode==='page'; }
   function qUsesPageFonts(){ return QPREFS.mode==='page' || QPREFS.mode==='reading'; }  // цветной пофайловый мединский
-  function qMarkAyah(){ const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].ay+=1; s.totAy=(s.totAy||0)+1; qStatsSave(s); }
+  function qMarkAyah(){ const s=qStats(), t=qToday(); s.days[t]=s.days[t]||{sec:0,ay:0}; s.days[t].ay+=1; s.totAy=(s.totAy||0)+1; qStatsSave(s); bumpStreak(); }
   function qFmtMin(sec){ const m=Math.round((sec||0)/60); if(m<1) return sec>0?'меньше мин':'0 мин'; if(m<60) return m+' мин'; const h=Math.floor(m/60), mm=m%60; return h+' ч'+(mm?' '+mm+' м':''); }
 
   // ---- прогресс чтения: битовая карта прочитанных аятов + хатмы (синк через CloudStorage) ----
-  const QREAD_KEY='azkar_quran_read', Q_TOTAL_AYAHS=6236, Q_BYTES=780;
+  const QREAD_KEY='azkar_quran_read', QMANUAL_KEY='azkar_quran_manual', Q_TOTAL_AYAHS=6236, Q_BYTES=780;
   let QREAD=null;
-  function qReadLoad(){ if(QREAD) return QREAD; let khatm=0, bits=new Uint8Array(Q_BYTES);
-    try{ const raw=JSON.parse(localStorage.getItem(QREAD_KEY)||'null'); if(raw){ khatm=raw.k||0; if(raw.b){ const bin=atob(raw.b); for(let i=0;i<bin.length&&i<Q_BYTES;i++) bits[i]=bin.charCodeAt(i)&255; } } }catch(e){}
-    QREAD={ bits:bits, khatm:khatm }; if(QURAN._lastKhatm==null) QURAN._lastKhatm=khatm; return QREAD; }
-  function qReadSave(){ if(!QREAD) return; let bin=''; for(let i=0;i<QREAD.bits.length;i++) bin+=String.fromCharCode(QREAD.bits[i]); try{ localStorage.setItem(QREAD_KEY, JSON.stringify({ v:1, k:QREAD.khatm, b:btoa(bin) })); }catch(e){} }
+  function qBitsFromB64(b64){ const bits=new Uint8Array(Q_BYTES); try{ const bin=atob(b64||''); for(let i=0;i<bin.length&&i<Q_BYTES;i++) bits[i]=bin.charCodeAt(i)&255; }catch(e){} return bits; }
+  function qBitsToB64(bits){ let bin=''; for(let i=0;i<Q_BYTES;i++) bin+=String.fromCharCode((bits&&bits[i])||0); return btoa(bin); }
+  function qManualLoad(){ try{ const m=JSON.parse(localStorage.getItem(QMANUAL_KEY)||'null'); if(m&&Array.isArray(m.items)) return m; }catch(e){} return { v:1, items:[] }; }
+  function qManualSave(m){ try{ localStorage.setItem(QMANUAL_KEY, JSON.stringify({ v:1, items:(m&&m.items)||[] })); }catch(e){} }
+  function qReadRebuildBits(st){
+    if(!st) st=qReadLoad();
+    const bits=new Uint8Array(Q_BYTES);
+    for(let i=0;i<Q_BYTES;i++) bits[i]=st.auto[i]||0;
+    const man=qManualLoad();
+    (man.items||[]).forEach(function(rec){ (rec.refs||[]).forEach(function(k){ const p=String(k).split(':'), bi=qBitIndex(parseInt(p[0],10), parseInt(p[1],10)); if(bi>=0) bits[bi>>3]|=(1<<(bi&7)); }); });
+    st.bits=bits;
+    return bits;
+  }
+  function qReadLoad(){ if(QREAD) return QREAD; let khatm=0, bits=new Uint8Array(Q_BYTES), auto=null;
+    try{ const raw=JSON.parse(localStorage.getItem(QREAD_KEY)||'null'); if(raw){ khatm=raw.k||0; bits=qBitsFromB64(raw.b); auto=raw.a?qBitsFromB64(raw.a):bits.slice(); } }catch(e){}
+    QREAD={ bits:bits, auto:auto||bits.slice(), khatm:khatm }; qReadRebuildBits(QREAD); if(QURAN._lastKhatm==null) QURAN._lastKhatm=khatm; return QREAD; }
+  function qReadSave(){ if(!QREAD) return; qReadRebuildBits(QREAD); try{ localStorage.setItem(QREAD_KEY, JSON.stringify({ v:2, k:QREAD.khatm, b:qBitsToB64(QREAD.bits), a:qBitsToB64(QREAD.auto) })); }catch(e){} }
   function qBuildOffsets(){ if(QURAN.offsets||!QURAN.index) return; const off={}; let c=0; const s=QURAN.index.slice().sort(function(a,b){ return a.n-b.n; }); for(let i=0;i<s.length;i++){ off[s[i].n]=c; c+=s[i].c; } QURAN.offsets=off; }
   function qBitIndex(s,a){ qBuildOffsets(); const o=QURAN.offsets; if(!o||!(s in o)) return -1; return o[s]+(a-1); }
   function qIsRead(s,a){ const st=qReadLoad(); const bi=qBitIndex(s,a); if(bi<0) return false; return !!(st.bits[bi>>3] & (1<<(bi&7))); }
-  function qTotalRead(){ const st=qReadLoad(); let c=0; for(let i=0;i<st.bits.length;i++){ let b=st.bits[i]; while(b){ c+=b&1; b>>=1; } } return c; }
-  function qSuraReadCount(s){ const su=(QURAN.index||[]).find(function(x){ return x.n===s; }); if(!su) return 0; qBuildOffsets(); const o=(QURAN.offsets||{})[s]; if(o==null) return 0; const st=qReadLoad(); let c=0; for(let a=0;a<su.c;a++){ const bi=o+a; if(st.bits[bi>>3]&(1<<(bi&7))) c++; } return c; }
-  function qMarkRead(s,a){ const bi=qBitIndex(s,a); if(bi<0) return false; const st=qReadLoad(); const by=bi>>3, m=1<<(bi&7); if(st.bits[by]&m) return false; st.bits[by]|=m;
-    if(qTotalRead()>=Q_TOTAL_AYAHS){ st.khatm++; st.bits=new Uint8Array(Q_BYTES); } qReadSave(); qHifzSyncSoon(); return true; }
+  function qTotalRead(){ const st=qReadLoad(); qReadRebuildBits(st); let c=0; for(let i=0;i<st.bits.length;i++){ let b=st.bits[i]; while(b){ c+=b&1; b>>=1; } } return c; }
+  function qSuraReadCount(s){ const su=(QURAN.index||[]).find(function(x){ return x.n===s; }); if(!su) return 0; qBuildOffsets(); const o=(QURAN.offsets||{})[s]; if(o==null) return 0; const st=qReadLoad(); qReadRebuildBits(st); let c=0; for(let a=0;a<su.c;a++){ const bi=o+a; if(st.bits[bi>>3]&(1<<(bi&7))) c++; } return c; }
+  function qMarkRead(s,a){ const bi=qBitIndex(s,a); if(bi<0) return false; const st=qReadLoad(); const by=bi>>3, m=1<<(bi&7); if(st.bits[by]&m){ st.auto[by]|=m; qReadSave(); return false; } st.auto[by]|=m; st.bits[by]|=m;
+    if(qTotalRead()>=Q_TOTAL_AYAHS){ st.khatm++; st.bits=new Uint8Array(Q_BYTES); st.auto=new Uint8Array(Q_BYTES); qManualSave({ v:1, items:[] }); } qReadSave(); qHifzSyncSoon(); return true; }
+
+  // ---- ручные отметки чтения: бумажный мусхаф / другие приложения ----
+  let QMANUAL_FORM={ mode:'pages', edit:null, pageFrom:1, pageTo:1, sura:1, ayahFrom:1, ayahTo:1 };
+  function qRefUniq(refs){ const seen={}, out=[]; (refs||[]).forEach(function(k){ if(!seen[k]){ seen[k]=1; out.push(k); } }); return out; }
+  function qRefsForPages(from,to){
+    from=Math.max(1,Math.min(QP_TOTAL,parseInt(from,10)||1)); to=Math.max(from,Math.min(QP_TOTAL,parseInt(to,10)||from));
+    const jobs=[]; for(let p=from;p<=to;p++) jobs.push(qLoadPage(p).catch(function(){ return null; }));
+    return Promise.all(jobs).then(function(pages){ const refs=[]; pages.forEach(function(d){ if(!d) return; (d.lines||[]).forEach(function(l){ (l.w||[]).forEach(function(w){ if(w.k) refs.push(w.k); }); }); }); return qRefUniq(refs); });
+  }
+  function qRefsForAyahs(s,from,to){ const su=(QURAN.index||[]).find(function(x){ return x.n===s; }); if(!su) return []; from=Math.max(1,Math.min(su.c,parseInt(from,10)||1)); to=Math.max(from,Math.min(su.c,parseInt(to,10)||from)); const refs=[]; for(let a=from;a<=to;a++) refs.push(s+':'+a); return refs; }
+  function qManualLabel(rec){
+    if(!rec) return '';
+    if(rec.type==='pages') return 'Стр. '+rec.from+'–'+rec.to;
+    const su=(QURAN.index||[]).find(function(x){ return x.n===rec.sura; });
+    return (su?su.nr:('Сура '+rec.sura))+' · аяты '+rec.from+'–'+rec.to;
+  }
+  function qManualDateLabel(d){ if(!d) return 'сегодня'; const t=qToday(); if(d===t) return 'сегодня'; const p=d.split('-'); return p.length===3 ? (p[2]+'.'+p[1]+'.'+p[0]) : d; }
+  function qManualTouchStats(delta,date){
+    delta=parseInt(delta,10)||0; if(!delta) return;
+    const s=qStats(), d=date||qToday(); s.days[d]=s.days[d]||{sec:0,ay:0};
+    s.days[d].ay=Math.max(0,(s.days[d].ay||0)+delta);
+    s.totAy=Math.max(0,(s.totAy||0)+delta);
+    qStatsSave(s);
+  }
+  function qActivityOnDay(d){
+    const h=loadHistory(), st=qStats(), qd=st.days&&st.days[d];
+    if(qd && ((qd.ay||0)>0 || (qd.sec||0)>0)) return true;
+    return !!(h[d] && Object.values(h[d].sessions||{}).some(function(s){ return s&&s.started; }));
+  }
+  function qRecalcStreak(){
+    let count=0, last=null;
+    for(let i=0;i<370;i++){ const d=new Date(); d.setDate(d.getDate()-i); const key=todayStr(d); if(qActivityOnDay(key)){ if(i===count){ count++; if(!last) last=key; } else break; } else if(i===0){ break; } else break; }
+    try{ localStorage.setItem('azkar_streak', JSON.stringify({ last:last, count:count })); }catch(e){}
+    updateStreakUI();
+  }
+  function qManualRefresh(){
+    qReadSave(); qRecalcStreak(); qHifzSyncSoon();
+    renderQProgressCard(); renderQuranHome(); updateSoftStats();
+    const qm=document.getElementById('quranMap'); if(qm&&qm.classList.contains('active')&&QURAN.index) renderQuranMap(QURAN.index);
+  }
+  function qManualOptions(from,to,sel){ let h=''; for(let i=from;i<=to;i++) h+='<option value="'+i+'"'+(i===sel?' selected':'')+'>'+i+'</option>'; return h; }
+  function qManualSuraOptions(sel){ return (QURAN.index||[]).map(function(s){ return '<option value="'+s.n+'"'+(s.n===sel?' selected':'')+'>'+s.n+'. '+escHtml(s.nr)+'</option>'; }).join(''); }
+  function qManualAyahMax(){ const su=(QURAN.index||[]).find(function(x){ return x.n===QMANUAL_FORM.sura; }); return su?su.c:7; }
+  function openQManual(editId){
+    qLoadIndex().then(function(){ QTAF.settings=false; const man=qManualLoad(); const rec=editId ? (man.items||[]).find(function(x){ return x.id===editId; }) : null;
+      if(rec){ QMANUAL_FORM={ mode:rec.type||'pages', edit:rec.id, pageFrom:rec.from||1, pageTo:rec.to||1, sura:rec.sura||1, ayahFrom:rec.from||1, ayahTo:rec.to||1 }; }
+      else QMANUAL_FORM={ mode:'pages', edit:null, pageFrom:1, pageTo:1, sura:1, ayahFrom:1, ayahTo:1 };
+      document.getElementById('qSheetTitle').textContent=rec?'Изменить запись':'Отметить прочитанное';
+      renderQManualSheet();
+      openQSheet();
+    }).catch(function(){ qToast('Не удалось загрузить список сур'); });
+  }
+  function renderQManualSheet(){
+    const f=QMANUAL_FORM, max=qManualAyahMax();
+    if(f.ayahFrom>max) f.ayahFrom=max; if(f.ayahTo>max) f.ayahTo=max; if(f.ayahTo<f.ayahFrom) f.ayahTo=f.ayahFrom;
+    let html='<div class="q-manual-form">'
+      +'<div class="seg"><button type="button" class="'+(f.mode==='pages'?'on':'')+'" onclick="qManualMode(\'pages\')">Страницы</button><button type="button" class="'+(f.mode==='ayahs'?'on':'')+'" onclick="qManualMode(\'ayahs\')">Сура и аяты</button></div>';
+    if(f.mode==='pages'){
+      html+='<div class="q-manual-row"><div class="q-manual-field"><label>С первой страницы</label><select onchange="qManualSet(\'pageFrom\',this.value)">'+qManualOptions(1,QP_TOTAL,f.pageFrom)+'</select></div>'
+        +'<div class="q-manual-field"><label>По страницу</label><select onchange="qManualSet(\'pageTo\',this.value)">'+qManualOptions(f.pageFrom,QP_TOTAL,Math.max(f.pageFrom,f.pageTo))+'</select></div></div>';
+    } else {
+      html+='<div class="q-manual-field"><label>Сура</label><select onchange="qManualSet(\'sura\',this.value)">'+qManualSuraOptions(f.sura)+'</select></div>'
+        +'<div class="q-manual-row"><div class="q-manual-field"><label>С аята</label><select onchange="qManualSet(\'ayahFrom\',this.value)">'+qManualOptions(1,max,f.ayahFrom)+'</select></div>'
+        +'<div class="q-manual-field"><label>По аят</label><select onchange="qManualSet(\'ayahTo\',this.value)">'+qManualOptions(f.ayahFrom,max,Math.max(f.ayahFrom,f.ayahTo))+'</select></div></div>';
+    }
+    html+='<div class="q-manual-note">Запись будет внесена вручную и учтётся только в прогрессе чтения и серии дней.</div>'
+      +'<div class="q-manual-actions"><button type="button" onclick="qManualSubmit()">'+(f.edit?'Сохранить':'Отметить')+'</button>'+(f.edit?'<button type="button" class="ghost" onclick="qManualCancelEdit()">Отмена</button>':'')+'</div>'
+      +'</div>'+qManualHistoryHtml();
+    document.getElementById('qSheetBody').innerHTML=html;
+  }
+  function qManualHistoryHtml(){ const items=(qManualLoad().items||[]).slice().sort(function(a,b){ return String(b.created||'').localeCompare(String(a.created||'')); });
+    if(!items.length) return '<div class="m-note" style="margin-top:14px">Ручных записей пока нет.</div>';
+    return '<div class="q-manual-list">'+items.map(function(r){ return '<div class="q-manual-entry"><span class="qm-tag">Вручную</span><span class="qm-body"><span class="qm-title">'+escHtml(qManualLabel(r))+'</span><span class="qm-sub">'+qManualDateLabel(r.date)+' · '+((r.refs||[]).length)+' '+qPlural((r.refs||[]).length,'аят','аята','аятов')+'</span></span><span class="qm-act"><button type="button" aria-label="Изменить" onclick="openQManual(\''+r.id+'\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button type="button" aria-label="Удалить" onclick="qManualDelete(\''+r.id+'\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button></span></div>'; }).join('')+'</div>';
+  }
+  function qManualMode(mode){ QMANUAL_FORM.mode=mode; renderQManualSheet(); tgHaptic('light'); }
+  function qManualSet(k,v){ v=parseInt(v,10)||1; QMANUAL_FORM[k]=v;
+    if(k==='pageFrom' && QMANUAL_FORM.pageTo<v) QMANUAL_FORM.pageTo=v;
+    if(k==='sura'){ QMANUAL_FORM.ayahFrom=1; QMANUAL_FORM.ayahTo=1; }
+    if(k==='ayahFrom' && QMANUAL_FORM.ayahTo<v) QMANUAL_FORM.ayahTo=v;
+    renderQManualSheet();
+  }
+  function qManualCancelEdit(){ QMANUAL_FORM.edit=null; renderQManualSheet(); }
+  function qManualSubmit(){
+    const f=QMANUAL_FORM, p=(f.mode==='pages') ? qRefsForPages(f.pageFrom,f.pageTo) : Promise.resolve(qRefsForAyahs(f.sura,f.ayahFrom,f.ayahTo));
+    p.then(function(refs){ if(!refs.length){ qToast('Не найден диапазон'); return; }
+      const man=qManualLoad(), items=man.items||[], old=f.edit?items.find(function(x){ return x.id===f.edit; }):null;
+      if(old) qManualTouchStats(-((old.refs||[]).length), old.date);
+      const rec={ id:old?old.id:('qm'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)), type:f.mode, date:qToday(), created:old?old.created:new Date().toISOString(), updated:new Date().toISOString(), refs:refs };
+      if(f.mode==='pages'){ rec.from=f.pageFrom; rec.to=Math.max(f.pageFrom,f.pageTo); }
+      else { rec.sura=f.sura; rec.from=f.ayahFrom; rec.to=Math.max(f.ayahFrom,f.ayahTo); }
+      if(old){ const i=items.indexOf(old); items[i]=rec; } else items.unshift(rec);
+      qManualSave({ v:1, items:items }); qManualTouchStats(refs.length, rec.date); qManualRefresh(); renderQManualSheet(); qToast(old?'Запись обновлена':'Прочитанное отмечено'); tgHaptic('medium');
+    }).catch(function(){ qToast('Не удалось отметить диапазон'); });
+  }
+  function qManualDelete(id){
+    const man=qManualLoad(), items=man.items||[], rec=items.find(function(x){ return x.id===id; }); if(!rec) return;
+    if(!confirm('Удалить ручную запись?')) return;
+    qManualSave({ v:1, items:items.filter(function(x){ return x.id!==id; }) }); qManualTouchStats(-((rec.refs||[]).length), rec.date);
+    qManualRefresh(); renderQManualSheet(); qToast('Запись удалена'); tgHaptic('medium');
+  }
 
   // ---- заучивание: битовая карта заученных аятов + интервальные повторения (SRS) по сурам ----
   const QMEM_KEY='azkar_quran_mem', SRS_DAYS=[1,3,7,14,30,90,180];
@@ -5111,7 +5251,7 @@ https://azkar.nurtech.dev/app`);
     if(!loc && !cld) return null;
     if(!loc) return JSON.stringify(cld);
     if(!cld) return JSON.stringify(loc);
-    if(k===QREAD_KEY) return JSON.stringify({ v:1, k:Math.max(loc.k||0, cld.k||0), b:qMergeBits(loc.b, cld.b) });
+    if(k===QREAD_KEY) return JSON.stringify({ v:2, k:Math.max(loc.k||0, cld.k||0), b:qMergeBits(loc.b, cld.b), a:qMergeBits(loc.a||loc.b, cld.a||cld.b) });
     // mem: OR битов заученного + слияние srs (при конфликте по суре — более ранний срок повторения, чтобы не пропустить)
     const srs={}, ss=loc.srs||{}, cs=cld.srs||{};
     Object.keys(ss).forEach(function(s){ srs[s]=ss[s]; });
