@@ -5298,10 +5298,21 @@ https://azkar.nurtech.dev/app`);
     renderQManualSheet();
   }
   function qManualCancelEdit(){ QMANUAL_FORM=qManualDefaultForm(); const t=document.getElementById('qSheetTitle'); if(t) t.textContent='Отметить прочитанное'; renderQManualSheet(); tgHaptic('light'); }
+  function qManualHasDuplicate(f, items){
+    const date=qToday(), type=f.mode;
+    if(type==='pages'){
+      const from=f.pageFrom, to=Math.max(f.pageFrom,f.pageTo);
+      return (items||[]).some(function(x){ return x.id!==f.edit && x.date===date && x.type==='pages' && x.from===from && x.to===to; });
+    }
+    const from=f.ayahFrom, to=Math.max(f.ayahFrom,f.ayahTo);
+    return (items||[]).some(function(x){ return x.id!==f.edit && x.date===date && x.type==='ayahs' && x.sura===f.sura && x.from===from && x.to===to; });
+  }
   function qManualSubmit(){
-    const f=QMANUAL_FORM, p=(f.mode==='pages') ? qRefsForPages(f.pageFrom,f.pageTo) : Promise.resolve(qRefsForAyahs(f.sura,f.ayahFrom,f.ayahTo));
+    const f=QMANUAL_FORM, man=qManualLoad(), items=man.items||[];
+    if(!f.edit && qManualHasDuplicate(f, items)){ qToast('Такая запись уже есть'); tgHaptic('light'); return; }
+    const p=(f.mode==='pages') ? qRefsForPages(f.pageFrom,f.pageTo) : Promise.resolve(qRefsForAyahs(f.sura,f.ayahFrom,f.ayahTo));
     p.then(function(refs){ if(!refs.length){ qToast('Не найден диапазон'); return; }
-      const man=qManualLoad(), items=man.items||[], old=f.edit?items.find(function(x){ return x.id===f.edit; }):null;
+      const old=f.edit?items.find(function(x){ return x.id===f.edit; }):null;
       if(old) qManualTouchStats(-((old.refs||[]).length), old.date);
       const rec={ id:old?old.id:('qm'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)), type:f.mode, date:qToday(), created:old?old.created:new Date().toISOString(), updated:new Date().toISOString(), refs:refs };
       if(f.mode==='pages'){ rec.from=f.pageFrom; rec.to=Math.max(f.pageFrom,f.pageTo); }
