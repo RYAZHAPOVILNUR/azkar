@@ -566,8 +566,8 @@
   .confirm-title { font-size:17px; line-height:1.25; font-weight:800; color:var(--ink); }
   .confirm-text { margin-top:8px; font-size:13.5px; line-height:1.45; color:var(--ink-soft); }
   .confirm-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:18px; }
-  .confirm-actions button { min-height:40px; padding:0 16px; border-radius:12px; border:1px solid color-mix(in srgb, var(--ink) 28%, var(--line)); font:inherit; font-size:13.5px; font-weight:800; cursor:pointer;
-    background:color-mix(in srgb, var(--ink) 88%, #000); color:#fff; -webkit-tap-highlight-color:transparent; transition:transform .12s, background .15s, color .15s, border-color .15s; }
+  .confirm-actions button { min-height:40px; padding:0 16px; border-radius:12px; border:1px solid color-mix(in srgb, var(--ink-faint) 58%, var(--line)); font:inherit; font-size:13.5px; font-weight:800; cursor:pointer;
+    background:var(--surface); color:var(--ink); -webkit-tap-highlight-color:transparent; transition:transform .12s, background .15s, color .15s, border-color .15s; }
   .confirm-actions button:active { transform:scale(.96); }
   .confirm-actions .danger { background:color-mix(in srgb, var(--danger, #ef4444) 14%, var(--surface-2)); color:color-mix(in srgb, var(--danger, #ef4444) 82%, var(--ink)); border-color:color-mix(in srgb, var(--danger, #ef4444) 42%, var(--line)); }
   .radio-choice-list { display:flex; flex-direction:column; gap:10px; margin-top:14px; }
@@ -773,8 +773,8 @@
   .q-select-option.on { background:var(--accent-soft); color:var(--accent-deep); font-weight:800; }
   @keyframes qSelectIn { from{ opacity:0; transform:translateY(-4px) scale(.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
   .q-manual-actions { display:flex; gap:9px; }
-  .q-manual-actions button { flex:1; min-height:44px; border:0; border-radius:13px; background:var(--accent); color:#fff; font:inherit; font-size:14px; font-weight:800; }
-  .q-manual-actions .ghost { background:color-mix(in srgb, var(--ink) 88%, #000); color:#fff; border:1px solid color-mix(in srgb, var(--ink) 28%, var(--line)); }
+  .q-manual-actions button { flex:1; min-height:44px; border:1px solid color-mix(in srgb, var(--ink-faint) 58%, var(--line)); border-radius:13px; background:var(--surface); color:var(--ink); font:inherit; font-size:14px; font-weight:800; }
+  .q-manual-actions .ghost { background:var(--surface); color:var(--ink); border-color:color-mix(in srgb, var(--ink-faint) 58%, var(--line)); }
   .q-manual-note { font-size:12.5px; line-height:1.45; color:var(--ink-faint); }
   .q-manual-list { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
   .q-manual-entry { display:flex; align-items:center; gap:10px; padding:11px 12px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
