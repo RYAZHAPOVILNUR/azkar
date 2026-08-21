@@ -994,9 +994,10 @@
   .qrv-g.forgot { color:#c0392b; }
   /* тост */
   .q-toast { position:fixed; left:50%; bottom:calc(90px + var(--tg-safe-bottom)); transform:translate(-50%, 12px); z-index:60; max-width:88%;
-    padding:11px 18px; border-radius:13px; background:color-mix(in srgb, var(--ink) 88%, #000); color:#fff; font-size:14px; font-weight:600;
-    opacity:0; pointer-events:none; transition:opacity .22s, transform .22s; box-shadow:0 8px 24px rgba(0,0,0,.28); }
-  .q-toast.dark { background:color-mix(in srgb, var(--ink) 94%, #000); color:#fff; border:1px solid color-mix(in srgb, var(--ink) 32%, var(--line)); box-shadow:0 14px 34px rgba(0,0,0,.34); }
+    padding:11px 18px; border-radius:13px; background:color-mix(in srgb, var(--bg) 72%, transparent); color:#fff; border:1px solid color-mix(in srgb, var(--ink-faint) 34%, transparent);
+    font-size:14px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .22s, transform .22s; box-shadow:0 14px 34px rgba(0,0,0,.34);
+    backdrop-filter:blur(14px) saturate(1.15); -webkit-backdrop-filter:blur(14px) saturate(1.15); }
+  .q-toast.dark { background:color-mix(in srgb, var(--bg) 78%, transparent); color:#fff; border-color:color-mix(in srgb, var(--ink-faint) 38%, transparent); }
   .q-toast.show { opacity:1; transform:translate(-50%, 0); }
   /* радио */
   .iconbtn.on { color:var(--accent-deep); background:var(--accent-soft); }
