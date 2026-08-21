@@ -746,11 +746,11 @@
   .q-select-arrow { position:absolute; right:14px; top:50%; width:18px; height:18px; transform:translateY(-50%) rotate(0deg); color:var(--ink-soft);
     pointer-events:none; transition:transform .22s cubic-bezier(.22,.8,.2,1), color .16s; }
   .q-select.open .q-select-arrow { transform:translateY(-50%) rotate(180deg); color:var(--accent-deep); }
-  .q-select-menu { position:absolute; left:0; right:0; bottom:calc(100% + 6px); z-index:60; display:none; overflow:hidden;
+  .q-select-menu { position:fixed; left:var(--q-select-left,0px); top:var(--q-select-top,0px); width:var(--q-select-width,100px); z-index:2100; display:none; overflow:hidden;
     border:1px solid color-mix(in srgb, var(--line) 92%, var(--ink-faint)); border-radius:14px; background:var(--surface);
     box-shadow:0 18px 46px rgba(0,0,0,.24), 0 1px 0 rgba(255,255,255,.04); }
   .q-select.open .q-select-menu { display:block; animation:qSelectIn .14s cubic-bezier(.22,.8,.2,1); }
-  .q-select-options { max-height:min(242px, 45vh); overflow-y:auto; overflow-x:hidden; padding:5px; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:color-mix(in srgb, var(--ink-faint) 42%, transparent) transparent; }
+  .q-select-options { max-height:var(--q-select-max, min(242px, 45vh)); overflow-y:auto; overflow-x:hidden; padding:5px; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:color-mix(in srgb, var(--ink-faint) 42%, transparent) transparent; }
   .q-select-options::-webkit-scrollbar { width:7px; }
   .q-select-options::-webkit-scrollbar-track { background:transparent; margin:7px 0; }
   .q-select-options::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--ink-faint) 42%, transparent); border-radius:999px; border:2px solid transparent; background-clip:content-box; }
@@ -759,7 +759,7 @@
   .q-select-option:active { transform:scale(.99); }
   .q-select-option:hover, .q-select-option:focus-visible { background:var(--surface-2); outline:none; }
   .q-select-option.on { background:var(--accent-soft); color:var(--accent-deep); font-weight:800; }
-  @keyframes qSelectIn { from{ opacity:0; transform:translateY(4px) scale(.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
+  @keyframes qSelectIn { from{ opacity:0; transform:translateY(-4px) scale(.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
   .q-manual-actions { display:flex; gap:9px; }
   .q-manual-actions button { flex:1; min-height:44px; border:0; border-radius:13px; background:var(--accent); color:#fff; font:inherit; font-size:14px; font-weight:800; }
   .q-manual-actions .ghost { background:var(--surface-2); color:var(--ink-soft); }
@@ -5228,10 +5228,23 @@ https://azkar.nurtech.dev/app`);
       const btn=box.querySelector('.q-select-btn'); if(btn) btn.setAttribute('aria-expanded','false');
     });
   }
+  function qManualPositionSelect(box){
+    const btn=box&&box.querySelector?box.querySelector('.q-select-btn'):null, menu=box&&box.querySelector?box.querySelector('.q-select-menu'):null;
+    if(!btn || !menu) return;
+    const r=btn.getBoundingClientRect(), gap=3, side=8;
+    const left=Math.max(side, Math.min(r.left, window.innerWidth-r.width-side));
+    const top=r.bottom+gap;
+    const max=Math.max(90, Math.min(242, window.innerHeight-top-side));
+    menu.style.setProperty('--q-select-left', left+'px');
+    menu.style.setProperty('--q-select-top', top+'px');
+    menu.style.setProperty('--q-select-width', r.width+'px');
+    menu.style.setProperty('--q-select-max', max+'px');
+  }
   function qManualSelectToggle(btn){
     const box=btn && btn.closest ? btn.closest('.q-select') : null; if(!box) return;
     const willOpen=!box.classList.contains('open');
     qManualCloseSelects(box);
+    if(willOpen) qManualPositionSelect(box);
     box.classList.toggle('open', willOpen);
     btn.setAttribute('aria-expanded', willOpen?'true':'false');
     if(willOpen){
@@ -5244,6 +5257,7 @@ https://azkar.nurtech.dev/app`);
   }
   function qManualPick(k,v){ qManualSet(k,v); tgHaptic('light'); }
   document.addEventListener('click', function(e){ if(!(e.target && e.target.closest && e.target.closest('.q-select'))) qManualCloseSelects(); });
+  window.addEventListener('resize', function(){ document.querySelectorAll('.q-select.open').forEach(qManualPositionSelect); });
   function qManualMode(mode){ QMANUAL_FORM.mode=mode; renderQManualSheet(); tgHaptic('light'); }
   function qManualSet(k,v){ v=parseInt(v,10)||1; QMANUAL_FORM[k]=v;
     if(k==='pageFrom' && QMANUAL_FORM.pageTo<v) QMANUAL_FORM.pageTo=v;
