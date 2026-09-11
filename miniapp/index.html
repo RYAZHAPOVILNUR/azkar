@@ -1385,7 +1385,8 @@
     body.q-page-lock #quranReader .q-page-settings { display:grid; }
     body.q-page-lock #quranReader #qrAyahs.qp-stage { overflow:hidden; touch-action:pan-y; }
   }
-  @media (min-width:481px){
+  /* Рамка нужна только широкому портрету: в landscape лист заполняет весь viewport. */
+  @media (min-width:481px) and (orientation:portrait){
     body.q-page-lock #quranReader.active {
       top:22px; bottom:22px; left:14px; right:14px;
       height:auto; max-height:none; border:1px solid var(--line); box-sizing:border-box;
