@@ -84,6 +84,30 @@
   *::-webkit-scrollbar-track { background:transparent; }
   *::-webkit-scrollbar-thumb { border:2px solid transparent; border-radius:999px; background:color-mix(in srgb, var(--ink-faint) 55%, transparent); background-clip:content-box; }
   *::-webkit-scrollbar-thumb:hover { background:color-mix(in srgb, var(--ink-soft) 70%, transparent); background-clip:content-box; }
+  /* ---------- Арабский интерфейс (RTL) ----------
+     dir="rtl" на <html> разворачивает раскладку целиком; ниже — только то, что зеркало
+     не чинит само: системный шрифт без арабских начертаний, направленные иконки и
+     элементы, которым нужно остаться слева направо (цифры, время, латиница). */
+  :root.lang-ar {
+    --sans: 'AzkarSans', 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+  :root.lang-ar body, :root.lang-ar button, :root.lang-ar input, :root.lang-ar select, :root.lang-ar textarea {
+    font-family:var(--sans);
+  }
+  /* Арабская вязь выше кириллицы: чуть больше межстрочного, иначе диакритика липнет */
+  :root.lang-ar .set-row .t, :root.lang-ar .set-row .d, :root.lang-ar .session .ttl,
+  :root.lang-ar .ttl .t, :root.lang-ar .seg button, :root.lang-ar .azlib-cat { line-height:1.5; }
+  /* Стрелки «назад» и «вперёд» нарисованы в SVG — зеркалим, чтобы вели в нужную сторону */
+  :root.lang-ar .back svg, :root.lang-ar .qnav-prev svg, :root.lang-ar .qnav-next svg,
+  :root.lang-ar .azlib-cat .chev, :root.lang-ar .set-row .chev { transform:scaleX(-1); }
+  /* Числовое и латинское — всегда слева направо, иначе bidi ломает порядок */
+  :root.lang-ar .val, :root.lang-ar .ht-ring-num, :root.lang-ar .rs-val,
+  :root.lang-ar #remMorning, :root.lang-ar #remEvening, :root.lang-ar #remSleep,
+  :root.lang-ar .pl-rest, :root.lang-ar .qp-num, :root.lang-ar .stat-num {
+    direction:ltr; unicode-bidi:isolate;
+  }
+  /* Прогресс-бары заполняются от начала строки — в RTL это правый край */
+  :root.lang-ar .pbar i, :root.lang-ar .rbar span { margin-left:auto; margin-right:0; }
   html,body { margin:0; padding:0; overscroll-behavior:none; }
   html, body { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   body {
@@ -1301,20 +1325,20 @@
         </span>
       </div>
       <div class="head-actions">
-        <span class="streak-badge" id="streakBadge" hidden title="Дней подряд"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C7 9 9 8 9 8s-.5 2 .5 3c0 0 1-1 1-3s1.5-6 1.5-6z"/></svg><span id="streakText">0</span></span>
-        <button class="iconbtn" id="radioBtn" onclick="toggleRadio()" title="Радио — прямой эфир" aria-label="Радио">
+        <span class="streak-badge" id="streakBadge" hidden title="Дней подряд" data-i18n-ttl="Дней подряд"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C7 9 9 8 9 8s-.5 2 .5 3c0 0 1-1 1-3s1.5-6 1.5-6z"/></svg><span id="streakText">0</span></span>
+        <button class="iconbtn" id="radioBtn" onclick="toggleRadio()" title="Радио — прямой эфир" data-i18n-ttl="Радио — прямой эфир" aria-label="Радио" data-i18n-al="Радио">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 6L7 9"/><rect x="3" y="9" width="18" height="11" rx="2"/><circle cx="8" cy="14.5" r="2.5"/><path d="M16 13h2M16 16h2"/></svg>
         </button>
-        <button class="iconbtn" onclick="openQibla()" title="Кибла — направление на Каабу" aria-label="Кибла">
+        <button class="iconbtn" onclick="openQibla()" title="Кибла — направление на Каабу" data-i18n-ttl="Кибла — направление на Каабу" aria-label="Кибла" data-i18n-al="Кибла">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.6 8.4l-2.1 5.1-5.1 2.1 2.1-5.1z" fill="currentColor" stroke="none"/></svg>
         </button>
-        <button class="iconbtn" onclick="openFreeTasbih()" title="Тасбих" aria-label="Свободный тасбих">
+        <button class="iconbtn" onclick="openFreeTasbih()" title="Тасбих" data-i18n-ttl="Тасбих" aria-label="Свободный тасбих" data-i18n-al="Свободный тасбих">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="4.5" r="2"/><circle cx="6" cy="7.5" r="1.7"/><circle cx="18" cy="7.5" r="1.7"/><circle cx="4.3" cy="13" r="1.7"/><circle cx="19.7" cy="13" r="1.7"/><circle cx="7.3" cy="17.6" r="1.7"/><circle cx="16.7" cy="17.6" r="1.7"/><circle cx="12" cy="19.5" r="1.7"/></svg>
         </button>
-        <button class="iconbtn" id="themeBtn" title="Тема" aria-label="Сменить тему">
+        <button class="iconbtn" id="themeBtn" title="Тема" data-i18n-ttl="Тема" aria-label="Сменить тему" data-i18n-al="Сменить тему">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path id="themeIcon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         </button>
-        <button class="iconbtn" onclick="go('settings')" title="Настройки" aria-label="Настройки">
+        <button class="iconbtn" onclick="go('settings')" title="Настройки" data-i18n-ttl="Настройки" aria-label="Настройки" data-i18n-al="Настройки">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h8M17 7h3M4 12h3M12 12h8M4 17h11M20 17h0"/><circle cx="15" cy="7" r="2.2"/><circle cx="9.5" cy="12" r="2.2"/><circle cx="17.5" cy="17" r="2.2"/></svg>
         </button>
       </div>
@@ -1329,16 +1353,16 @@
     <div class="loc-prompt" id="locPrompt" hidden>
       <div class="lp-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
       <div class="lp-copy">
-        <div class="lp-title">Точные напоминания</div>
-        <div class="lp-text">Разреши местоположение, чтобы бот напоминал после Фаджра и Асра.</div>
+        <div class="lp-title" data-i18n="Точные напоминания">Точные напоминания</div>
+        <div class="lp-text" data-i18n="Разреши местоположение, чтобы бот напоминал после Фаджра и Асра.">Разреши местоположение, чтобы бот напоминал после Фаджра и Асра.</div>
       </div>
-      <button type="button" class="lp-btn" id="locPromptOpen">Настроить</button>
+      <button type="button" class="lp-btn" id="locPromptOpen" data-i18n="Настроить">Настроить</button>
     </div>
 
     <button type="button" class="quran-card" id="quranCard" onclick="openQuran()">
       <span class="qc-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.5 5 8 4.5 5 4.8A1 1 0 0 0 4 5.8v11.4a1 1 0 0 0 1.1 1c2.8-.3 5.2.2 6.6 1.6.8.7 1.8.7 2.6 0 1.4-1.4 3.8-1.9 6.6-1.6a1 1 0 0 0 1.1-1V5.8a1 1 0 0 0-1-1c-3-.3-5.5.2-7 1.7z"/><path d="M12 6.5v12.9"/></svg></span>
       <span class="qc-body">
-        <span class="qc-title">Коран</span>
+        <span class="qc-title" data-i18n="Коран">Коран</span>
         <span class="qc-sub" id="quranCardSub">Читать полностью · с таджвидом и переводом</span>
       </span>
       <span class="qc-go"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></span>
@@ -1347,7 +1371,7 @@
     <button type="button" class="quran-card az-library-card" onclick="openAzkarLibrary()">
       <span class="qc-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h6l2 2h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 11h8M8 15h5"/></svg></span>
       <span class="qc-body">
-        <span class="qc-title">Библиотека азкаров</span>
+        <span class="qc-title" data-i18n="Библиотека азкаров">Библиотека азкаров</span>
         <span class="qc-sub" id="azkarLibraryCount">Категории, поиск и источники</span>
       </span>
       <span class="qc-go"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></span>
@@ -1359,7 +1383,7 @@
         <div class="body">
           <div class="lead">
             <span class="s-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 2v7"/><path d="m4.9 10.9 1.4 1.4"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.1 10.9-1.4 1.4"/><path d="M22 22H2"/><path d="m8.5 5.5 3.5-3.5 3.5 3.5"/></svg></span>
-            <div class="titles"><div class="t">Утренние поминания</div><div class="sub">Утро · до восхода солнца</div></div>
+            <div class="titles"><div class="t" data-i18n="Утренние поминания">Утренние поминания</div><div class="sub" data-i18n="Утро · до восхода солнца">Утро · до восхода солнца</div></div>
           </div>
           <div class="prog"><small id="pMorning">0/22</small><span class="pbar"><i></i></span></div>
         </div>
@@ -1370,7 +1394,7 @@
         <div class="body">
           <div class="lead">
             <span class="s-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 9V2"/><path d="m4.9 10.9 1.4 1.4"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.1 10.9-1.4 1.4"/><path d="M22 22H2"/><path d="m8.5 5.5 3.5 3.5 3.5-3.5"/></svg></span>
-            <div class="titles"><div class="t">Вечерние поминания</div><div class="sub">Вечер · после ʿасра до заката</div></div>
+            <div class="titles"><div class="t" data-i18n="Вечерние поминания">Вечерние поминания</div><div class="sub" data-i18n="Вечер · после ʿасра до заката">Вечер · после ʿасра до заката</div></div>
           </div>
           <div class="prog"><small id="pEvening">0/20</small><span class="pbar"><i></i></span></div>
         </div>
@@ -1381,7 +1405,7 @@
         <div class="body">
           <div class="lead">
             <span class="s-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V11a6 6 0 0 1 12 0v10"/><path d="M4 21h16"/><path d="M12 11v4"/></svg></span>
-            <div class="titles"><div class="t">После намаза</div><div class="sub">После обязательной молитвы</div></div>
+            <div class="titles"><div class="t" data-i18n="После намаза">После намаза</div><div class="sub" data-i18n="После обязательной молитвы">После обязательной молитвы</div></div>
           </div>
           <div class="prog"><small id="pAfter">0/15</small><span class="pbar"><i></i></span></div>
         </div>
@@ -1392,7 +1416,7 @@
         <div class="body">
           <div class="lead">
             <span class="s-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A7.5 7.5 0 1 1 10.5 4a5.8 5.8 0 0 0 9.5 9.5z"/><path d="M18 4.2l.5 1.3 1.3.5-1.3.5L18 7.8l-.5-1.3L16.2 6l1.3-.5z"/></svg></span>
-            <div class="titles"><div class="t">Перед сном</div><div class="sub">Когда ложишься</div></div>
+            <div class="titles"><div class="t" data-i18n="Перед сном">Перед сном</div><div class="sub" data-i18n="Когда ложишься">Когда ложишься</div></div>
           </div>
           <div class="prog"><small id="pSleep">0/17</small><span class="pbar"><i></i></span></div>
         </div>
@@ -1402,7 +1426,7 @@
         <div class="body">
           <div class="lead">
             <span class="s-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
-            <div class="titles"><div class="t">Избранное</div><div class="sub">Для повторения и заучивания</div></div>
+            <div class="titles"><div class="t" data-i18n="Избранное">Избранное</div><div class="sub" data-i18n="Для повторения и заучивания">Для повторения и заучивания</div></div>
           </div>
           <div class="prog"><small id="pFavorites">0</small><span class="pbar"><i></i></span></div>
         </div>
@@ -1411,24 +1435,24 @@
 
     <div class="home-today" id="homeToday">
       <div class="ht-head">
-        <span class="ht-title">Сегодня</span>
-        <span class="ht-streak" id="streakBadge2" hidden title="Дней подряд"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C7 9 9 8 9 8s-.5 2 .5 3c0 0 1-1 1-3s1.5-6 1.5-6z"/></svg><span id="streakText2">0</span></span>
+        <span class="ht-title" data-i18n="Сегодня">Сегодня</span>
+        <span class="ht-streak" id="streakBadge2" hidden title="Дней подряд" data-i18n-ttl="Дней подряд"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C7 9 9 8 9 8s-.5 2 .5 3c0 0 1-1 1-3s1.5-6 1.5-6z"/></svg><span id="streakText2">0</span></span>
       </div>
       <div class="ht-main">
         <div class="ht-ring">
           <svg viewBox="0 0 108 108"><circle class="ht-ring-track" cx="54" cy="54" r="46"></circle><circle class="ht-ring-fill" id="htRing" cx="54" cy="54" r="46" transform="rotate(-90 54 54)"></circle></svg>
           <div class="ht-ring-c">
             <span class="ht-ring-num"><b id="htDone">0</b><small>/<span id="htTotal">0</span></small></span>
-            <span class="ht-ring-lbl">поминаний</span>
+            <span class="ht-ring-lbl" data-i18n="поминаний">поминаний</span>
           </div>
         </div>
         <div class="ht-highlights">
-          <div class="ht-hl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.5 5 8 4.5 5 4.8A1 1 0 0 0 4 5.8v11.4a1 1 0 0 0 1.1 1c2.8-.3 5.2.2 6.6 1.6.8.7 1.8.7 2.6 0 1.4-1.4 3.8-1.9 6.6-1.6a1 1 0 0 0 1.1-1V5.8a1 1 0 0 0-1-1c-3-.3-5.5.2-7 1.7z"/><path d="M12 6.5v12.9"/></svg><span class="ht-hl-t">Аяты</span><b id="htTodayAy">0</b></div>
-          <div class="ht-hl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg><span class="ht-hl-t">Время</span><b id="htTodayMin">0<small> мин</small></b></div>
+          <div class="ht-hl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.5 5 8 4.5 5 4.8A1 1 0 0 0 4 5.8v11.4a1 1 0 0 0 1.1 1c2.8-.3 5.2.2 6.6 1.6.8.7 1.8.7 2.6 0 1.4-1.4 3.8-1.9 6.6-1.6a1 1 0 0 0 1.1-1V5.8a1 1 0 0 0-1-1c-3-.3-5.5.2-7 1.7z"/><path d="M12 6.5v12.9"/></svg><span class="ht-hl-t" data-i18n="Аяты">Аяты</span><b id="htTodayAy">0</b></div>
+          <div class="ht-hl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg><span class="ht-hl-t" data-i18n="Время">Время</span><b id="htTodayMin">0<small data-i18n="мин"> мин</small></b></div>
         </div>
       </div>
       <div class="ht-week-wrap">
-        <span class="ht-cap">За неделю</span>
+        <span class="ht-cap" data-i18n="За неделю">За неделю</span>
         <div class="ht-week" id="htWeek"></div>
         <div class="ht-week-sum" id="htWeekSum"></div>
       </div>
@@ -1438,7 +1462,7 @@
       </button>
       <div class="ht-invite" id="htInvite" onclick="openReading('morning', {resume:true})">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 2v7"/><path d="M2 18h20"/><path d="m4.9 10.9 1.4 1.4"/><path d="m19.1 10.9-1.4 1.4"/></svg>
-        <span>Начни день с утренних поминаний</span>
+        <span data-i18n="Начни день с утренних поминаний">Начни день с утренних поминаний</span>
         <svg class="ht-inv-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
       </div>
     </div>
@@ -1448,15 +1472,15 @@
   <section class="screen" id="azkarLibrary">
     <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
       <div class="row">
-        <button class="back" onclick="back({visual:true})" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <div class="ttl"><div class="t" style="font-size:18px">Библиотека азкаров</div></div>
-        <button class="iconbtn" onclick="document.getElementById('azkarSearchInput').focus()" title="Поиск" aria-label="Поиск"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+        <button class="back" onclick="back({visual:true})" aria-label="Назад" data-i18n-al="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px" data-i18n="Библиотека азкаров">Библиотека азкаров</div></div>
+        <button class="iconbtn" onclick="document.getElementById('azkarSearchInput').focus()" title="Поиск" data-i18n-ttl="Поиск" aria-label="Поиск" data-i18n-al="Поиск"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
       </div>
     </div>
     <div class="azlib">
       <label class="azlib-search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <input id="azkarSearchInput" type="search" inputmode="search" placeholder="Поиск: сон, защита, Бухари..." oninput="renderAzkarLibrary(this.value)">
+        <input id="azkarSearchInput" type="search" inputmode="search" placeholder="Поиск: сон, защита, Бухари..." data-i18n-ph="Поиск: сон, защита, Бухари..." oninput="renderAzkarLibrary(this.value)">
       </label>
       <div class="azlib-filters" id="azkarDbFilters"></div>
       <div id="azkarLibraryBody"></div>
@@ -1467,16 +1491,16 @@
   <section class="screen" id="reading">
     <div class="rhead">
       <div class="row">
-        <button class="back" onclick="back({visual:true})" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <button class="back" onclick="back({visual:true})" aria-label="Назад" data-i18n-al="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
         <div class="ttl"><div class="t" id="rTitle"></div></div>
-        <button class="iconbtn" aria-label="Настройки" onclick="go('settings')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h8M17 7h3M4 12h3M12 12h8M4 17h11M20 17h0"/><circle cx="15" cy="7" r="2.2"/><circle cx="9.5" cy="12" r="2.2"/><circle cx="17.5" cy="17" r="2.2"/></svg></button>
+        <button class="iconbtn" aria-label="Настройки" data-i18n-al="Настройки" onclick="go('settings')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h8M17 7h3M4 12h3M12 12h8M4 17h11M20 17h0"/><circle cx="15" cy="7" r="2.2"/><circle cx="9.5" cy="12" r="2.2"/><circle cx="17.5" cy="17" r="2.2"/></svg></button>
       </div>
       <div class="rbar"><span id="rBarFill"></span></div>
       <div class="rmeta"><span id="rProg"></span><span id="rHint" class="rhint"></span></div>
       <div class="learn-seg" id="learnSeg">
-        <button type="button" data-learn="full">Полный текст</button>
-        <button type="button" data-learn="check">Без перевода</button>
-        <button type="button" data-learn="memory">На память</button>
+        <button type="button" data-learn="full" data-i18n="Полный текст">Полный текст</button>
+        <button type="button" data-learn="check" data-i18n="Без перевода">Без перевода</button>
+        <button type="button" data-learn="memory" data-i18n="На память">На память</button>
       </div>
       <div class="learn-hint" id="learnHint">Арабский, транскрипция и перевод видны полностью</div>
     </div>
@@ -1491,8 +1515,8 @@
   <section class="screen" id="complete">
     <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
       <div class="row">
-        <button class="back" onclick="goHome()" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <div class="ttl"><div class="t" style="font-size:18px">Завершено</div></div>
+        <button class="back" onclick="goHome()" aria-label="Назад" data-i18n-al="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px" data-i18n="Завершено">Завершено</div></div>
         <div style="width:38px"></div>
       </div>
     </div>
@@ -1501,10 +1525,10 @@
         <div class="complete-mark"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
         <div class="complete-title" id="completeTitle">Поминания завершены</div>
         <div class="complete-sub" id="completeSub">Аллах принял благие слова и сделал их причиной спокойствия.</div>
-        <div class="complete-dua">О Аллах, помоги нам поминать Тебя, благодарить Тебя и прекрасно поклоняться Тебе.</div>
+        <div class="complete-dua" data-i18n="О Аллах, помоги нам поминать Тебя, благодарить Тебя и прекрасно поклоняться Тебе.">О Аллах, помоги нам поминать Тебя, благодарить Тебя и прекрасно поклоняться Тебе.</div>
         <div class="complete-actions">
-          <button class="primary" type="button" onclick="goHome()">Вернуться</button>
-          <button type="button" onclick="openRandomSharh()">Прочитать шарх одного зикра</button>
+          <button class="primary" type="button" onclick="goHome()" data-i18n="Вернуться">Вернуться</button>
+          <button type="button" onclick="openRandomSharh()" data-i18n="Прочитать шарх одного зикра">Прочитать шарх одного зикра</button>
         </div>
       </div>
     </div>
@@ -1514,8 +1538,8 @@
   <section class="screen" id="settings">
     <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
       <div class="row">
-        <button class="back" onclick="back({visual:true})" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <div class="ttl"><div class="t" style="font-size:18px">Настройки</div></div>
+        <button class="back" onclick="back({visual:true})" aria-label="Назад" data-i18n-al="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px" data-i18n="Настройки">Настройки</div></div>
         <div style="width:38px"></div>
       </div>
     </div>
@@ -1526,19 +1550,32 @@
         <span><b id="statAzkar">0</b> азкаров</span>
       </div>
       <div class="set-group">
-        <div class="lbl">Оформление</div>
+        <div class="lbl" data-i18n="Язык">Язык</div>
+        <div class="card-set glass">
+          <div class="set-row stack">
+            <div class="head">
+              <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18z"/></svg></div>
+              <div class="txt"><div class="t" data-i18n="Язык интерфейса">Язык интерфейса</div><div class="d" id="langDesc">Русский</div></div>
+            </div>
+            <div class="seg" id="langSeg"><button data-lang-set="ru">Русский</button><button data-lang-set="ar">العربية</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="set-group">
+        <div class="lbl" data-i18n="Оформление">Оформление</div>
         <div class="card-set glass">
           <div class="set-row stack">
             <div class="head">
               <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg></div>
-              <div class="txt"><div class="t">Тема</div><div class="d" id="themeDesc">Авто — по системе телефона</div></div>
+              <div class="txt"><div class="t" data-i18n="Тема">Тема</div><div class="d" id="themeDesc">Авто — по системе телефона</div></div>
             </div>
-            <div class="seg" id="themeSeg"><button data-theme-set="auto">Авто</button><button data-theme-set="light">Светлая</button><button data-theme-set="dark">Тёмная</button></div>
+            <div class="seg" id="themeSeg"><button data-theme-set="auto" data-i18n="Авто">Авто</button><button data-theme-set="light" data-i18n="Светлая">Светлая</button><button data-theme-set="dark" data-i18n="Тёмная">Тёмная</button></div>
           </div>
           <div class="set-row stack">
             <div class="head">
               <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7V5h16v2M9 20h6M12 5v15"/></svg></div>
-              <div class="txt" style="flex:1"><div class="t">Размер арабского</div></div>
+              <div class="txt" style="flex:1"><div class="t" data-i18n="Размер арабского">Размер арабского</div></div>
               <div class="val" id="arSizeVal">30</div>
             </div>
             <input type="range" class="slider" id="arSize" min="24" max="44" value="30">
@@ -1547,63 +1584,63 @@
           <div class="set-row stack">
             <div class="head">
               <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h10M4 18h7"/></svg></div>
-              <div class="txt"><div class="t">Шрифт арабского</div><div class="d">Выбери самый удобный для чтения</div></div>
+              <div class="txt"><div class="t" data-i18n="Шрифт арабского">Шрифт арабского</div><div class="d" data-i18n="Выбери самый удобный для чтения">Выбери самый удобный для чтения</div></div>
             </div>
             <div class="seg" id="fontSeg">
-              <button data-font="AzkarNaskh"><span class="fprev" style="font-family:'AzkarNaskh'">بِسْم</span><span class="flbl">Насх</span></button>
-              <button data-font="AzkarMushaf"><span class="fprev" style="font-family:'AzkarMushaf'">بِسْم</span><span class="flbl">Мусхаф</span></button>
-              <button data-font="AzkarSans"><span class="fprev" style="font-family:'AzkarSans'">بِسْم</span><span class="flbl">Простой</span></button>
-              <button data-font="AzkarAmiri"><span class="fprev" style="font-family:'AzkarAmiri'">بِسْم</span><span class="flbl">Классика</span></button>
+              <button data-font="AzkarNaskh"><span class="fprev" style="font-family:'AzkarNaskh'">بِسْم</span><span class="flbl" data-i18n="Насх">Насх</span></button>
+              <button data-font="AzkarMushaf"><span class="fprev" style="font-family:'AzkarMushaf'">بِسْم</span><span class="flbl" data-i18n="Мусхаф">Мусхаф</span></button>
+              <button data-font="AzkarSans"><span class="fprev" style="font-family:'AzkarSans'">بِسْم</span><span class="flbl" data-i18n="Простой">Простой</span></button>
+              <button data-font="AzkarAmiri"><span class="fprev" style="font-family:'AzkarAmiri'">بِسْم</span><span class="flbl" data-i18n="Классика">Классика</span></button>
             </div>
           </div>
         </div>
       </div>
       <div class="set-group">
-        <div class="lbl">Текст</div>
+        <div class="lbl" data-i18n="Текст">Текст</div>
         <div class="card-set glass">
-          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg></div><div class="txt"><div class="t">Транскрипция</div><div class="d">Кириллицей под арабским</div></div><div class="switch on" data-toggle="translit"></div></div>
-          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg></div><div class="txt"><div class="t">Перевод смысла</div><div class="d">На русский язык</div></div><div class="switch on" data-toggle="translate"></div></div>
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg></div><div class="txt"><div class="t" data-i18n="Транскрипция">Транскрипция</div><div class="d" data-i18n="Кириллицей под арабским">Кириллицей под арабским</div></div><div class="switch on" data-toggle="translit"></div></div>
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg></div><div class="txt"><div class="t" data-i18n="Перевод смысла">Перевод смысла</div><div class="d" data-i18n="На русский язык">На русский язык</div></div><div class="switch on" data-toggle="translate"></div></div>
         </div>
       </div>
       <div class="set-group">
-        <div class="lbl">Намаз и мазхаб</div>
+        <div class="lbl" data-i18n="Намаз и мазхаб">Намаз и мазхаб</div>
         <div class="card-set glass">
           <div class="set-row" style="flex-direction:column;align-items:stretch;gap:10px">
             <div style="display:flex;align-items:center;gap:12px">
               <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
-              <div class="txt"><div class="t">Местоположение</div><div class="d" id="locStatus">Не определено — напоминания по фикс. времени</div></div>
+              <div class="txt"><div class="t" data-i18n="Местоположение">Местоположение</div><div class="d" id="locStatus">Не определено — напоминания по фикс. времени</div></div>
             </div>
             <button class="btn-loc" id="locBtn">Определить местоположение</button>
           </div>
           <div class="set-row" style="flex-direction:column;align-items:stretch;gap:10px">
             <div style="display:flex;align-items:center;gap:12px">
               <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V10l8-6 8 6v11M4 21h16M9 21v-6h6v6"/></svg></div>
-              <div class="txt"><div class="t">Мазхаб</div><div class="d">Влияет на время Асра (вечерние поминания)</div></div>
+              <div class="txt"><div class="t" data-i18n="Мазхаб">Мазхаб</div><div class="d" data-i18n="Влияет на время Асра (вечерние поминания)">Влияет на время Асра (вечерние поминания)</div></div>
             </div>
-            <div class="seg" id="madhabSeg"><button data-madhab="shafi">Шафи‘итский</button><button data-madhab="hanafi">Ханафитский</button></div>
+            <div class="seg" id="madhabSeg"><button data-madhab="shafi" data-i18n="Шафи‘итский">Шафи‘итский</button><button data-madhab="hanafi" data-i18n="Ханафитский">Ханафитский</button></div>
           </div>
         </div>
         <div class="card-set glass" id="timesCard" style="margin-top:10px;display:none">
-          <div class="set-row times-head"><div class="txt"><div class="t">Времена намаза сегодня</div><div class="d">По вашему местоположению</div></div></div>
+          <div class="set-row times-head"><div class="txt"><div class="t" data-i18n="Времена намаза сегодня">Времена намаза сегодня</div><div class="d" data-i18n="По вашему местоположению">По вашему местоположению</div></div></div>
           <div class="times-grid" id="timesGrid"></div>
         </div>
       </div>
       <div class="set-group">
-        <div class="lbl">Напоминания в Telegram</div>
+        <div class="lbl" data-i18n="Напоминания в Telegram">Напоминания в Telegram</div>
         <div class="card-set glass">
-          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg></div><div class="txt"><div class="t">Утренние — после Фаджра</div><div class="d" id="remMorningDesc">Пока по фикс. времени</div></div><div class="val" id="remMorning">06:30</div></div>
-          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div><div class="txt"><div class="t">Вечерние — после Асра</div><div class="d" id="remEveningDesc">Пока по фикс. времени</div></div><div class="val" id="remEvening">18:00</div></div>
-          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a7 7 0 0 0 0 14 7 7 0 0 0 7-7 8 8 0 0 1-7-7z"/><path d="M5 21h14"/></svg></div><div class="txt"><div class="t">Перед сном</div><div class="d">Спокойное напоминание вечером</div></div><div class="val" id="remSleep">22:30</div></div>
-          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14v-3a6 6 0 0 0-12 0v3a2 2 0 0 1-.6 1.6L4 17h5m6 0a3 3 0 0 1-6 0"/></svg></div><div class="txt"><div class="t">Присылать напоминания</div><div class="d" id="remStatus">Включено — по твоей таймзоне</div></div><div class="switch on" data-toggle="reminders"></div></div>
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg></div><div class="txt"><div class="t" data-i18n="Утренние — после Фаджра">Утренние — после Фаджра</div><div class="d" id="remMorningDesc">Пока по фикс. времени</div></div><div class="val" id="remMorning">06:30</div></div>
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div><div class="txt"><div class="t" data-i18n="Вечерние — после Асра">Вечерние — после Асра</div><div class="d" id="remEveningDesc">Пока по фикс. времени</div></div><div class="val" id="remEvening">18:00</div></div>
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a7 7 0 0 0 0 14 7 7 0 0 0 7-7 8 8 0 0 1-7-7z"/><path d="M5 21h14"/></svg></div><div class="txt"><div class="t" data-i18n="Перед сном">Перед сном</div><div class="d" data-i18n="Спокойное напоминание вечером">Спокойное напоминание вечером</div></div><div class="val" id="remSleep">22:30</div></div>
+          <div class="set-row"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14v-3a6 6 0 0 0-12 0v3a2 2 0 0 1-.6 1.6L4 17h5m6 0a3 3 0 0 1-6 0"/></svg></div><div class="txt"><div class="t" data-i18n="Присылать напоминания">Присылать напоминания</div><div class="d" id="remStatus">Включено — по твоей таймзоне</div></div><div class="switch on" data-toggle="reminders"></div></div>
         </div>
       </div>
       <div class="set-group" id="addHomeGroup" style="display:none">
-        <div class="lbl">Ещё</div>
+        <div class="lbl" data-i18n="Ещё">Ещё</div>
         <div class="card-set glass">
           <div class="set-row stack">
             <div class="head">
               <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M12 6v6M9 9h6"/></svg></div>
-              <div class="txt"><div class="t">Иконка на телефоне</div><div class="d" id="addHomeDesc">Добавь ярлык на главный экран — открывай в один тап</div></div>
+              <div class="txt"><div class="t" data-i18n="Иконка на телефоне">Иконка на телефоне</div><div class="d" id="addHomeDesc">Добавь ярлык на главный экран — открывай в один тап</div></div>
             </div>
             <button class="btn-loc" id="addHomeBtn">Добавить на главный экран</button>
           </div>
@@ -1617,9 +1654,9 @@
   <section class="screen" id="freetasbih">
     <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
       <div class="row">
-        <button class="back" onclick="back({visual:true})" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <div class="ttl"><div class="t" style="font-size:18px">Тасбих</div></div>
-        <button class="iconbtn" id="ftResetTop" title="Сбросить" aria-label="Сбросить счёт"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <button class="back" onclick="back({visual:true})" aria-label="Назад" data-i18n-al="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px" data-i18n="Тасбих">Тасбих</div></div>
+        <button class="iconbtn" id="ftResetTop" title="Сбросить" data-i18n-ttl="Сбросить" aria-label="Сбросить счёт" data-i18n-al="Сбросить счёт"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
       </div>
     </div>
     <div class="ft">
@@ -1632,15 +1669,15 @@
       </div>
       <div class="ft-custom-row" id="ftCustomRow" hidden>
         <div class="ft-number-field">
-          <input type="text" id="ftCustomInput" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="число повторов" aria-label="Число повторов">
+          <input type="text" id="ftCustomInput" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="число повторов" data-i18n-ph="число повторов" aria-label="Число повторов" data-i18n-al="Число повторов">
           <div class="ft-stepper">
-            <button type="button" class="ft-step" data-step="-1" aria-label="Уменьшить число повторов">−</button>
-            <button type="button" class="ft-step" data-step="1" aria-label="Увеличить число повторов">+</button>
+            <button type="button" class="ft-step" data-step="-1" aria-label="Уменьшить число повторов" data-i18n-al="Уменьшить число повторов">−</button>
+            <button type="button" class="ft-step" data-step="1" aria-label="Увеличить число повторов" data-i18n-al="Увеличить число повторов">+</button>
           </div>
         </div>
         <button type="button" class="ft-custom-ok" id="ftCustomOk">OK</button>
       </div>
-      <button class="ft-counter" id="ftCounter" aria-label="Считать">
+      <button class="ft-counter" id="ftCounter" aria-label="Считать" data-i18n-al="Считать">
         <svg viewBox="0 0 220 220" class="ft-ring" aria-hidden="true">
           <circle class="ft-track" cx="110" cy="110" r="96"/>
           <circle class="ft-prog" id="ftProg" cx="110" cy="110" r="96"/>
@@ -1652,13 +1689,13 @@
         </div>
       </button>
       <div class="ft-dhikr" id="ftDhikr">
-        <button class="ft-d" data-i="0">Субхан-Аллах</button>
-        <button class="ft-d" data-i="1">Аль-хамду-лиллях</button>
-        <button class="ft-d" data-i="2">Аллаху акбар</button>
-        <button class="ft-d" data-i="3">Ля иляха илля-Ллах</button>
-        <button class="ft-d" data-i="4">Свободно</button>
+        <button class="ft-d" data-i="0" data-i18n="Субхан-Аллах">Субхан-Аллах</button>
+        <button class="ft-d" data-i="1" data-i18n="Аль-хамду-лиллях">Аль-хамду-лиллях</button>
+        <button class="ft-d" data-i="2" data-i18n="Аллаху акбар">Аллаху акбар</button>
+        <button class="ft-d" data-i="3" data-i18n="Ля иляха илля-Ллах">Ля иляха илля-Ллах</button>
+        <button class="ft-d" data-i="4" data-i18n="Свободно">Свободно</button>
       </div>
-      <div class="ft-hint">Касание по кругу — считать. Кнопка ↻ сверху обнуляет.</div>
+      <div class="ft-hint" data-i18n="Касание по кругу — считать. Кнопка ↻ сверху обнуляет.">Касание по кругу — считать. Кнопка ↻ сверху обнуляет.</div>
     </div>
   </section>
 
@@ -1666,9 +1703,9 @@
   <section class="screen" id="quran">
     <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
       <div class="row">
-        <button class="back" onclick="back({visual:true})" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <div class="ttl"><div class="t" style="font-size:18px">Коран</div></div>
-        <button class="iconbtn" id="quranStatsBtn" title="Статистика чтения" aria-label="Статистика чтения" onclick="openQuranStats()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></button>
+        <button class="back" onclick="back({visual:true})" aria-label="Назад" data-i18n-al="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px" data-i18n="Коран">Коран</div></div>
+        <button class="iconbtn" id="quranStatsBtn" title="Статистика чтения" data-i18n-ttl="Статистика чтения" aria-label="Статистика чтения" data-i18n-al="Статистика чтения" onclick="openQuranStats()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></button>
       </div>
     </div>
     <div class="qwrap" style="padding:0 16px">
@@ -1677,7 +1714,7 @@
         <span class="qk-b"><span class="qk-t" id="qContTitle">Продолжить чтение</span><span class="qk-s" id="qContSub"></span></span>
       </button>
       <button type="button" class="q-progress-card" id="qProgressCard" onclick="openQuranMap()">
-        <div class="qpc-top"><span class="qpc-t">Мой прогресс</span><span class="qpc-pct" id="qpcPct">0%</span></div>
+        <div class="qpc-top"><span class="qpc-t" data-i18n="Мой прогресс">Мой прогресс</span><span class="qpc-pct" id="qpcPct">0%</span></div>
         <span class="qpc-bar"><i id="qpcBar"></i></span>
         <div class="qpc-sub" id="qpcSub">прочитано 0 из 6236 аятов · карта →</div>
       </button>
@@ -1687,7 +1724,7 @@
       </button>
       <div class="q-search">
         <span class="qs-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></span>
-        <input type="text" id="qSearch" inputmode="search" placeholder="Найти суру — название или номер" autocomplete="off">
+        <input type="text" id="qSearch" inputmode="search" placeholder="Найти суру — название или номер" data-i18n-ph="Найти суру — название или номер" autocomplete="off">
       </div>
       <div class="sura-list" id="suraList"></div>
     </div>
@@ -1697,21 +1734,21 @@
   <section class="screen" id="quranReader">
     <div class="qr-head">
       <div class="row">
-        <button class="back" onclick="qBackToList()" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <button class="qr-ttl" onclick="qTitleTap()" aria-label="Навигация"><span class="t" id="qrTitle">Сура</span><span class="s" id="qrSub"></span></button>
-        <button class="iconbtn" title="Настройки чтения" aria-label="Настройки чтения" onclick="openReaderSettings()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h8M17 7h3M4 12h3M12 12h8M4 17h11M20 17h0"/><circle cx="15" cy="7" r="2.2"/><circle cx="9.5" cy="12" r="2.2"/><circle cx="17.5" cy="17" r="2.2"/></svg></button>
+        <button class="back" onclick="qBackToList()" aria-label="Назад" data-i18n-al="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <button class="qr-ttl" onclick="qTitleTap()" aria-label="Навигация" data-i18n-al="Навигация"><span class="t" id="qrTitle">Сура</span><span class="s" id="qrSub"></span></button>
+        <button class="iconbtn" title="Настройки чтения" data-i18n-ttl="Настройки чтения" aria-label="Настройки чтения" data-i18n-al="Настройки чтения" onclick="openReaderSettings()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h8M17 7h3M4 12h3M12 12h8M4 17h11M20 17h0"/><circle cx="15" cy="7" r="2.2"/><circle cx="9.5" cy="12" r="2.2"/><circle cx="17.5" cy="17" r="2.2"/></svg></button>
       </div>
       <div class="q-review-bar" id="qReviewBar" hidden>
         <div class="qrv-ttl" id="qrvTtl">Повторение</div>
-        <div class="qrv-hint">Вспомни наизусть, затем оцени:</div>
+        <div class="qrv-hint" data-i18n="Вспомни наизусть, затем оцени:">Вспомни наизусть, затем оцени:</div>
         <div class="qrv-grades">
-          <button type="button" class="qrv-g forgot" onclick="qReviewGrade('forgot')">Забыл</button>
-          <button type="button" class="qrv-g hard" onclick="qReviewGrade('hard')">Трудно</button>
-          <button type="button" class="qrv-g easy" onclick="qReviewGrade('easy')">Легко</button>
+          <button type="button" class="qrv-g forgot" onclick="qReviewGrade('forgot')" data-i18n="Забыл">Забыл</button>
+          <button type="button" class="qrv-g hard" onclick="qReviewGrade('hard')" data-i18n="Трудно">Трудно</button>
+          <button type="button" class="qrv-g easy" onclick="qReviewGrade('easy')" data-i18n="Легко">Легко</button>
         </div>
       </div>
     </div>
-    <button class="q-page-settings" title="Настройки чтения" aria-label="Настройки чтения" onclick="openReaderSettings()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h8M17 7h3M4 12h3M12 12h8M4 17h11M20 17h0"/><circle cx="15" cy="7" r="2.2"/><circle cx="9.5" cy="12" r="2.2"/><circle cx="17.5" cy="17" r="2.2"/></svg></button>
+    <button class="q-page-settings" title="Настройки чтения" data-i18n-ttl="Настройки чтения" aria-label="Настройки чтения" data-i18n-al="Настройки чтения" onclick="openReaderSettings()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h8M17 7h3M4 12h3M12 12h8M4 17h11M20 17h0"/><circle cx="15" cy="7" r="2.2"/><circle cx="9.5" cy="12" r="2.2"/><circle cx="17.5" cy="17" r="2.2"/></svg></button>
     <div class="qwrap" style="padding:0 16px">
       <div id="qrBism" class="q-bism" hidden>بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>
       <div class="q-ayahs" id="qrAyahs"></div>
@@ -1721,12 +1758,12 @@
       </div>
     </div>
     <div class="q-player" id="qPlayer" hidden>
-      <button type="button" class="qp-btn" id="qpPrev" aria-label="Предыдущий аят" onclick="qAudioStep(-1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM9.5 12l8.5 6V6z"/></svg></button>
-      <button type="button" class="qp-btn qp-play" id="qpPlay" aria-label="Играть/пауза" onclick="qAudioToggle()"><svg id="qpPlayIc" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
-      <button type="button" class="qp-btn" id="qpNext" aria-label="Следующий аят" onclick="qAudioStep(1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg></button>
-      <button type="button" class="qp-mid" onclick="qOpenReciters()" aria-label="Сменить чтеца"><div class="qp-ttl" id="qpTtl">—</div><div class="qp-sub" id="qpSub">аль-Хусари · авто</div></button>
-      <button type="button" class="qp-btn qp-rep" id="qpRep" aria-label="Повтор аята" onclick="qAudioToggleRepeat()" title="Повторять аят (для заучивания)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
-      <button type="button" class="qp-btn qp-x" id="qpClose" aria-label="Закрыть плеер" onclick="qAudioStop()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <button type="button" class="qp-btn" id="qpPrev" aria-label="Предыдущий аят" data-i18n-al="Предыдущий аят" onclick="qAudioStep(-1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM9.5 12l8.5 6V6z"/></svg></button>
+      <button type="button" class="qp-btn qp-play" id="qpPlay" aria-label="Играть/пауза" data-i18n-al="Играть/пауза" onclick="qAudioToggle()"><svg id="qpPlayIc" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+      <button type="button" class="qp-btn" id="qpNext" aria-label="Следующий аят" data-i18n-al="Следующий аят" onclick="qAudioStep(1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg></button>
+      <button type="button" class="qp-mid" onclick="qOpenReciters()" aria-label="Сменить чтеца" data-i18n-al="Сменить чтеца"><div class="qp-ttl" id="qpTtl">—</div><div class="qp-sub" id="qpSub">аль-Хусари · авто</div></button>
+      <button type="button" class="qp-btn qp-rep" id="qpRep" aria-label="Повтор аята" data-i18n-al="Повтор аята" onclick="qAudioToggleRepeat()" title="Повторять аят (для заучивания)" data-i18n-ttl="Повторять аят (для заучивания)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
+      <button type="button" class="qp-btn qp-x" id="qpClose" aria-label="Закрыть плеер" data-i18n-al="Закрыть плеер" onclick="qAudioStop()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
   </section>
   <audio id="qAudioEl" preload="none"></audio>
@@ -1738,16 +1775,16 @@
   <section class="screen" id="quranMap">
     <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
       <div class="row">
-        <button class="back" onclick="back({visual:true})" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <div class="ttl"><div class="t" style="font-size:18px">Прогресс чтения</div></div>
-        <button class="iconbtn" title="Статистика" aria-label="Статистика" onclick="openQuranStats()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></button>
+        <button class="back" onclick="back({visual:true})" aria-label="Назад" data-i18n-al="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px" data-i18n="Прогресс чтения">Прогресс чтения</div></div>
+        <button class="iconbtn" title="Статистика" data-i18n-ttl="Статистика" aria-label="Статистика" data-i18n-al="Статистика" onclick="openQuranStats()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></button>
       </div>
     </div>
     <div class="qwrap" style="padding:0 16px">
       <div class="qm-stats" id="qmStats"></div>
       <button type="button" class="qm-review" id="qmReview" hidden onclick="qStartReview()">
         <span class="qmr-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></span>
-        <span class="qmr-b"><span class="qmr-t">Повторить заученное</span><span class="qmr-sub"></span></span>
+        <span class="qmr-b"><span class="qmr-t" data-i18n="Повторить заученное">Повторить заученное</span><span class="qmr-sub"></span></span>
         <span class="qmr-go"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></span>
       </button>
       <div class="qm-legend"><span><i class="l0"></i>не читал</span><span><i class="l1"></i>частично</span><span><i class="l2"></i>прочитано</span><span><i class="l3"></i>заучиваю</span></div>
@@ -1759,9 +1796,9 @@
   <section class="screen" id="qibla">
     <div class="rhead" style="position:static;background:none;backdrop-filter:none;border:none">
       <div class="row">
-        <button class="back" onclick="back({visual:true})" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <div class="ttl"><div class="t" style="font-size:18px">Кибла</div></div>
-        <button class="iconbtn" title="Обновить местоположение" aria-label="Обновить" onclick="qiblaRefreshLoc()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <button class="back" onclick="back({visual:true})" aria-label="Назад" data-i18n-al="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="ttl"><div class="t" style="font-size:18px" data-i18n="Кибла">Кибла</div></div>
+        <button class="iconbtn" title="Обновить местоположение" data-i18n-ttl="Обновить местоположение" aria-label="Обновить" data-i18n-al="Обновить" onclick="qiblaRefreshLoc()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
       </div>
     </div>
     <div class="qibla-wrap">
@@ -1770,10 +1807,10 @@
         <div class="qd-glow" aria-hidden="true"></div>
         <div class="qd-rose" id="qdRose">
           <div class="qd-ticks" id="qdTicks" aria-hidden="true"></div>
-          <span class="qd-card qd-n">С</span>
-          <span class="qd-card qd-e">В</span>
-          <span class="qd-card qd-s">Ю</span>
-          <span class="qd-card qd-w">З</span>
+          <span class="qd-card qd-n" data-i18n="С">С</span>
+          <span class="qd-card qd-e" data-i18n="В">В</span>
+          <span class="qd-card qd-s" data-i18n="Ю">Ю</span>
+          <span class="qd-card qd-w" data-i18n="З">З</span>
         </div>
         <div class="qd-needle" id="qdNeedle">
           <div class="qd-arrow"></div>
@@ -1787,8 +1824,8 @@
         <button type="button" class="qi-enable" id="qiblaEnable" hidden onclick="qiblaEnableCompass()">Включить компас</button>
         <button type="button" class="qi-enable" id="qiblaLocBtn" hidden onclick="qiblaRefreshLoc()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Разрешить геолокацию</button>
         <div class="qi-metrics">
-          <div class="qi-m"><b id="qiblaDeg">—</b><span>азимут от севера</span></div>
-          <div class="qi-m"><b id="qiblaDist">—</b><span>до Мекки</span></div>
+          <div class="qi-m"><b id="qiblaDeg">—</b><span data-i18n="азимут от севера">азимут от севера</span></div>
+          <div class="qi-m"><b id="qiblaDist">—</b><span data-i18n="до Мекки">до Мекки</span></div>
         </div>
         <div class="qi-hint" id="qiblaHint">Держи телефон горизонтально. Компас может требовать калибровки — поводи им «восьмёркой».</div>
       </div>
@@ -1802,7 +1839,7 @@
       <div class="grip"></div>
       <div class="m-head">
         <div class="m-title" id="qSheetTitle" style="flex:1">Правила таджвида</div>
-        <button class="m-close" id="qSheetClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <button class="m-close" id="qSheetClose" aria-label="Закрыть" data-i18n-al="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div id="qSheetBody"></div>
       <div id="qSheetScroll" aria-hidden="true"><div id="qSheetScrollThumb"></div></div>
@@ -1828,8 +1865,8 @@
       <div class="grip"></div>
       <div class="m-head">
         <div class="m-badge"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 6L7 9"/><rect x="3" y="9" width="18" height="11" rx="2"/><circle cx="8" cy="14.5" r="2.5"/><path d="M16 13h2M16 16h2"/></svg></div>
-        <div class="m-title">Радио</div>
-        <button class="m-close" id="radioSheetClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <div class="m-title" data-i18n="Радио">Радио</div>
+        <button class="m-close" id="radioSheetClose" aria-label="Закрыть" data-i18n-al="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div id="radioNow"></div>
       <div class="radio-cap" id="radioListCap">Эфиры</div>
@@ -1844,19 +1881,19 @@
       <div class="grip"></div>
       <div class="m-head">
         <div class="m-badge" id="miBadge">1</div>
-        <div class="m-title">Информация о зикре</div>
-        <button class="m-close" id="miClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <div class="m-title" data-i18n="Информация о зикре">Информация о зикре</div>
+        <button class="m-close" id="miClose" aria-label="Закрыть" data-i18n-al="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="m-ar" id="miAr"></div>
-      <div class="m-sec"><div class="m-lbl">Перевод и достоинство</div><div class="m-txt soft" id="miTr"></div></div>
-      <div class="m-sec"><div class="m-lbl">Источник</div><div class="m-src" id="miSrc"></div><div style="margin-top:8px"><span class="m-grade" id="miGrade"></span></div></div>
+      <div class="m-sec"><div class="m-lbl" data-i18n="Перевод и достоинство">Перевод и достоинство</div><div class="m-txt soft" id="miTr"></div></div>
+      <div class="m-sec"><div class="m-lbl" data-i18n="Источник">Источник</div><div class="m-src" id="miSrc"></div><div style="margin-top:8px"><span class="m-grade" id="miGrade"></span></div></div>
       <button type="button" class="m-play" id="miAudio" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Прослушать</button>
       <div class="m-audio-note" id="miAudioNote" hidden>Аудио взято из открытого источника импортированной книги. Текст всё равно требует сверки перед отметкой «проверено».</div>
       <button type="button" class="m-play" id="miShare"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>Поделиться зикром</button>
-      <div class="m-sec" id="miSharhSec"><div class="m-lbl">Перевод смысла</div><div class="m-sharh-tabs" id="miSharhTabs"><button type="button" data-sharh-mode="brief">Кратко</button><button type="button" data-sharh-mode="deep">Подробно</button></div><div class="m-txt sharh" id="miSharh"></div><div class="m-note" id="miSharhSrc"></div></div>
-      <div class="m-sec" id="miRefsSec"><div class="m-lbl">Открыть источники и шархи</div><div class="m-refs" id="miRefs"></div></div>
-      <div class="m-sec" id="miFadlSec" style="display:none"><div class="m-lbl">Достоинство (фадль)</div><div class="m-txt" id="miFadl"></div></div>
-      <div class="m-note">По каждой ссылке — русский перевод смысла (нейросеть) для тех, кто не читает по-арабски; арабский оригинал открывается внутри.</div>
+      <div class="m-sec" id="miSharhSec"><div class="m-lbl" data-i18n="Перевод смысла">Перевод смысла</div><div class="m-sharh-tabs" id="miSharhTabs"><button type="button" data-sharh-mode="brief" data-i18n="Кратко">Кратко</button><button type="button" data-sharh-mode="deep" data-i18n="Подробно">Подробно</button></div><div class="m-txt sharh" id="miSharh"></div><div class="m-note" id="miSharhSrc"></div></div>
+      <div class="m-sec" id="miRefsSec"><div class="m-lbl" data-i18n="Открыть источники и шархи">Открыть источники и шархи</div><div class="m-refs" id="miRefs"></div></div>
+      <div class="m-sec" id="miFadlSec" style="display:none"><div class="m-lbl" data-i18n="Достоинство (фадль)">Достоинство (фадль)</div><div class="m-txt" id="miFadl"></div></div>
+      <div class="m-note" data-i18n="По каждой ссылке — русский перевод смысла (нейросеть) для тех, кто не читает по-арабски; арабский оригинал открывается внутри.">По каждой ссылке — русский перевод смысла (нейросеть) для тех, кто не читает по-арабски; арабский оригинал открывается внутри.</div>
     </div>
   </div>
 
@@ -1867,11 +1904,11 @@
       <div class="grip"></div>
       <div class="m-head">
         <div class="m-title" id="trTitle" style="flex:1">Перевод смысла</div>
-        <button class="m-close" id="trClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <button class="m-close" id="trClose" aria-label="Закрыть" data-i18n-al="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="m-lbl" id="trSrcLabel" style="margin-bottom:10px"></div>
       <div class="m-txt sharh" id="trBody"></div>
-      <div class="m-note">Нейросетевой перевод смысла — для тех, кто не читает по-арабски. Это не дословная цитата учёного; арабский оригинал открывается кнопкой ниже.</div>
+      <div class="m-note" data-i18n="Нейросетевой перевод смысла — для тех, кто не читает по-арабски. Это не дословная цитата учёного; арабский оригинал открывается кнопкой ниже.">Нейросетевой перевод смысла — для тех, кто не читает по-арабски. Это не дословная цитата учёного; арабский оригинал открывается кнопкой ниже.</div>
       <a class="m-share" id="trOrig" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14L21 3"/></svg>Открыть арабский оригинал</a>
     </div>
   </div>
@@ -1882,11 +1919,11 @@
       <div class="grip"></div>
       <div class="m-head">
         <div class="m-badge"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
-        <div class="m-title">Точные напоминания</div>
-        <button class="m-close" id="locPromptClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <div class="m-title" data-i18n="Точные напоминания">Точные напоминания</div>
+        <button class="m-close" id="locPromptClose" aria-label="Закрыть" data-i18n-al="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
-      <div class="m-sec"><div class="m-lbl">Зачем это нужно</div><div class="m-txt soft">Сейчас бот может напоминать примерно по таймзоне телефона. Если разрешить местоположение, утренние и вечерние поминания будут приходить по времени намаза в твоём городе.</div></div>
-      <div class="m-sec"><div class="m-lbl">Как используем</div><div class="m-txt soft">Координаты нужны только для расчёта Фаджра и Асра. Адрес не нужен и нигде не показывается.</div></div>
+      <div class="m-sec"><div class="m-lbl" data-i18n="Зачем это нужно">Зачем это нужно</div><div class="m-txt soft" data-i18n="Сейчас бот может напоминать примерно по таймзоне телефона. Если разрешить местоположение, утренние и вечерние поминания будут приходить по времени намаза в твоём городе.">Сейчас бот может напоминать примерно по таймзоне телефона. Если разрешить местоположение, утренние и вечерние поминания будут приходить по времени намаза в твоём городе.</div></div>
+      <div class="m-sec"><div class="m-lbl" data-i18n="Как используем">Как используем</div><div class="m-txt soft" data-i18n="Координаты нужны только для расчёта Фаджра и Асра. Адрес не нужен и нигде не показывается.">Координаты нужны только для расчёта Фаджра и Асра. Адрес не нужен и нигде не показывается.</div></div>
       <div class="m-actions">
         <button type="button" class="secondary" id="locPromptLater">Позже</button>
         <button type="button" class="primary" id="locPromptAllow">Определить</button>
@@ -1900,16 +1937,16 @@
       <div class="grip"></div>
       <div class="m-head">
         <div class="m-badge"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg></div>
-        <div class="m-title">Открытка зикра</div>
-        <button class="m-close" id="shareClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <div class="m-title" data-i18n="Открытка зикра">Открытка зикра</div>
+        <button class="m-close" id="shareClose" aria-label="Закрыть" data-i18n-al="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="share-preview"><canvas id="shareCanvas" width="1080" height="1920"></canvas></div>
       <div class="share-tools">
         <div class="share-bg-row">
-          <button type="button" class="share-bg" data-share-bg="paper" aria-label="Фон бумага"></button>
-          <button type="button" class="share-bg" data-share-bg="dawn" aria-label="Фон утро"></button>
-          <button type="button" class="share-bg" data-share-bg="night" aria-label="Фон ночь"></button>
-          <button type="button" class="share-bg" data-share-bg="rose" aria-label="Фон мягкий"></button>
+          <button type="button" class="share-bg" data-share-bg="paper" aria-label="Фон бумага" data-i18n-al="Фон бумага"></button>
+          <button type="button" class="share-bg" data-share-bg="dawn" aria-label="Фон утро" data-i18n-al="Фон утро"></button>
+          <button type="button" class="share-bg" data-share-bg="night" aria-label="Фон ночь" data-i18n-al="Фон ночь"></button>
+          <button type="button" class="share-bg" data-share-bg="rose" aria-label="Фон мягкий" data-i18n-al="Фон мягкий"></button>
         </div>
         <div class="share-toggles">
           <button type="button" class="share-toggle on" id="shareGradient">Градиент</button>
@@ -1934,6 +1971,776 @@
 <script>
   /* ---- Telegram WebApp интеграция (graceful, работает и вне Telegram) ---- */
   const TG = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+
+  /* ---------- Язык интерфейса: русский / арабский ----------
+     Ключ словаря — сам русский текст, поэтому перевод подключается и к статической разметке
+     (через data-i18n), и к строкам, которые собирает JS (через t()). Отсутствующий ключ
+     возвращает русский оригинал — интерфейс не ломается на пропущенном переводе. */
+  const I18N_AR = {
+    'четыре раза':'أربع مرات',
+    'два раза':'مرتان',
+    'пять раз':'خمس مرات',
+    'девяносто девять раз':'تسع وتسعون مرة',
+    'Держи телефон горизонтально. Компас может требовать калибровки — поводи им «восьмёркой».':'أمسك الهاتف أفقيًا. وقد تحتاج البوصلة إلى معايرة — حرّكه على شكل رقم ٨.',
+    'Утро':'الصباح',
+    'Вечер':'المساء',
+    'После намаза':'بعد الصلاة',
+    'Перед сном':'عند النوم',
+    'Утро · أذكار الصباح':'الصباح · أذكار الصباح',
+    'Вечер · أذكار المساء':'المساء · أذكار المساء',
+    'дней подряд':'أيام متتالية',
+    'Добавить на главный экран':'إضافة إلى الشاشة الرئيسية',
+    'Добавь ярлык на главный экран — открывай в один тап':'أضف اختصارًا إلى الشاشة الرئيسية — يُفتح بضغطة واحدة',
+    'Учебный проект · как это сделано':'مشروع تعليمي · كيف صُنع',
+    'Продолжить чтение':'متابعة القراءة',
+    'своё':'مخصّص',
+    'цель':'الهدف',
+    'Определяем направление…':'جارٍ تحديد الاتجاه…',
+    'Включить компас':'تشغيل البوصلة',
+    'Разрешить геолокацию':'السماح بالوصول إلى الموقع',
+    'Держи телефон горизонтально. Компас может требовать калибровки.':'أمسك الهاتف أفقيًا. قد تحتاج البوصلة إلى معايرة.',
+    'сто раз':'مائة مرة',
+    'три раза':'ثلاث مرات',
+    'семь раз':'سبع مرات',
+    'десять раз':'عشر مرات',
+    'после фаджра и магриба · 10 раз':'بعد الفجر والمغرب · ١٠ مرات',
+    'Настроить':'إعداد',
+    'Категории, поиск и источники':'الأقسام والبحث والمصادر',
+    'заучено':'محفوظ',
+    'аятов':'آية',
+    'дней':'يومًا',
+    'дня':'يومًا',
+    'день':'يوم',
+    'Вернуть исходный порядок':'استعادة الترتيب الأصلي',
+    'Поминания завершены':'اكتملت الأذكار',
+    'Не определено — напоминания по фикс. времени':'غير محدّد — التذكيرات بأوقات ثابتة',
+    'Определить местоположение':'تحديد الموقع',
+    'Пока по фикс. времени':'مؤقتًا بأوقات ثابتة',
+    'Коран и тафсир':'القرآن والتفسير',
+    'Читать полностью · с таджвидом и переводом':'اقرأ كاملًا · بالتجويد والترجمة',
+    '° от севера (сверься с компасом или солнцем).':'° من الشمال (تحقّق بالبوصلة أو الشمس).',
+    'ن или танвин превращается в звук «م» перед ب':'تُقلب النون أو التنوين ميمًا قبل الباء',
+    'Страница ':'صفحة ',
+    'Продолжить: страница ':'متابعة: صفحة ',
+    'Толкование всего пассажа':'تفسير المقطع كاملًا',
+    'Показать только аят':'إظهار الآية فقط',
+    'Язык':'اللغة',
+    'Язык интерфейса':'لغة الواجهة',
+    'Русский':'الروسية',
+    'Сура ':'سورة ',
+    'Стр. ':'ص ',
+    'Джуз ':'جزء ',
+    'аят ':'آية ',
+    'аяты ':'الآيات ',
+    'цель ':'الهدف ',
+    'стр. ':'ص ',
+    'Продолжить: ':'متابعة: ',
+    'Повторение · ':'مراجعة · ',
+    'к повторению сегодня: ':'للمراجعة اليوم: ',
+    'мусхаф':'مصحف',
+    'Сура':'سورة',
+    ' аятов':' آية',
+    ' из ':' من ',
+    ' км':' كم',
+    ' м':' م',
+    ' мин':' د',
+    ' ч':' س',
+    '0 мин':'٠ د',
+    '«Ма‘ани аль-азкар» — Халид ас-Сабт':'«معاني الأذكار» — خالد السبت',
+    '«Сахих аль-Калим ат-таййиб» — аль-Бадр':'«صحيح الكلم الطيب» — البدر',
+    '«Тухфат аль-ахйар» — Ибн Баз':'«تحفة الأخيار» — ابن باز',
+    '«Фикх дуа и азкаров» — Абдурраззак аль-Бадр':'«فقه الأدعية والأذكار» — عبد الرزاق البدر',
+    '«аль-Вабиль ас-саййиб» — аль-Бадр':'«الوابل الصيب» — البدر',
+    'АЗКАР':'أذكار',
+    'Аббад':'عباد',
+    'Абдуллах Авад аль-Джухани':'عبد الله عواد الجهني',
+    'Абдуллах Басфар':'عبد الله بصفر',
+    'Абдуллах Матруд':'عبد الله مطرود',
+    'Абдуль-Басит Абдус-Самад':'عبد الباسط عبد الصمد',
+    'Абдуль-Басит Абдус-Самад · муджаввад':'عبد الباسط عبد الصمد · مجوّد',
+    'Абдуль-Карим':'عبد الكريم',
+    'Абдуррахман ас-Судайс':'عبد الرحمن السديس',
+    'Абдус-Самад':'عبد الصمد',
+    'Абдус-Самад (мудж.)':'عبد الصمد (مجوّد)',
+    'Абу Дауд':'أبو داود',
+    'Абубакр аш-Шатри':'أبو بكر الشاطري',
+    'Авто':'تلقائي',
+    'Авто — по системе телефона':'تلقائي — حسب نظام الهاتف',
+    'Азиз Алили':'عزيز عليلي',
+    'Азкар':'أذكار',
+    'Азкары и дуа — сайт шейха аль-Бадра':'الأذكار والأدعية — موقع الشيخ البدر',
+    'Айман Сувейд':'أيمن سويد',
+    'Айюб':'أيوب',
+    'Акрам аль-Алаими':'أكرم العلمي',
+    'Али Джабер':'علي جابر',
+    'Али Хаджадж ас-Суэйси':'علي حجاج السويسي',
+    'Али аль-Хузейфи':'علي الحذيفي',
+    'Алили':'عليلي',
+    'Аллаху акбар':'الله أكبر',
+    'Аль-Бухари':'البخاري',
+    'Аль-хамду-лиллях':'الحمد لله',
+    'Ан-Насаи':'النسائي',
+    'Арабский, транскрипция и перевод видны полностью':'النص العربي والنقل الصوتي والترجمة ظاهرة كاملة',
+    'Ас-Саади':'السعدي',
+    'Ас-Саади толкует эти аяты вместе.':'السعدي يفسّر هذه الآيات مجتمعةً.',
+    'Аср':'العصر',
+    'Ахмад Неана':'أحمد نعينع',
+    'Ахмад ибн Али аль-Аджами':'أحمد بن علي العجمي',
+    'Аят аль-Курси — аль-Бакара 2:255':'آية الكرسي — البقرة ٢:٢٥٥',
+    'Аяты':'الآيات',
+    'Басфар':'بصفر',
+    'Без перевода':'بدون ترجمة',
+    'Библиотека азкаров':'مكتبة الأذكار',
+    'Больше':'أكبر',
+    'В':'ق',
+    'В аль-Маш‘ар аль-Харам':'عند المشعر الحرام',
+    'В браузере: кнопка «Поделиться» ⬆️ → пролистай вниз → «На экран „Домой“»':'في المتصفح: زر «مشاركة» ⬆️ ← مرّر للأسفل ← «إضافة إلى الشاشة الرئيسية»',
+    'В брачную ночь или при покупке животного':'ليلة الزفاف وعند شراء الدابة',
+    'В избранное':'إضافة إلى المفضّلة',
+    'В путешествии':'في السفر',
+    'Вернуться':'رجوع',
+    'Вечер · после ʿасра до заката':'المساء · بعد العصر إلى المغرب',
+    'Вечерние поминания':'أذكار المساء',
+    'Вечерние — после Асра':'أذكار المساء — بعد العصر',
+    'Включено — по времени намаза':'مُفعّل — حسب مواقيت الصلاة',
+    'Включено — по твоей таймзоне':'مُفعّل — حسب منطقتك الزمنية',
+    'Влияет на время Асра (вечерние поминания)':'يؤثّر في وقت العصر (أذكار المساء)',
+    'Во время поясного поклона':'في الركوع',
+    'Времена намаза сегодня':'مواقيت الصلاة اليوم',
+    'Время':'الوقت',
+    'Вручную':'يدويًا',
+    'Вс':'أحد',
+    'Все':'الكل',
+    'Всегда светлая':'فاتح دائمًا',
+    'Всегда тёмная':'داكن دائمًا',
+    'Вспомни наизусть, затем оцени:':'استذكر عن ظهر قلب ثم قيّم نفسك:',
+    'Всё повторено ✓':'تمّت مراجعة الكل ✓',
+    'Вт':'ثلا',
+    'Выбери самый удобный для чтения':'اختر الأنسب للقراءة',
+    'Выключено — бот не будет писать сам':'مُعطّل — لن يراسلك البوت من تلقاء نفسه',
+    'Выключить':'إيقاف',
+    'Геолокация недоступна на этом устройстве':'تحديد الموقع غير متاح على هذا الجهاز',
+    'Готово':'تمّ',
+    'Гунна и идгам':'غنة وإدغام',
+    'Держи телефон горизонтально. Если стрелку «уводит» — поводи телефоном «восьмёркой» для калибровки.':'أمسك الهاتف أفقيًا. وإذا انحرف السهم فحرّك الهاتف على شكل رقم ٨ لمعايرته.',
+    'Джабер':'جابر',
+    'Джибриль':'جبريل',
+    'Джузы':'الأجزاء',
+    'Для повторения и заучивания':'للمراجعة والحفظ',
+    'Для тяжелобольного':'للمريض المحتضر',
+    'Для этого аята тафсир Ибн Касира пока недоступен.':'تفسير ابن كثير لهذه الآية غير متوفر بعد.',
+    'Для этого аята тафсир ас-Саади пока недоступен.':'تفسير السعدي لهذه الآية غير متوفر بعد.',
+    'Дней подряд':'أيام متتالية',
+    'Достоверная Сунна':'السنة الصحيحة',
+    'Достоверные поминания':'الأذكار الصحيحة',
+    'Достоверный · сахих':'صحيح',
+    'Достоинство (фадль)':'الفضل',
+    'Достоинство поминания Аллаха':'فضل ذكر الله',
+    'Достоинство посещения больного':'فضل عيادة المريض',
+    'Достоинство салавата Пророку ﷺ':'فضل الصلاة على النبي ﷺ',
+    'Доступ к компасу не разрешён':'لم يُسمح بالوصول إلى البوصلة',
+    'Дуа гостя за хозяина':'دعاء الضيف لصاحب الطعام',
+    'Дуа путника за остающегося':'دعاء المسافر لمن يقيم',
+    'Если дело стало трудным':'إذا صعب عليه أمر',
+    'Если испугался во сне':'إذا فزع في نومه',
+    'Если постящемуся предлагают еду':'إذا دُعي الصائم إلى طعام',
+    'Если случилось нежеланное':'إذا أصابه ما يكره',
+    'Если страшно засыпать или одиноко':'إذا استوحش في نومه',
+    'Если увидел плохую примету':'إذا رأى ما يكره من الطيرة',
+    'Если увидел сон':'إذا رأى رؤيا',
+    'Ещё':'المزيد',
+    'З':'غ',
+    'За больного при посещении':'عند عيادة المريض',
+    'За неделю':'هذا الأسبوع',
+    'За сказавшего: «Да простит тебя Аллах»':'لمن قال: غفر الله لك',
+    'За сказавшего: «Я люблю тебя ради Аллаха»':'لمن قال: أحبّك في الله',
+    'За умершего в погребальной молитве':'الدعاء للميت في صلاة الجنازة',
+    'За умершего ребёнка':'على الطفل المتوفّى',
+    'Забыл':'نسيت',
+    'Завершено':'تمّ',
+    'Закрыть':'إغلاق',
+    'Закрыть плеер':'إغلاق المشغّل',
+    'Запись обновлена':'تمّ تحديث السجل',
+    'Запись удалена':'تمّ حذف السجل',
+    'Зачем это нужно':'لماذا نحتاج ذلك',
+    'Защита детей':'تحصين الأطفال',
+    'Защита от Даджаля':'التحصين من الدجال',
+    'Земной поклон при чтении Корана':'سجود التلاوة',
+    'Зикр из приложения Азкар':'ذكر من تطبيق أذكار',
+    'Зухр':'الظهر',
+    'Ибн Баз: когда говорить رضيت بالله رباً':'ابن باز: متى يقال رضيت بالله ربًّا',
+    'Ибн Баз: الأذكار الواردة بعد الصلاة':'ابن باز: الأذكار الواردة بعد الصلاة',
+    'Ибн Баз: التهليل مائة مرة':'ابن باز: التهليل مائة مرة',
+    'Ибн Баз: باب ما يقوله عند النوم':'ابن باز: باب ما يقوله عند النوم',
+    'Ибн Касир':'ابن كثير',
+    'Ибн Касир толкует эти аяты вместе.':'ابن كثير يفسّر هذه الآيات مجتمعةً.',
+    'Ибн Маджа':'ابن ماجه',
+    'Ибрахим аль-Ахдар':'إبراهيم الأخضر',
+    'Играть/пауза':'تشغيل/إيقاف',
+    'Избранное':'المفضّلة',
+    'Изменить':'تعديل',
+    'Изменить запись':'تعديل السجل',
+    'Изменить порядок':'تغيير الترتيب',
+    'Икляб':'إقلاب',
+    'Иконка на телефоне':'أيقونة على الشاشة الرئيسية',
+    'Информация о зикре':'معلومات عن الذكر',
+    'Исмаил':'إسماعيل',
+    'Источник':'المصدر',
+    'Источник: ':'المصدر: ',
+    'Ихфа':'إخفاء',
+    'Иша':'العشاء',
+    'Как Пророк ﷺ прославлял Аллаха':'كيف كان النبي ﷺ يسبّح',
+    'Как добавить на iPhone':'كيف تضيفه على آيفون',
+    'Как используем':'كيف نستخدمها',
+    'Калькаля':'قلقلة',
+    'Карта':'الخريطة',
+    'Касание по кругу — считать. Кнопка ↻ сверху обнуляет.':'اضغط على الدائرة للعدّ. وزر ↻ في الأعلى يصفّر العدّاد.',
+    'Кибла':'القبلة',
+    'Кибла — направление на Каабу':'القبلة — اتجاه الكعبة',
+    'Кириллицей под арабским':'بالحروف الروسية تحت النص العربي',
+    'Классика':'كلاسيكي',
+    'Классический':'كلاسيكي',
+    'Когда дует ветер':'عند هبوب الريح',
+    'Когда ложишься':'عند النوم',
+    'Когда что-то радует или огорчает':'عند ما يسرّ أو يحزن',
+    'Компас недоступен — ориентируйся по азимуту':'البوصلة غير متاحة — استرشد بالزاوية',
+    'Компас недоступен. Направь верх телефона на ':'البوصلة غير متاحة. وجّه أعلى الهاتف نحو ',
+    'Компас сейчас неточный. Подержи телефон ровно и поводи им «восьмёркой» для калибровки.':'البوصلة غير دقيقة الآن. أمسك الهاتف مستويًا وحرّكه على شكل رقم ٨ لمعايرتها.',
+    'Конец':'النهاية',
+    'Координаты нужны только для расчёта Фаджра и Асра. Адрес не нужен и нигде не показывается.':'تُستخدم الإحداثيات لحساب وقتَي الفجر والعصر فقط. ولا نحتاج عنوانك ولا يُعرض في أي مكان.',
+    'Коран':'القرآن الكريم',
+    'Коран, резервный поток':'القرآن، بثّ احتياطي',
+    'Корана прочитано':'من القرآن مقروء',
+    'Кратко':'باختصار',
+    'Кунут в витр-намазе':'القنوت في الوتر',
+    'Легко':'سهل',
+    'Ля иляха илля-Ллах':'لا إله إلا الله',
+    'Магриб':'المغرب',
+    'Мадд естественный':'المد الطبيعي',
+    'Мадд необходимый':'المد اللازم',
+    'Мадд обязательный и дозволенный':'المد الواجب والجائز',
+    'Мазхаб':'المذهب',
+    'Матруд':'مطرود',
+    'Махер аль-Муайкли':'ماهر المعيقلي',
+    'Махмуд Али аль-Банна':'محمود علي البنا',
+    'Махмуд Халиль аль-Хусари':'محمود خليل الحصري',
+    'Махмуд Халиль аль-Хусари · муджаввад':'محمود خليل الحصري · مجوّد',
+    'Мединский':'المدني',
+    'Между двумя земными поклонами':'بين السجدتين',
+    'Между йеменским углом и Чёрным камнем':'بين الركن اليماني والحجر الأسود',
+    'Меньше':'أصغر',
+    'Местоположение':'الموقع',
+    'Местоположение определено':'تمّ تحديد الموقع',
+    'Мишари Рашид аль-Афаси':'مشاري راشد العفاسي',
+    'Мой прогресс':'تقدّمي',
+    'Муслим':'مسلم',
+    'Мустафа Исмаил':'مصطفى إسماعيل',
+    'Мусхаф':'المصحف',
+    'Мухаммад Абдуль-Карим':'محمد عبد الكريم',
+    'Мухаммад Айюб':'محمد أيوب',
+    'Мухаммад Джибриль':'محمد جبريل',
+    'Мухаммад Сиддик аль-Миншави':'محمد صديق المنشاوي',
+    'Мухаммад аль-Миншави · муджаввад':'محمد المنشاوي · مجوّد',
+    'Мухаммад ат-Таблави':'محمد الطبلاوي',
+    'Мухсин аль-Касим':'محسن القاسم',
+    'На память':'عن ظهر قلب',
+    'На паузе':'متوقف مؤقتًا',
+    'На русский язык':'إلى اللغة الروسية',
+    'На сегодня повторений нет 👍':'لا مراجعات اليوم 👍',
+    'На холмах Сафа и Марва':'على الصفا والمروة',
+    'Набиль ар-Рифаи':'نبيل الرفاعي',
+    'Навигация':'التنقّل',
+    'Нажми «Включить компас»':'اضغط «تشغيل البوصلة»',
+    'Назад':'رجوع',
+    'Найти суру — название или номер':'ابحث عن سورة — بالاسم أو بالرقم',
+    'Намаз и мазхаб':'الصلاة والمذهب',
+    'Напоминания будут приходить по времени намаза':'ستصلك التذكيرات حسب مواقيت الصلاة',
+    'Напоминания в Telegram':'التذكيرات في تيليجرام',
+    'Напоминания по времени намаза':'تذكيرات حسب مواقيت الصلاة',
+    'Насер аль-Катами':'ناصر القطامي',
+    'Настройки':'الإعدادات',
+    'Настройки чтения':'إعدادات القراءة',
+    'Насх':'نسخ',
+    'Насх мусхаф':'مصحف النسخ',
+    'Начало':'البداية',
+    'Начни день с утренних поминаний':'ابدأ يومك بأذكار الصباح',
+    'Не найден диапазон':'لم يُعثر على النطاق',
+    'Не произносится':'لا يُنطق',
+    'Не удалось включить — попробуй ещё раз':'تعذّر التفعيل — حاول مرة أخرى',
+    'Не удалось выключить — попробуй ещё раз':'تعذّر الإيقاف — حاول مرة أخرى',
+    'Не удалось загрузить список сур':'تعذّر تحميل قائمة السور',
+    'Не удалось отметить диапазон':'تعذّر تعليم النطاق',
+    'Не удалось собрать изображение':'تعذّر إنشاء الصورة',
+    'Не удалось — доступ к геолокации не разрешён':'تعذّر — لم يُسمح بالوصول إلى الموقع',
+    'Неана':'نعينع',
+    'Нейросетевой перевод смысла — для тех, кто не читает по-арабски. Это не дословная цитата учёного; арабский оригинал открывается кнопкой ниже.':'ترجمة للمعنى بالذكاء الاصطناعي لمن لا يقرأ العربية، وليست نقلًا حرفيًا عن العالِم؛ والأصل العربي يُفتح بالزر أدناه.',
+    'Нет доступа к местоположению':'لا يوجد وصول إلى الموقع',
+    'Носовой призвук; слияние ن и م со следующей буквой':'غنّة؛ وإدغام النون والميم في الحرف التالي',
+    'Нужен доступ к геолокации':'نحتاج إذن الوصول إلى الموقع',
+    'О Аллах, помоги нам поминать Тебя, благодарить Тебя и прекрасно поклоняться Тебе.':'اللَّهُمَّ أَعِنَّا عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ',
+    'Обновить':'تحديث',
+    'Обновить местоположение':'تحديث الموقع',
+    'Определяем местоположение…':'جارٍ تحديد الموقع…',
+    'От наущений шайтана в молитве и чтении Корана':'من وسوسة الشيطان في الصلاة وقراءة القرآن',
+    'От несправедливости правителя':'من ظلم السلطان',
+    'Ответ немусульманину на салям':'ردّ السلام على غير المسلم',
+    'Открой Коран — появится история чтения':'افتح القرآن لتظهر سجلّات القراءة',
+    'Открой внутри Telegram, чтобы включить':'افتحه داخل تيليجرام للتفعيل',
+    'Открытка зикра':'بطاقة الذكر',
+    'Открыть источники и шархи':'فتح المصادر والشروح',
+    'Открыть раздел':'فتح القسم',
+    'Открыть тафсир ас-Саади':'فتح تفسير السعدي',
+    'Отмена':'إلغاء',
+    'Отменить':'إلغاء',
+    'Отметить':'تعليم',
+    'Отметить прочитанное':'تعليم المقروء',
+    'Отскок-эхо букв ق ط ب ج د при сукуне':'صوت مرتدّ في حروف ق ط ب ج د عند السكون',
+    'Официальный саудийский исламский эфир':'الإذاعة الإسلامية السعودية الرسمية',
+    'Официальный саудийский эфир Корана':'إذاعة القرآن الكريم السعودية الرسمية',
+    'Офлайн':'دون اتصال',
+    'Оформление':'المظهر',
+    'Пауза':'إيقاف مؤقت',
+    'Пауза или продолжить':'إيقاف أو متابعة',
+    'Перевод и достоинство':'الترجمة والفضل',
+    'Перевод скрыт: попробуй понять зикр по арабскому и транскрипции':'الترجمة مخفيّة: حاول فهم الذكر من النص العربي والنقل الصوتي',
+    'Перевод смысла':'ترجمة المعنى',
+    'Перевод смысла для этого зикра пока не добавлен. Откройте арабский оригинал кнопкой ниже.':'لم تُضف ترجمة المعنى لهذا الذكر بعد. افتح الأصل العربي بالزر أدناه.',
+    'Перевод смысла по достоверным источникам':'ترجمة المعنى وفق المصادر الصحيحة',
+    'Перед близостью':'قبل الجماع',
+    'Перед началом молитвы':'دعاء الاستفتاح',
+    'Перед сном':'أذكار النوم',
+    'Перейти':'انتقال',
+    'Переместить выше':'تحريك لأعلى',
+    'Переместить ниже':'تحريك لأسفل',
+    'Переподключаю эфир…':'إعادة الاتصال بالبث…',
+    'Перетащить':'سحب',
+    'Перетащить зикр':'سحب الذكر',
+    'Пн':'اثن',
+    'По вашему местоположению':'حسب موقعك',
+    'По времени намаза':'حسب مواقيت الصلاة',
+    'По каждой ссылке — русский перевод смысла (нейросеть) для тех, кто не читает по-арабски; арабский оригинал открывается внутри.':'في كل رابط ترجمة روسية للمعنى (بالذكاء الاصطناعي) لمن لا يقرأ العربية؛ والأصل العربي يُفتح بالداخل.',
+    'Поворачивай телефон в сторону метки':'أدر الهاتف نحو العلامة',
+    'Поворачивай телефон — метка укажет на киблу':'أدر الهاتف — ستشير العلامة إلى القبلة',
+    'Повтор аята':'تكرار الآية',
+    'Повторение завершено ✓':'اكتملت المراجعة ✓',
+    'Повторить заученное':'مراجعة المحفوظ',
+    'Повторять аят (для заучивания)':'تكرار الآية (للحفظ)',
+    'Подключение к эфиру':'الاتصال بالبث',
+    'Подключение…':'جارٍ الاتصال…',
+    'Подробно':'بالتفصيل',
+    'Подтвердить действие':'تأكيد الإجراء',
+    'Поиск':'بحث',
+    'Поиск: сон, защита, Бухари...':'ابحث: النوم، الحفظ، البخاري...',
+    'Полный текст':'النص الكامل',
+    'Поминания':'الأذكار',
+    'Поминания перед сном':'أذكار النوم',
+    'Поминания после намаза':'أذكار بعد الصلاة',
+    'После витр-намаза':'بعد الوتر',
+    'После выпрямления из поясного поклона':'بعد الرفع من الركوع',
+    'После завершения молитвы':'بعد السلام من الصلاة',
+    'После намаза':'أذكار بعد الصلاة',
+    'После обязательной молитвы':'بعد الصلاة المفروضة',
+    'Последние аяты аль-Бакара 2:285-286':'خواتيم سورة البقرة ٢:٢٨٥-٢٨٦',
+    'Правила таджвида':'أحكام التجويد',
+    'Пред.':'السابق',
+    'Предыдущий аят':'الآية السابقة',
+    'При беде':'عند المصيبة',
+    'При виде первых плодов сезона':'عند رؤية باكورة الثمر',
+    'При возвращении из путешествия':'عند الرجوع من السفر',
+    'При встрече с врагом':'عند لقاء العدو',
+    'При входе на рынок':'عند دخول السوق',
+    'При гневе':'عند الغضب',
+    'При крике петуха и крике осла':'عند صياح الديك ونهيق الحمار',
+    'При лае собак ночью':'عند نباح الكلاب ليلًا',
+    'При опускании умершего в могилу':'عند إدخال الميت القبر',
+    'При разговении':'عند الإفطار',
+    'При тревоге и печали':'عند الهمّ والحزن',
+    'При трудности':'عند الشدة',
+    'Примерно по таймзоне':'تقريبًا حسب المنطقة الزمنية',
+    'Присылать напоминания':'إرسال التذكيرات',
+    'Прогресс и повторение':'التقدّم والمراجعة',
+    'Прогресс чтения':'تقدّم القراءة',
+    'Продолжаем с незавершённого':'نتابع من حيث توقّفت',
+    'Продолжить':'متابعة',
+    'Прослушать':'استماع',
+    'Прослушать аскар':'استماع الذكر',
+    'Простой':'بسيط',
+    'Против врага':'على العدو',
+    'Протяжение на 2 харака':'مدّ بمقدار حركتين',
+    'Протяжение на 4–5 хараков':'مدّ بمقدار أربع أو خمس حركات',
+    'Протяжение на 6 хараков — самое долгое удлинение':'مدّ بمقدار ست حركات — أطول المدود',
+    'Прочитанное отмечено':'تمّ تعليم المقروء',
+    'Прочитать шарх одного зикра':'قراءة شرح ذكر واحد',
+    'Прямой эфир':'بثّ مباشر',
+    'Пт':'جمع',
+    'Пусть эти слова останутся в сердце после чтения.':'لتبقَ هذه الكلمات في القلب بعد القراءة.',
+    'Путнику перед рассветом':'للمسافر عند السحر',
+    'Радио':'الإذاعة',
+    'Радио на паузе':'الإذاعة متوقفة',
+    'Радио — прямой эфир':'الإذاعة — بثّ مباشر',
+    'Разделы':'الأقسام',
+    'Размер':'الحجم',
+    'Размер арабского':'حجم الخط العربي',
+    'Разреши местоположение, чтобы бот напоминал после Фаджра и Асра.':'اسمح بالوصول إلى موقعك ليذكّرك البوت بعد الفجر والعصر.',
+    'Режим':'الوضع',
+    'Русский эфир':'بث روسي',
+    'Ручная отметка будет удалена из прогресса чтения.':'سيُحذف التعليم اليدوي من تقدّم القراءة.',
+    'С':'ش',
+    'С аудио':'مع الصوت',
+    'Саад аль-Гамиди':'سعد الغامدي',
+    'Салават Пророку ﷺ после ташаххуда':'الصلاة على النبي ﷺ بعد التشهد',
+    'Салах аль-Будейр':'صلاح البدير',
+    'Салах аль-Бухатир':'صلاح بوخاطر',
+    'Саляма':'سلامة',
+    'Сауд аш-Шурейм':'سعود الشريم',
+    'Сахль Ясин':'سهل ياسين',
+    'Сб':'سبت',
+    'Сбросить':'تصفير',
+    'Сбросить счёт':'تصفير العدّاد',
+    'Светлая':'فاتح',
+    'Свободно':'حرّ',
+    'Свободный тасбих':'تسبيح حرّ',
+    'Сегодня':'اليوم',
+    'Сейчас бот может напоминать примерно по таймзоне телефона. Если разрешить местоположение, утренние и вечерние поминания будут приходить по времени намаза в твоём городе.':'يذكّرك البوت الآن تقريبًا حسب توقيت هاتفك. وإن سمحت بالوصول إلى موقعك فستصلك أذكار الصباح والمساء حسب مواقيت الصلاة في مدينتك.',
+    'Скоро добавим':'قريبًا',
+    'Скрытое произношение буквы с носовым призвуком':'نطق خفيّ للحرف مع غنّة',
+    'След.':'التالي',
+    'Следующий аят':'الآية التالية',
+    'Слушать':'استماع',
+    'Слушать на русском':'الاستماع بالروسية',
+    'Сменить тему':'تغيير المظهر',
+    'Сменить чтеца':'تغيير القارئ',
+    'Сменить эфир':'تغيير البث',
+    'Сохранить':'حفظ',
+    'Спокойное напоминание вечером':'تذكير هادئ في المساء',
+    'Ср':'أرب',
+    'Статистика':'الإحصائيات',
+    'Статистика чтения':'إحصائيات القراءة',
+    'Страница':'صفحة',
+    'Страницы':'الصفحات',
+    'Субхан-Аллах':'سبحان الله',
+    'Сувейд':'سويد',
+    'Сура':'سورة',
+    'Сура аль-Ихлас 112':'سورة الإخلاص ١١٢',
+    'Сура аль-Кафирун 109':'سورة الكافرون ١٠٩',
+    'Сура аль-Фаляк 113':'سورة الفلق ١١٣',
+    'Сура ан-Нас 114':'سورة الناس ١١٤',
+    'Суры':'السور',
+    'Считать':'العدّ',
+    'Счётчик повторений':'عدّاد التكرار',
+    'Таджвид':'التجويد',
+    'Такая запись уже есть':'هذا السجل موجود بالفعل',
+    'Такбир у Чёрного камня':'التكبير عند الحجر الأسود',
+    'Тапни счётчик':'اضغط العدّاد',
+    'Тасбих':'المسبحة',
+    'Тафсир':'التفسير',
+    'Тафсир Ибн Касира':'تفسير ابن كثير',
+    'Тафсир ас-Саади':'تفسير السعدي',
+    'Текст':'النص',
+    'Текущий раздел':'القسم الحالي',
+    'Тема':'المظهر',
+    'Тирмизи':'الترمذي',
+    'Точные напоминания':'تذكيرات دقيقة',
+    'Транскрипция':'النقل الصوتي',
+    'Транскрипция и перевод скрыты, арабский закрыт до нажатия':'النقل الصوتي والترجمة مخفيان، والنص العربي يظهر بالضغط',
+    'Тренажёр — скрыть текст':'تدريب — إخفاء النص',
+    'Трудно':'صعب',
+    'Ты смотришь на киблу':'أنت متّجه إلى القبلة',
+    'Тёмная':'داكن',
+    'Увеличить число повторов':'زيادة عدد التكرارات',
+    'Удалить':'حذف',
+    'Удалить запись?':'حذف السجل؟',
+    'Уже на главном экране':'موجود على الشاشة الرئيسية',
+    'Уменьшить число повторов':'إنقاص عدد التكرارات',
+    'Утренние поминания':'أذكار الصباح',
+    'Утренние — после Фаджра':'أذكار الصباح — بعد الفجر',
+    'Утро · до восхода солнца':'الصباح · قبل شروق الشمس',
+    'Фаджр':'الفجر',
+    'Фарес Аббад':'فارس عباد',
+    'Фон бумага':'خلفية ورقية',
+    'Фон мягкий':'خلفية هادئة',
+    'Фон ночь':'خلفية ليلية',
+    'Фон утро':'خلفية صباحية',
+    'Фото скачано':'تمّ تنزيل الصورة',
+    'Фото скачано. Его можно отправить в Telegram.':'تمّ تنزيل الصورة. يمكنك إرسالها في تيليجرام.',
+    'Халид аль-Кахтани':'خالد القحطاني',
+    'Халифа ат-Тунайджи':'خليفة الطنيجي',
+    'Хамзату-ль-васль, «солнечный» лям, беззвучные буквы':'همزة الوصل، واللام الشمسية، والحروف التي لا تُنطق',
+    'Ханафитский':'الحنفي',
+    'Хани ар-Рифаи':'هاني الرفاعي',
+    'Хороший · хасан':'حسن',
+    'Число повторов':'عدد التكرارات',
+    'Чт':'خمي',
+    'Чтение':'القراءة',
+    'Чтение Корана':'قراءة القرآن',
+    'Чтец':'القارئ',
+    'Чтец (аудио)':'القارئ (الصوت)',
+    'Шарх «аль-Калим ат-таййиб» — аль-Бадр':'شرح «الكلم الطيب» — البدر',
+    'Шафи‘итский':'الشافعي',
+    'Шрифт арабского':'الخط العربي',
+    'Это действие нельзя отменить.':'لا يمكن التراجع عن هذا الإجراء.',
+    'Эфиры':'البثوث',
+    'Ю':'ج',
+    'Ясер Саляма':'ياسر سلامة',
+    'Ясин':'ياسين',
+    'Яссер ад-Дуссари':'ياسر الدوسري',
+    'ад-Дуссари':'الدوسري',
+    'азимут от севера':'الزاوية من الشمال',
+    'азкар':'ذكر',
+    'азкара':'ذكر',
+    'азкаров':'ذكرًا',
+    'аль-Аджами':'العجمي',
+    'аль-Алаими':'العلمي',
+    'аль-Афаси':'العفاسي',
+    'аль-Ахдар':'الأخضر',
+    'аль-Банна':'البنا',
+    'аль-Будейр':'البدير',
+    'аль-Бухатир':'بوخاطر',
+    'аль-Гамиди':'الغامدي',
+    'аль-Джухани':'الجهني',
+    'аль-Касим':'القاسم',
+    'аль-Катами':'القطامي',
+    'аль-Кахтани':'القحطاني',
+    'аль-Миншави':'المنشاوي',
+    'аль-Миншави (мудж.)':'المنشاوي (مجوّد)',
+    'аль-Муайкли':'المعيقلي',
+    'аль-Хузейфи':'الحذيفي',
+    'аль-Хусари':'الحصري',
+    'аль-Хусари (мудж.)':'الحصري (مجوّد)',
+    'ар-Рифаи':'الرفاعي',
+    'ас-Судайс':'السديس',
+    'ас-Суэйси':'السويسي',
+    'ат-Таблави':'الطبلاوي',
+    'ат-Тунайджи':'الطنيجي',
+    'аш-Шатри':'الشاطري',
+    'аш-Шурейм':'الشريم',
+    'аят':'آية',
+    'аята':'آية',
+    'аятов':'آية',
+    'аятов заучено':'آية محفوظة',
+    'аятов сегодня':'آية اليوم',
+    'аяты':'آيات',
+    'аяты+перевод':'آيات + ترجمة',
+    'без цели':'بلا هدف',
+    'вс':'أحد',
+    'всего':'الإجمالي',
+    'вт':'ثلا',
+    'день':'يوم',
+    'дней':'يومًا',
+    'дня':'أيام',
+    'до Мекки':'إلى مكة',
+    'до киблы':'إلى القبلة',
+    'достоверная Сунна':'السنة الصحيحة',
+    'за 7 дней':'خلال ٧ أيام',
+    'книга':'كتاب',
+    'кратче':'أوجز',
+    'меньше мин':'أقل من دقيقة',
+    'мин':'د',
+    'мин чтения':'دقيقة قراءة',
+    'мусхаф Медины':'مصحف المدينة',
+    'на сверке':'قيد المراجعة',
+    'на сверке арабского':'قيد مراجعة النص العربي',
+    'на сверке источника':'قيد مراجعة المصدر',
+    'на сверке перевода':'قيد مراجعة الترجمة',
+    'на сегодня повторений нет':'لا مراجعات اليوم',
+    'пн':'اثن',
+    'повторить':'مراجعة',
+    'подробно':'بالتفصيل',
+    'поминание на каждый день':'ذكر لكل يوم',
+    'поминаний':'ذكرًا',
+    'проверено':'مُراجَع',
+    'прочитано ':'مقروء ',
+    'пт':'جمع',
+    'раздел':'باب',
+    'сб':'سبت',
+    'сегодня':'اليوم',
+    'скачать':'تنزيل',
+    'скоро':'قريبًا',
+    'сплошным':'متصلًا',
+    'ср':'أرب',
+    'сур':'سورة',
+    'сура':'سورة',
+    'суры':'سور',
+    'точно на кибле':'أنت على اتجاه القبلة',
+    'фетва':'فتوى',
+    'хадис':'حديث',
+    'хатмов':'ختمة',
+    'число повторов':'عدد التكرارات',
+    'чт':'خمي',
+    'шарх':'شرح',
+    'ن или танвин превращается в звук «م» перед ب':'تُقلب النون أو التنوين ميمًا قبل الباء'
+  };                       // заполняется ниже, в блоке словаря
+  const LANG_KEY = 'azkar_lang';
+  function detectLang(){
+    try{ const v = localStorage.getItem(LANG_KEY); if(v === 'ru' || v === 'ar') return v; }catch(e){}
+    let code = '';
+    try{ code = (TG && TG.initDataUnsafe && TG.initDataUnsafe.user && TG.initDataUnsafe.user.language_code) || navigator.language || ''; }catch(e){}
+    return /^ar\b|^ar-/i.test(String(code)) ? 'ar' : 'ru';   // первый запуск — по языку Telegram
+  }
+  let LANG = detectLang();
+  function isAr(){ return LANG === 'ar'; }
+  function t(s){
+    if(LANG !== 'ar') return s;
+    const k = String(s == null ? '' : s);
+    return Object.prototype.hasOwnProperty.call(I18N_AR, k) ? I18N_AR[k] : k;
+  }
+  // Число + форма слова: в арабском свои правила (двойственное число, 3–10 — мн.ч., 11+ — ед.ч.)
+  function plurAr(n, forms){
+    n = Math.abs(Number(n) || 0);
+    if(!forms) return '';
+    if(n === 1) return forms[0];
+    if(n === 2) return forms[1] || forms[0];
+    if(n >= 3 && n <= 10) return forms[2] || forms[1] || forms[0];
+    return forms[3] || forms[0];
+  }
+  /* Шаблонные подписи: точное совпадение не годится, потому что внутрь подставляются числа. */
+  const I18N_RE_AR = [];                    // [[регулярка, замена], ...] — заполняется в блоке словаря
+  (function(){
+    I18N_RE_AR.push([/^Продолжить: страница (\d+)$/, 'متابعة: صفحة $1']);
+    I18N_RE_AR.push([/^Продолжить: (.+)$/, 'متابعة: $1']);
+    I18N_RE_AR.push([/^Стр\. (\d+)$/, 'ص $1']);
+    I18N_RE_AR.push([/^Страница (\d+)$/, 'صفحة $1']);
+    I18N_RE_AR.push([/^Сура (\d+)$/, 'سورة $1']);
+    I18N_RE_AR.push([/^Джуз (\d+)$/, 'جزء $1']);
+    I18N_RE_AR.push([/^аят (\d+)$/, 'آية $1']);
+    I18N_RE_AR.push([/^аяты (\d+)[–-](\d+)$/, 'الآيات $1–$2']);
+    I18N_RE_AR.push([/^(\d+) аят(?:а|ов)?$/, '$1 آية']);
+    I18N_RE_AR.push([/^(\d+) сур(?:а|ы)?$/, '$1 سورة']);
+    I18N_RE_AR.push([/^(\d+) азкар(?:а|ов)?$/, '$1 ذكرًا']);
+    I18N_RE_AR.push([/^(\d+) поминани(?:е|я|й)$/, '$1 ذكرًا']);
+    I18N_RE_AR.push([/^(\d+) (?:день|дня|дней)$/, '$1 يومًا']);
+    I18N_RE_AR.push([/^через (\d+) ч (\d+) мин$/, 'بعد $1 س $2 د']);
+    I18N_RE_AR.push([/^через (\d+) ч$/, 'بعد $1 س']);
+    I18N_RE_AR.push([/^через (\d+) мин$/, 'بعد $1 د']);
+    I18N_RE_AR.push([/^(\d+) мин$/, '$1 د']);
+    I18N_RE_AR.push([/^(\d+) ч (\d+) м$/, '$1 س $2 د']);
+    I18N_RE_AR.push([/^(\d+) км$/, '$1 كم']);
+    I18N_RE_AR.push([/^(\d+) из (\d+)$/, '$1 من $2']);
+    I18N_RE_AR.push([/^Повторение · (.+)$/, 'مراجعة · $1']);
+    I18N_RE_AR.push([/^к повторению сегодня: (\d+)$/, 'للمراجعة اليوم: $1']);
+    I18N_RE_AR.push([/^(\d+) страницы? ✓$/, '$1 صفحة ✓']);
+    I18N_RE_AR.push([/^· аят (\d+)$/, '· آية $1']);
+    I18N_RE_AR.push([/^· страница (\d+)$/, '· صفحة $1']);
+    I18N_RE_AR.push([/^· кругов (\d+)$/, '· أشواط $1']);
+    I18N_RE_AR.push([/^· хатмов (\d+)$/, '· ختمات $1']);
+    I18N_RE_AR.push([/^· авто$/, '· تلقائي']);
+    I18N_RE_AR.push([/^· повтор$/, '· تكرار']);
+    I18N_RE_AR.push([/^· карта →$/, '· الخريطة →']);
+    I18N_RE_AR.push([/^Найдено: (\d+)$/, 'النتائج: $1']);
+    I18N_RE_AR.push([/^прочитано (\d+) из (\d+) аятов · карта →$/, 'مقروء $1 من $2 آية · الخريطة →']);
+    I18N_RE_AR.push([/^прочитано (\d+) из (\d+) аятов$/, 'مقروء $1 من $2 آية']);
+    I18N_RE_AR.push([/^цель (\d+) · кругов (\d+)$/, 'الهدف $1 · أشواط $2']);
+    I18N_RE_AR.push([/^цель (\d+)$/, 'الهدف $1']);
+    I18N_RE_AR.push([/^(\d+) дней подряд$/, '$1 أيام متتالية']);
+    I18N_RE_AR.push([/^(\d+) азкар(?:а|ов)? · поиск и источники$/, '$1 ذكرًا · بحث ومصادر']);
+    I18N_RE_AR.push([/^(\d+) азкар(?:а|ов)?$/, '$1 ذكرًا']);
+    I18N_RE_AR.push([/^Коран (\d+)% · заучено (\d+) аятов$/, 'القرآن $1% · محفوظ $2 آية']);
+    I18N_RE_AR.push([/^· заучено$/, '· محفوظ']);
+    I18N_RE_AR.push([/^С аудио: (\d+)$/, 'مع الصوت: $1']);
+    I18N_RE_AR.push([/^(.+) — оригинал$/, '$1 — الأصل']);
+  })();
+  const HAS_RU = /[А-Яа-яЁё]/;
+  /* Ссылки на источники — смесь имени сборника, номера и степени достоверности
+     («Абу Дауд 5088, Тирмизи 3388 · сахих»). Целиком в словарь их не занести, поэтому
+     подменяем известные части, и только там, где строка действительно похожа на ссылку. */
+  const I18N_SRC_PARTS = [
+    ['Аль-Бухари','البخاري'],['Аль-Хаким','الحاكم'],['Ан-Насаи','النسائي'],['Ат-Табарани','الطبراني'],
+    ['Абу Дауд','أبو داود'],['Ибн Маджа','ابن ماجه'],['Ибн Хиббан','ابن حبان'],['Ибн ас-Сунни','ابن السني'],
+    ['Тирмизи','الترمذي'],['Муслим','مسلم'],['Ахмад','أحمد'],['Малик','مالك'],['Байхаки','البيهقي'],
+    ['Абу Я‘ля','أبو يعلى'],['Дарими','الدارمي'],['Табарани','الطبراني'],
+    ['аль-Хаким','الحاكم'],['Хаким','الحاكم'],['аль-Байхаки','البيهقي'],['ат-Табарани','الطبراني'],
+    ['ан-Насаи','النسائي'],['ат-Тирмизи','الترمذي'],['аль-Бухари','البخاري'],['Ибн Абу Шейба','ابن أبي شيبة'],
+    ['сахих','صحيح'],['хасан','حسن'],['даиф','ضعيف'],['сто раз','مائة مرة'],['три раза','ثلاث مرات'],['четыре раза','أربع مرات'],
+    ['два раза','مرتان'],['пять раз','خمس مرات'],['по три раза','ثلاث مرات لكلٍّ'],
+    ['семь раз','سبع مرات'],['десять раз','عشر مرات'],['один раз','مرة واحدة'],['раз','مرة']
+  ];
+  const SRC_HINT = /\d|сахих|хасан|даиф/;
+  function trSource(txt){
+    if(!SRC_HINT.test(txt)) return null;
+    let out = txt, hit = false;
+    for(let i=0;i<I18N_SRC_PARTS.length;i++){
+      const pair = I18N_SRC_PARTS[i];
+      if(out.indexOf(pair[0]) < 0) continue;
+      out = out.split(pair[0]).join(pair[1]); hit = true;
+    }
+    return (hit && !HAS_RU.test(out)) ? out : null;   // остался русский — значит это не ссылка, не трогаем
+  }
+  function trText(txt){
+    const k = String(txt).trim();
+    if(!k || !HAS_RU.test(k)) return null;
+    if(Object.prototype.hasOwnProperty.call(I18N_AR, k)) return String(txt).replace(k, I18N_AR[k]);
+    for(let i=0;i<I18N_RE_AR.length;i++){
+      const rule = I18N_RE_AR[i];
+      if(rule[0].test(k)) return String(txt).replace(k, k.replace(rule[0], rule[1]));
+    }
+    const src = trSource(k);
+    if(src) return String(txt).replace(k, src);
+    return null;
+  }
+  /* Значительная часть подписей собирается в JS уже готовой строкой, поэтому переводим их
+     на выходе — в самом DOM. Ключ словаря совпадает со строкой целиком, так что тексты
+     зикров, переводы смыслов и тафсиры (их в словаре нет) остаются нетронутыми. */
+  const I18N_ATTRS = ['aria-label','title','placeholder'];
+  function trNode(node){
+    if(node.nodeType === 3){
+      const next = trText(node.nodeValue);
+      if(next !== null && next !== node.nodeValue) node.nodeValue = next;
+      return;
+    }
+    if(node.nodeType !== 1) return;
+    for(let i=0;i<I18N_ATTRS.length;i++){
+      const a = I18N_ATTRS[i];
+      if(!node.hasAttribute || !node.hasAttribute(a)) continue;
+      const next = trText(node.getAttribute(a));
+      if(next !== null) node.setAttribute(a, next);
+    }
+  }
+  function trTree(root){
+    if(!isAr() || !root) return;
+    if(root.nodeType === 3){ trNode(root); return; }
+    if(root.nodeType !== 1) return;
+    trNode(root);
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, null);
+    let n;
+    while((n = walker.nextNode())) trNode(n);
+  }
+  let _i18nObserver = null;
+  function startI18nObserver(){
+    if(_i18nObserver || !window.MutationObserver) return;
+    _i18nObserver = new MutationObserver(function(muts){
+      if(!isAr()) return;
+      for(let i=0;i<muts.length;i++){
+        const m = muts[i];
+        if(m.type === 'characterData'){ trNode(m.target); continue; }
+        for(let j=0;j<m.addedNodes.length;j++) trTree(m.addedNodes[j]);
+      }
+    });
+    _i18nObserver.observe(document.documentElement, { childList:true, subtree:true, characterData:true });
+  }
+  // Экраны въезжают со стороны, противоположной направлению письма: в RTL это зеркало.
+  // Название суры на языке интерфейса: в данных уже есть арабский оригинал (na).
+  function suraName(su){ if(!su) return ''; return (isAr() && su.na) ? su.na : (su.nr || su.ne || ''); }
+  function navX(v){ return isAr() ? String(v).replace(/(-?)(\d)/, function(m,sign,d){ return (sign ? '' : '-') + d; }) : v; }
+  function applyLang(){
+    const ar = isAr();
+    const root = document.documentElement;
+    root.setAttribute('lang', ar ? 'ar' : 'ru');
+    root.setAttribute('dir', ar ? 'rtl' : 'ltr');
+    root.classList.toggle('lang-ar', ar);
+    document.querySelectorAll('[data-i18n]').forEach(function(el){ el.textContent = t(el.getAttribute('data-i18n')); });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph'))); });
+    document.querySelectorAll('[data-i18n-al]').forEach(function(el){ el.setAttribute('aria-label', t(el.getAttribute('data-i18n-al'))); });
+    document.querySelectorAll('[data-i18n-ttl]').forEach(function(el){ el.setAttribute('title', t(el.getAttribute('data-i18n-ttl'))); });
+    if(ar){ trTree(document.documentElement); startI18nObserver(); }
+  }
+  function setLang(next, opts){
+    next = (next === 'ar') ? 'ar' : 'ru';
+    if(next === LANG && !(opts && opts.force)) return;
+    LANG = next;
+    try{ localStorage.setItem(LANG_KEY, LANG); }catch(e){}
+    applyLang();
+    try{ if(typeof onLangChanged === 'function') onLangChanged(); }catch(e){}
+  }
 
   /* ---- Синхронизация прогресса/порядка/настроек между устройствами через TG CloudStorage ----
      localStorage остаётся синхронным источником правды; синк-ключи зеркалятся в облако (debounce),
@@ -3121,8 +3928,8 @@
     cur.style.transition = 'transform .24s cubic-bezier(.22,.8,.2,1)';
     prev.style.transition = 'transform .24s cubic-bezier(.22,.8,.2,1), opacity .24s ease';
     requestAnimationFrame(()=>{
-      cur.style.transform = commit ? 'translateX(102%)' : 'translateX(0)';
-      prev.style.transform = commit ? 'translateX(0)' : 'translateX(-28px)';
+      cur.style.transform = commit ? 'translateX('+navX('102%')+')' : 'translateX(0)';
+      prev.style.transform = commit ? 'translateX(0)' : 'translateX('+navX('-28px')+')';
       prev.style.opacity = commit ? '1' : '.92';
     });
     setTimeout(()=>{
@@ -3150,7 +3957,7 @@
         prev.classList.add('nav-under');
         cur.classList.add('nav-drag');
         cur.style.top = (-navLockY) + 'px';   // уходящий fixed-экран показывает твою прокрутку
-        prev.style.transform = 'translateX(-28px)';
+        prev.style.transform = 'translateX('+navX('-28px')+')';
         prev.style.opacity = '.92';
         finishBackVisual(cur, prev, true);
         tgHaptic('light');
@@ -4823,6 +5630,44 @@ https://azkar.nurtech.dev/app`);
   }
   document.getElementById('themeBtn').addEventListener('click', ()=>{ themeMode = effectiveDark()?'light':'dark'; applyTheme(); });
   document.querySelectorAll('#themeSeg button').forEach(b=> b.addEventListener('click', ()=>{ themeMode=b.dataset.themeSet; applyTheme(); }));
+  document.querySelectorAll('#langSeg button').forEach(b=> b.addEventListener('click', ()=>{ setLang(b.dataset.langSet); tgHaptic('light'); }));
+  function renderLangSeg(){
+    document.querySelectorAll('#langSeg button').forEach(b=> b.classList.toggle('on', b.dataset.langSet===LANG));
+    const d=document.getElementById('langDesc');
+    if(d) d.textContent = isAr() ? 'العربية' : 'Русский';
+  }
+  /* Смена языка на лету: заголовки экранов и списки собираются в JS, поэтому их
+     перерисовываем; всё остальное догоняет наблюдатель за DOM. */
+  function onLangChanged(){
+    renderLangSeg();
+    applyArabicPrefs();
+    try{
+      if(typeof updateHomeProgress === 'function') updateHomeProgress();
+      if(typeof renderQuranHome === 'function') renderQuranHome();
+      if(typeof renderAzkarLibrary === 'function' && document.getElementById('azkarLibraryBody')) renderAzkarLibrary(
+        (document.getElementById('azkarSearchInput')||{}).value || ''
+      );
+      const scr = activeScreen();
+      if(scr && scr.id === 'reading' && CURRENT_KEY && typeof openReading === 'function') openReading(CURRENT_KEY, { resume:true });
+      if(typeof renderQProgressCard === 'function') renderQProgressCard();
+      if(typeof updateStreakUI === 'function') updateStreakUI();
+      if(typeof applyTheme === 'function') applyTheme();
+    }catch(e){}
+  }
+  /* Для арабоязычного читателя русские подстрочник и перевод — шум: по умолчанию прячем их
+     (тумблеры в настройках остаются, вернуть можно в один тап). Выбор пользователя не трогаем. */
+  function applyArabicPrefs(){
+    if(!isAr()) return;
+    try{
+      if(localStorage.getItem('azkar_lang_prefs_done')) return;
+      localStorage.setItem('azkar_show_translit','0');
+      localStorage.setItem('azkar_show_translate','0');
+      localStorage.setItem('azkar_lang_prefs_done','1');
+      showTranslit = false; showTranslate = false;
+      if(typeof applyTextToggles === 'function') applyTextToggles();
+      if(typeof applyTextToggleSwitches === 'function') applyTextToggleSwitches();
+    }catch(e){}
+  }
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(themeMode==='auto') applyTheme(); });
 
   // размер арабского (с сохранением)
@@ -5111,8 +5956,8 @@ https://azkar.nurtech.dev/app`);
       c.style.transition='transform .24s cubic-bezier(.22,.8,.2,1)';
       p.style.transition='transform .24s cubic-bezier(.22,.8,.2,1), opacity .24s ease';
       requestAnimationFrame(()=>{
-        c.style.transform = commit ? 'translateX(102%)' : 'translateX(0)';
-        p.style.transform = commit ? 'translateX(0)' : 'translateX(-28px)';
+        c.style.transform = commit ? 'translateX('+navX('102%')+')' : 'translateX(0)';
+        p.style.transform = commit ? 'translateX(0)' : 'translateX('+navX('-28px')+')';
         p.style.opacity = commit ? '1' : '.92';
       });
       setTimeout(()=>{
@@ -5149,7 +5994,7 @@ https://azkar.nurtech.dev/app`);
         cur.classList.add('nav-drag');
         cur.style.top = (-navLockY) + 'px';   // уходящий fixed-экран показывает твою прокрутку
         prev.style.transition='none'; cur.style.transition='none';
-        prev.style.transform='translateX(-28px)'; prev.style.opacity='.92';
+        prev.style.transform='translateX('+navX('-28px')+')'; prev.style.opacity='.92';
       }
       if(dragging){
         e.preventDefault();
@@ -5412,7 +6257,7 @@ https://azkar.nurtech.dev/app`);
     if(!rec) return '';
     if(rec.type==='pages') return 'Стр. '+rec.from+'–'+rec.to;
     const su=(QURAN.index||[]).find(function(x){ return x.n===rec.sura; });
-    return (su?su.nr:('Сура '+rec.sura))+' · аяты '+rec.from+'–'+rec.to;
+    return (su?suraName(su):('Сура '+rec.sura))+' · аяты '+rec.from+'–'+rec.to;
   }
   function qManualDateLabel(d){ if(!d) return 'сегодня'; const t=qToday(); if(d===t) return 'сегодня'; const p=d.split('-'); return p.length===3 ? (p[2]+'.'+p[1]+'.'+p[0]) : d; }
   function qManualTouchStats(delta,date){
@@ -5449,7 +6294,7 @@ https://azkar.nurtech.dev/app`);
       +'</div></div></div>';
   }
   function qManualNumberItems(from,to){ const out=[]; for(let i=from;i<=to;i++) out.push({ value:i, label:String(i) }); return out; }
-  function qManualSuraItems(){ return (QURAN.index||[]).map(function(s){ return { value:s.n, label:s.n+'. '+s.nr }; }); }
+  function qManualSuraItems(){ return (QURAN.index||[]).map(function(s){ return { value:s.n, label:s.n+'. '+suraName(s) }; }); }
   function qManualAyahMax(){ const su=(QURAN.index||[]).find(function(x){ return x.n===QMANUAL_FORM.sura; }); return su?su.c:7; }
   function openQManual(editId){
     qLoadIndex().then(function(){ QTAF.settings=false; const man=qManualLoad(); const rec=editId ? (man.items||[]).find(function(x){ return x.id===editId; }) : null;
@@ -5687,7 +6532,7 @@ https://azkar.nurtech.dev/app`);
   function suraRow(su){
     return '<div class="sura" onclick="qOpenSura('+su.n+')">'
       +'<span class="sn"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="9" y="9" width="22" height="22" rx="4" transform="rotate(45 20 20)"/></svg><b>'+su.n+'</b></span>'
-      +'<span class="sbody"><span class="stitle"><span class="snr">'+escHtml(su.nr)+'</span><span class="snm">'+escHtml(su.nm||'')+'</span></span>'
+      +'<span class="sbody"><span class="stitle"><span class="snr">'+escHtml(suraName(su))+'</span><span class="snm">'+escHtml(su.nm||'')+'</span></span>'
       +'<span class="smeta">'+su.c+' '+qPlural(su.c,'аят','аята','аятов')+' · '+escHtml(su.t)+'</span></span>'
       +'<span class="sar">'+escHtml((su.na||'').replace('سُورَةُ ','').replace(/^سُورَةُ\s*/,''))+'</span></div>';
   }
@@ -5709,8 +6554,8 @@ https://azkar.nurtech.dev/app`);
     if(!pos){ el.hidden=true; return; }
     el.hidden=false;
     const set=function(nr){ document.getElementById('qContSub').textContent = nr+' · аят '+(pos.a||1); };
-    if(QURAN.index){ const su=QURAN.index.find(function(x){ return x.n===pos.s; }); set(su?su.nr:('Сура '+pos.s)); }
-    else qLoadIndex().then(function(idx){ const su=idx.find(function(x){ return x.n===pos.s; }); set(su?su.nr:('Сура '+pos.s)); }).catch(function(){ set('Сура '+pos.s); });
+    if(QURAN.index){ const su=QURAN.index.find(function(x){ return x.n===pos.s; }); set(su?suraName(su):('Сура '+pos.s)); }
+    else qLoadIndex().then(function(idx){ const su=idx.find(function(x){ return x.n===pos.s; }); set(su?suraName(su):('Сура '+pos.s)); }).catch(function(){ set('Сура '+pos.s); });
   }
   function qResume(){
     if(QPREFS.mode==='page'){ qOpenPage(qSavedPage()||1); return; }
@@ -5757,7 +6602,7 @@ https://azkar.nurtech.dev/app`);
     Promise.all([ qLoadIndex().catch(function(){ return null; }), qLoadSura(n), qLoadAyahWords(n).catch(function(){ return null; }) ]).then(function(res){
       if(req!==QURAN._suraReq) return;
       const su=res[1], aw=res[2]; QURAN.cur=su; QURAN.curN=n; QURAN.curAw=aw; QURAN.seen=new Set();
-      document.getElementById('qrTitle').textContent = su.n+'. '+su.nr;
+      document.getElementById('qrTitle').textContent = su.n+'. '+suraName(su);
       document.getElementById('qrSub').textContent = su.c+' '+qPlural(su.c,'аят','аята','аятов')+' · '+su.t;
       document.getElementById('qrBism').hidden = true;
       const start=Math.max(1,parseInt(ayah,10)||1);
@@ -5788,7 +6633,7 @@ https://azkar.nurtech.dev/app`);
   function renderReader(su, ayah){
     QURAN.cur=su; QURAN.curN=su.n;
     const aw = QURAN.curAw;
-    document.getElementById('qrTitle').textContent = su.n+'. '+su.nr;
+    document.getElementById('qrTitle').textContent = su.n+'. '+suraName(su);
     document.getElementById('qrSub').textContent = su.c+' '+qPlural(su.c,'аят','аята','аятов')+' · '+su.t;
     document.getElementById('qrBism').hidden = !su.bism;
     document.getElementById('qrBism').style.fontFamily = "'KFGQPC', var(--ar)";
@@ -5823,7 +6668,7 @@ https://azkar.nurtech.dev/app`);
     const idx=QURAN.index;
     const pl=document.getElementById('qrPrevL'), nl=document.getElementById('qrNextL');
     if(idx){ const p=idx.find(function(x){ return x.n===n-1; }), nx=idx.find(function(x){ return x.n===n+1; });
-      pl.textContent = p? p.nr : 'Пред.'; nl.textContent = nx? nx.nr : 'След.'; }
+      pl.textContent = p? suraName(p) : t('Пред.'); nl.textContent = nx? suraName(nx) : t('След.'); }
     else { pl.textContent='Пред.'; nl.textContent='След.'; }
   }
   function qCurrentAyah(){
@@ -6096,7 +6941,7 @@ https://azkar.nurtech.dev/app`);
   }); }
   function tafsirFromKey(vk){ const p=String(vk).split(':'); openTafsir(parseInt(p[0],10), parseInt(p[1],10)); }
   function qTafPlay(){ const c=QTAF.cur; if(!c) return; closeQSheet(); if(typeof qPlayAyah==='function') qPlayAyah(c.s, c.a); tgHaptic('light'); }
-  function suraNameRu(n){ const su=(QURAN.index||[]).find(function(x){ return x.n===n; }); return su?su.nr:('Сура '+n); }
+  function suraNameRu(n){ const su=(QURAN.index||[]).find(function(x){ return x.n===n; }); return su?suraName(su):('Сура '+n); }
   function qPageSura(data){
     const lines=(data&&data.lines||[]);
     if(data&&data.starts&&data.starts.length) return data.starts[0].s;
@@ -6502,7 +7347,7 @@ https://azkar.nurtech.dev/app`);
     } else {
       html+='<div class="jp-suralist">';
       const list=(m&&m.suraPages)||[];
-      for(let i=0;i<list.length;i++){ const su=list[i]; html+='<button onclick="qGotoPage('+su.p+')"><span class="jn">'+su.n+'. '+escHtml(su.nr)+'</span><span class="jp-pg">стр. '+su.p+'</span></button>'; }
+      for(let i=0;i<list.length;i++){ const su=list[i]; html+='<button onclick="qGotoPage('+su.p+')"><span class="jn">'+su.n+'. '+escHtml(suraName(su))+'</span><span class="jp-pg">стр. '+su.p+'</span></button>'; }
       html+='</div>';
     }
     body.innerHTML=html;
@@ -6654,8 +7499,8 @@ https://azkar.nurtech.dev/app`);
     const pos=qPos();
     if(!pos){ sub.textContent='Читать полностью · с таджвидом и переводом'; return; }
     const set=function(nr){ sub.textContent='Продолжить: '+nr+' · аят '+(pos.a||1); };
-    if(QURAN.index){ const su=QURAN.index.find(function(x){ return x.n===pos.s; }); set(su?su.nr:('Сура '+pos.s)); }
-    else qLoadIndex().then(function(idx){ const su=idx.find(function(x){ return x.n===pos.s; }); set(su?su.nr:('Сура '+pos.s)); }).catch(function(){ set('Сура '+pos.s); });
+    if(QURAN.index){ const su=QURAN.index.find(function(x){ return x.n===pos.s; }); set(su?suraName(su):('Сура '+pos.s)); }
+    else qLoadIndex().then(function(idx){ const su=idx.find(function(x){ return x.n===pos.s; }); set(su?suraName(su):('Сура '+pos.s)); }).catch(function(){ set('Сура '+pos.s); });
   }
 
   // ---- карта прогресса чтения ----
@@ -6686,7 +7531,7 @@ https://azkar.nurtech.dev/app`);
       g += '<div class="qm-cell '+cls+'" onclick="qOpenSura('+su.n+')">'
         + (fillH? '<span class="qm-fill" style="height:'+fillH+'%"></span>':'')
         + (mc>0? '<span class="qm-mem"></span>':'')
-        + '<span class="qm-n">'+su.n+'</span><span class="qm-nm">'+escHtml(su.nr)+'</span></div>';
+        + '<span class="qm-n">'+su.n+'</span><span class="qm-nm">'+escHtml(suraName(su))+'</span></div>';
     }
     const gEl=document.getElementById('qmGrid'); if(gEl) gEl.innerHTML=g;
   }
@@ -6756,7 +7601,7 @@ https://azkar.nurtech.dev/app`);
     const cur=QTAF.cur; if(!cur) return; const s=cur.s, a=cur.a, r=cur.r;
     const src=qTafSource();
     const su=QURAN.index ? QURAN.index.find(function(x){ return x.n===s; }) : null;
-    const nm=su ? su.nr : ('Сура '+s);
+    const nm=su ? suraName(su) : ('Сура '+s);
     const perAyah = !QTAF.full && r.seg && r.seg[String(a)];
     const playHtml = '<button type="button" class="q-taf-play" onclick="qTafPlay()"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Слушать аят '+a+'</button>';
     let html=qTafSourcesHtml();
@@ -7026,6 +7871,9 @@ https://azkar.nurtech.dev/app`);
     const d=document.getElementById('qiblaDial'); if(d) d.classList.remove('aligned'); }
 
   applyTheme();
+  applyLang();                 // язык до первой отрисовки, чтобы не мигало русским
+  renderLangSeg();
+  applyArabicPrefs();
   const restoredQuran = qRestoreReaderSession();
   loadAzkarDb().finally(function(){
     cloudInit();   // подтянуть прогресс/порядок/настройки из TG CloudStorage (если новее) + засеять облако
