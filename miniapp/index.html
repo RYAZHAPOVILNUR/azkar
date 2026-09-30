@@ -1294,7 +1294,10 @@
   /* При арабском интерфейсе русский подстрочник аята и русские пояснения к зикру скрыты:
      арабоязычный читатель видит оригинал, а перевод на русский ему только мешает. */
   :root.lang-ar .q-tr { display:none; }
-  :root.lang-ar #miSharhSec, :root.lang-ar #miTr { display:none; }
+  :root.lang-ar #miSharhSec, :root.lang-ar #miTrSec { display:none; }
+  :root.lang-ar .azlib-result .tr { display:none; }
+  /* Арабский текст в карточках библиотеки — справа налево */
+  :root.lang-ar .azlib-result .ar, :root.lang-ar .azlib-result .src { text-align:right; }
   .q-taf-ayah.ar { direction:rtl; text-align:right; unicode-bidi:isolate; font-family:'AzkarMushaf','AzkarNaskh',var(--ar); font-size:20px; line-height:2.1; }
   .q-taf-text.ar { direction:rtl; text-align:right; unicode-bidi:isolate; font-family:'AzkarNaskh','Noto Naskh Arabic',var(--ar); font-size:17.5px; line-height:2.05; }
   .q-taf-text.ar .qq { color:var(--accent-deep); font-weight:600; }
@@ -1893,7 +1896,7 @@
         <button class="m-close" id="miClose" aria-label="Закрыть" data-i18n-al="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="m-ar" id="miAr"></div>
-      <div class="m-sec"><div class="m-lbl" data-i18n="Перевод и достоинство">Перевод и достоинство</div><div class="m-txt soft" id="miTr"></div></div>
+      <div class="m-sec" id="miTrSec"><div class="m-lbl" data-i18n="Перевод и достоинство">Перевод и достоинство</div><div class="m-txt soft" id="miTr"></div></div>
       <div class="m-sec"><div class="m-lbl" data-i18n="Источник">Источник</div><div class="m-src" id="miSrc"></div><div style="margin-top:8px"><span class="m-grade" id="miGrade"></span></div></div>
       <button type="button" class="m-play" id="miAudio" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Прослушать</button>
       <div class="m-audio-note" id="miAudioNote" hidden>Аудио взято из открытого источника импортированной книги. Текст всё равно требует сверки перед отметкой «проверено».</div>
@@ -1985,6 +1988,60 @@
      (через data-i18n), и к строкам, которые собирает JS (через t()). Отсутствующий ключ
      возвращает русский оригинал — интерфейс не ломается на пропущенном переводе. */
   const I18N_AR = {
+    'Утро':'الصباح',
+    'Вечер':'المساء',
+    'После намаза':'بعد الصلاة',
+    'Перед сном':'عند النوم',
+    'Каждый день':'كل يوم',
+    'Намаз':'الصلاة',
+    'Коран и дуа':'القرآن والدعاء',
+    'Защита':'التحصين',
+    'Мечеть':'المسجد',
+    'Дом':'البيت',
+    'Еда и питьё':'الطعام والشراب',
+    'Путешествие':'السفر',
+    'Тревога и печаль':'الهمّ والحزن',
+    'Рукъя':'الرقية',
+    'Утренние поминания из текущей проверенной базы':'أذكار الصباح من القاعدة المُراجَعة',
+    'Вечерние поминания из текущей проверенной базы':'أذكار المساء من القاعدة المُراجَعة',
+    'Поминания после обязательной молитвы':'الأذكار بعد الصلاة المفروضة',
+    'Поминания перед сном':'أذكار النوم',
+    'Повторяющиеся ежедневные поминания':'أذكار يومية متكرّرة',
+    'Поминания, связанные с молитвой':'أذكار متعلّقة بالصلاة',
+    'Коранические дуа и аяты, которые используются в поминаниях':'أدعية وآيات قرآنية تُستعمل في الأذكار',
+    'Поминания защиты от вреда и шайтана':'أذكار التحصين من الأذى والشيطان',
+    'Вход, выход и поведение в мечети':'الدخول والخروج وآداب المسجد',
+    'Вход, выход и семейные ситуации':'الدخول والخروج وأحوال البيت',
+    'Перед едой, после еды и для гостя':'قبل الطعام وبعده ودعاء الضيف',
+    'Дорога, транспорт и возвращение домой':'الطريق والركوب والرجوع إلى البيت',
+    'Поминания при страхе, грусти и трудности':'أذكار الخوف والحزن والشدّة',
+    'Дуа и аяты для лечения по Сунне':'أدعية وآيات للرقية من السنة',
+    'Текущая проверенная база приложения':'القاعدة المُراجَعة الحالية للتطبيق',
+    'Утренние и вечерние азкары из достоверной Сунны':'أذكار الصباح والمساء من السنة الصحيحة',
+    'Крепость мусульманина':'حصن المسلم',
+    'Достоверные азкары':'الأذكار الصحيحة',
+    'Благое слово':'الكلم الطيب',
+    'Все':'الكل',
+    'С аудио':'مع الصوت',
+    'авто':'تلقائي',
+    'Аят аль-Курси':'آية الكرسي',
+    'Поделиться зикром':'مشاركة الذكر',
+    'Поделиться':'مشاركة',
+    'Прослушать':'استماع',
+    'Открыть':'فتح',
+    'Оригинал':'الأصل',
+    '— оригинал':'— الأصل',
+    'не читал':'لم يُقرأ',
+    'частично':'جزئيًا',
+    'прочитано':'مقروء',
+    'заучиваю':'قيد الحفظ',
+    'Заучить':'حفظ',
+    'Заучено':'محفوظ',
+    'Читать →':'قراءة →',
+    'Читать':'قراءة',
+    'мекканская':'مكية',
+    'мединская':'مدنية',
+    'Аллах принял благие слова и сделал их причиной спокойствия.':'تقبّل الله الكلم الطيّب وجعله سببًا للطمأنينة.',
     'Актау':'أكتاو',
     'Актобе':'أكتوبي',
     'Алматы':'ألماتي',
@@ -2678,6 +2735,12 @@
     I18N_RE_AR.push([/^· повтор$/, '· تكرار']);
     I18N_RE_AR.push([/^· карта →$/, '· الخريطة →']);
     I18N_RE_AR.push([/^Найдено: (\d+)$/, 'النتائج: $1']);
+    I18N_RE_AR.push([/^Все · (\d+)$/, 'الكل · $1']);
+    I18N_RE_AR.push([/^С аудио · (\d+)$/, 'مع الصوت · $1']);
+    I18N_RE_AR.push([/^(.+) · ×(\d+)$/, function(){ return t(arguments[1]) + ' · ×' + arguments[2]; }]);
+    I18N_RE_AR.push([/^Крепость мусульманина, № (\d+)$/, 'حصن المسلم، رقم $1']);
+    I18N_RE_AR.push([/^(.+) · аят (\d+)$/, function(){ return arguments[1] + ' · آية ' + arguments[2]; }]);
+    I18N_RE_AR.push([/^(.+) · авто$/, function(){ return t(arguments[1]) + ' · تلقائي'; }]);
     I18N_RE_AR.push([/^Слушать аят (\d+)$/, 'استماع الآية $1']);
     I18N_RE_AR.push([/^Слушать аяты (\d+)[–-](\d+)$/, 'استماع الآيات $1–$2']);
     I18N_RE_AR.push([/^Толкование всего пассажа \(аяты (\d+)[–-](\d+)\)$/, 'تفسير المقطع كاملًا (الآيات $1–$2)']);
@@ -2778,6 +2841,15 @@
   }
   // Экраны въезжают со стороны, противоположной направлению письма: в RTL это зеркало.
   // Название суры на языке интерфейса: в данных уже есть арабский оригинал (na).
+  // «7 аятов · мекканская» — на арабском своя форма множественного числа и свои названия типов сур
+  const SURA_TYPE_AR = { 'мекканская':'مكية', 'мединская':'مدنية' };
+  function suraSub(su){
+    if(!su) return '';
+    const type = isAr() ? (SURA_TYPE_AR[su.t] || su.t) : su.t;
+    const cnt = isAr() ? (su.c + ' ' + plurAr(su.c, ['آية','آيتان','آيات','آية'])) 
+                       : (su.c + ' ' + qPlural(su.c,'аят','аята','аятов'));
+    return cnt + ' · ' + type;
+  }
   function suraName(su){ if(!su) return ''; return (isAr() && su.na) ? su.na : (su.nr || su.ne || ''); }
   function navX(v){ return isAr() ? String(v).replace(/(-?)(\d)/, function(m,sign,d){ return (sign ? '' : '-') + d; }) : v; }
   function applyLang(){
@@ -6667,7 +6739,7 @@ https://azkar.nurtech.dev/app`);
       if(req!==QURAN._suraReq) return;
       const su=res[1], aw=res[2]; QURAN.cur=su; QURAN.curN=n; QURAN.curAw=aw; QURAN.seen=new Set();
       document.getElementById('qrTitle').textContent = su.n+'. '+suraName(su);
-      document.getElementById('qrSub').textContent = su.c+' '+qPlural(su.c,'аят','аята','аятов')+' · '+su.t;
+      document.getElementById('qrSub').textContent = suraSub(su);
       document.getElementById('qrBism').hidden = true;
       const start=Math.max(1,parseInt(ayah,10)||1);
       if(!(activeScreen()&&activeScreen().id==='quranReader')) go('quranReader');
@@ -6698,7 +6770,7 @@ https://azkar.nurtech.dev/app`);
     QURAN.cur=su; QURAN.curN=su.n;
     const aw = QURAN.curAw;
     document.getElementById('qrTitle').textContent = su.n+'. '+suraName(su);
-    document.getElementById('qrSub').textContent = su.c+' '+qPlural(su.c,'аят','аята','аятов')+' · '+su.t;
+    document.getElementById('qrSub').textContent = suraSub(su);
     document.getElementById('qrBism').hidden = !su.bism;
     document.getElementById('qrBism').style.fontFamily = "'KFGQPC', var(--ar)";
     const wrap=document.getElementById('qrAyahs');
