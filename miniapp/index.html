@@ -1290,6 +1290,14 @@
   .q-taf-sub { font-size:12px; letter-spacing:.4px; text-transform:uppercase; color:var(--accent-deep); font-weight:700; margin-bottom:10px; }
   .q-taf-text { min-width:0; max-width:100%; font-size:15.5px; line-height:1.75; color:var(--ink); white-space:pre-line; overflow-wrap:anywhere; word-break:break-word; }
   .q-taf-ar { direction:rtl; unicode-bidi:isolate; overflow-wrap:anywhere; word-break:break-word; }
+  /* Арабский тафсир: сплошной текст справа налево, наскх крупнее и с воздухом между строк */
+  /* При арабском интерфейсе русский подстрочник аята и русские пояснения к зикру скрыты:
+     арабоязычный читатель видит оригинал, а перевод на русский ему только мешает. */
+  :root.lang-ar .q-tr { display:none; }
+  :root.lang-ar #miSharhSec, :root.lang-ar #miTr { display:none; }
+  .q-taf-ayah.ar { direction:rtl; text-align:right; unicode-bidi:isolate; font-family:'AzkarMushaf','AzkarNaskh',var(--ar); font-size:20px; line-height:2.1; }
+  .q-taf-text.ar { direction:rtl; text-align:right; unicode-bidi:isolate; font-family:'AzkarNaskh','Noto Naskh Arabic',var(--ar); font-size:17.5px; line-height:2.05; }
+  .q-taf-text.ar .qq { color:var(--accent-deep); font-weight:600; }
   .q-taf-ar.long { display:block; max-width:100%; margin:.12em 0; text-align:right; direction:rtl; unicode-bidi:isolate; }
   .q-taf-ar.long > bdi { display:inline; direction:rtl; unicode-bidi:isolate-override; overflow-wrap:anywhere; word-break:break-word; line-break:anywhere; }
   .q-taf-loading { padding:18px 2px; color:var(--ink-faint); font-size:14px; text-align:center; }
@@ -2670,6 +2678,10 @@
     I18N_RE_AR.push([/^· повтор$/, '· تكرار']);
     I18N_RE_AR.push([/^· карта →$/, '· الخريطة →']);
     I18N_RE_AR.push([/^Найдено: (\d+)$/, 'النتائج: $1']);
+    I18N_RE_AR.push([/^Слушать аят (\d+)$/, 'استماع الآية $1']);
+    I18N_RE_AR.push([/^Слушать аяты (\d+)[–-](\d+)$/, 'استماع الآيات $1–$2']);
+    I18N_RE_AR.push([/^Толкование всего пассажа \(аяты (\d+)[–-](\d+)\)$/, 'تفسير المقطع كاملًا (الآيات $1–$2)']);
+    I18N_RE_AR.push([/^Показать только аят (\d+)$/, 'إظهار الآية $1 فقط']);
     // «Примерно по таймзоне (Эр-Рияд)» — город приходит с сервера, переводим его отдельно
     I18N_RE_AR.push([/^Примерно по таймзоне \((.+)\)$/, function(){ return 'تقريبًا حسب المنطقة الزمنية (' + t(arguments[1]) + ')'; }]);
     I18N_RE_AR.push([/^По времени намаза \((.+)\)$/, function(){ return 'حسب مواقيت الصلاة (' + t(arguments[1]) + ')'; }]);
@@ -3793,6 +3805,11 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
   function qTafTextHtml(text){
+    // В арабском тафсире арабский — весь текст, поэтому выделять «длинные арабские» фрагменты
+    // нечего: рендерим сплошняком, разметку берёт на себя CSS (.q-taf-text.ar).
+    if(typeof qTafSource === 'function' && qTafSource().arabic){
+      return escHtml(String(text == null ? '' : text));
+    }
     let raw = String(text == null ? '' : text);
     const kept = [];
     raw = raw.replace(/﴾[\s\S]*?﴿/g, function(part){
@@ -7592,7 +7609,11 @@ https://azkar.nurtech.dev/app`);
       dir:'assets/quran/tafsir/',
       missing:'Для этого аята тафсир ас-Саади пока недоступен.',
       groupNote:'Ас-Саади толкует эти аяты вместе.',
-      attr:'<div class="m-note">Тафсир ас-Саади (‘Абд ар-Рахман ибн Насир ас-Саади), русский перевод.</div>'
+      attr:'<div class="m-note">Тафсир ас-Саади (‘Абд ар-Рахман ибн Насир ас-Саади), русский перевод.</div>',
+      ar:{ label:'السعدي', title:'تفسير السعدي', dir:'assets/quran/tafsir-ar-saadi/',
+        missing:'لم يتوفّر تفسير السعدي لهذه الآية بعد.',
+        groupNote:'السعدي يفسّر هذه الآيات مجتمعةً.',
+        attr:'<div class="m-note">تيسير الكريم الرحمن في تفسير كلام المنان — عبد الرحمن بن ناصر السعدي. مصدر البيانات: quran.com</div>' }
     },
     kathir: {
       id:'kathir',
@@ -7601,13 +7622,24 @@ https://azkar.nurtech.dev/app`);
       dir:'assets/quran/tafsir-ibn-kathir/',
       missing:'Для этого аята тафсир Ибн Касира пока недоступен.',
       groupNote:'Ибн Касир толкует эти аяты вместе.',
-      attr:'<div class="m-note">Тафсир Ибн Касира, русский перевод. Источник данных: Quranic Universal Library (QUL) / Tarteel AI, ресурс Tafsir Ibne Kathir.</div>'
+      attr:'<div class="m-note">Тафсир Ибн Касира, русский перевод. Источник данных: Quranic Universal Library (QUL) / Tarteel AI, ресурс Tafsir Ibne Kathir.</div>',
+      ar:{ label:'ابن كثير', title:'تفسير ابن كثير', dir:'assets/quran/tafsir-ar-kathir/',
+        missing:'لم يتوفّر تفسير ابن كثير لهذه الآية بعد.',
+        groupNote:'ابن كثير يفسّر هذه الآيات مجتمعةً.',
+        attr:'<div class="m-note">تفسير القرآن العظيم — الحافظ ابن كثير. مصدر البيانات: quran.com</div>' }
     }
   };
   const QTAF = { cache:{}, source:(function(){ try{ return localStorage.getItem('azkar_qtafsir') || 'saadi'; }catch(e){ return 'saadi'; } })() };
-  function qTafSource(){ return QTAF_SOURCES[QTAF.source] || QTAF_SOURCES.saadi; }
+  // На арабском тот же тафсир берётся из арабской базы — с оригинальным текстом и подписями.
+  function qTafSource(){
+    const base = QTAF_SOURCES[QTAF.source] || QTAF_SOURCES.saadi;
+    if(!isAr() || !base.ar) return base;
+    const a = base.ar;
+    return { id:base.id, arabic:true, label:a.label, title:a.title, dir:a.dir,
+             missing:a.missing, groupNote:a.groupNote, attr:a.attr };
+  }
   function qLoadTafsir(s){
-    const src=qTafSource(), key=src.id+':'+s;
+    const src=qTafSource(), key=src.id+':'+(src.arabic?'ar':'ru')+':'+s;
     if(QTAF.cache[key]) return Promise.resolve(QTAF.cache[key]);
     return qFetchJSON(src.dir+s+'.json').then(function(d){ QTAF.cache[key]=d; return d; });
   }
@@ -7638,7 +7670,9 @@ https://azkar.nurtech.dev/app`);
       const list=res[0], sura=res[1];
       const r=tafsirRangeFor(list, a);
       if(!r || !r.x){ document.getElementById('qSheetBody').innerHTML=qTafSourcesHtml()+'<div class="m-note">'+escHtml(src.missing)+'</div>'; return; }
-      const ayahTr=(sura && sura.a && sura.a[a-1]) ? sura.a[a-1].ru : ((QURAN.cur && QURAN.cur.n===s && QURAN.cur.a[a-1]) ? QURAN.cur.a[a-1].ru : '');
+      // Над толкованием — перевод смысла, а на арабском сам аят: переводить арабоязычному нечего.
+      const _av=(sura && sura.a && sura.a[a-1]) ? sura.a[a-1] : ((QURAN.cur && QURAN.cur.n===s && QURAN.cur.a[a-1]) ? QURAN.cur.a[a-1] : null);
+      const ayahTr=_av ? (isAr() ? (_av.ar || '') : (_av.ru || '')) : '';
       QTAF.cur={ s:s, a:a, r:r, ayahTr:ayahTr }; QTAF.full=false;
       renderTafsir();
     }).catch(function(){ document.getElementById('qSheetBody').innerHTML='<div class="m-note">Не удалось загрузить тафсир. Проверьте соединение и попробуйте снова.</div>'; });
@@ -7653,18 +7687,18 @@ https://azkar.nurtech.dev/app`);
     const playHtml = '<button type="button" class="q-taf-play" onclick="qTafPlay()"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Слушать аят '+a+'</button>';
     let html=qTafSourcesHtml();
     if(perAyah){
-      html += '<div class="q-taf-sub">'+escHtml(nm)+' · аят '+a+'</div>';
-      if(cur.ayahTr) html += '<div class="q-taf-ayah">'+escHtml(cur.ayahTr)+'</div>';
+      html += '<div class="q-taf-sub">'+escHtml(nm)+' · '+t('аят')+' '+a+'</div>';
+      if(cur.ayahTr) html += '<div class="q-taf-ayah'+(isAr()?' ar':'')+'">'+escHtml(cur.ayahTr)+'</div>';
       html += playHtml;
-      html += '<div class="q-taf-text">'+qTafTextHtml(r.seg[String(a)])+'</div>';
+      html += '<div class="q-taf-text'+(src.arabic?' ar':'')+'">'+qTafTextHtml(r.seg[String(a)])+'</div>';
       if(r.t>r.f) html += '<button type="button" class="q-taf-full" onclick="qTafToggleFull()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Толкование всего пассажа (аяты '+r.f+'–'+r.t+')</button>';
     } else {
-      const rangeLabel = r.f===r.t ? ('аят '+r.f) : ('аяты '+r.f+'–'+r.t);
+      const rangeLabel = r.f===r.t ? (t('аят')+' '+r.f) : (t('аяты')+' '+r.f+'–'+r.t);
       html += '<div class="q-taf-sub">'+escHtml(nm)+' · '+rangeLabel+'</div>';
-      if(cur.ayahTr) html += '<div class="q-taf-ayah">'+escHtml(cur.ayahTr)+'</div>';   // перевод аята (Кулиев) над толкованием
+      if(cur.ayahTr) html += '<div class="q-taf-ayah'+(isAr()?' ar':'')+'">'+escHtml(cur.ayahTr)+'</div>';   // перевод аята (Кулиев) над толкованием
       html += playHtml;
       if(r.f!==r.t && !r.seg) html += '<div class="q-taf-group-note">'+escHtml(src.groupNote)+'</div>';
-      html += '<div class="q-taf-text">'+qTafTextHtml(String(r.x))+'</div>';
+      html += '<div class="q-taf-text'+(src.arabic?' ar':'')+'">'+qTafTextHtml(String(r.x))+'</div>';
       if(r.seg && r.seg[String(a)]) html += '<button type="button" class="q-taf-full" onclick="qTafToggleFull()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>Показать только аят '+a+'</button>';
     }
     document.getElementById('qSheetBody').innerHTML = html + src.attr;
